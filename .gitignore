@@ -1,0 +1,27 @@
+# XAMPP specific
+/apache/logs/
+/mysql/data/
+/php/logs/
+/tomcat/logs/
+/tmp/
+
+# IDE specific
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# PHP specific
+/vendor/
+composer.lock
+*.log
+.env
+
+# Windows specific
+Thumbs.db
+desktop.ini
+
+# Mac specific
+.DS_Store
+.AppleDouble
+.LSOverride

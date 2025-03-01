@@ -1,0 +1,272 @@
+DEVELOPMENT GUIDELINES AND PREFERENCES
+=====================================
+1. Understanding the Task
+Analyze the Request: I carefully read and analyze the user's request to understand the task at hand.
+Clarify Ambiguities: If the task is unclear or lacks necessary details, I use the ask_followup_question tool to request clarification.
+2. Planning the Solution
+Break Down the Task: I break the task into smaller, manageable steps.
+Create a Plan: I outline a plan for how to approach the task, including which tools to use and in what order.
+Confirm with User: If the task is complex, I share the plan with the user for confirmation before proceeding.
+3. Using Tools Effectively
+Tool Selection: I choose the most appropriate tool for each step of the task (e.g., read_file, create_file, execute_command, etc.).
+Step-by-Step Execution: I use one tool at a time, waiting for the user's response before proceeding to the next step.
+Error Handling: If a tool fails or encounters an error, I analyze the issue and adjust the approach accordingly.
+4. Writing Code
+Best Practices: I follow coding best practices, such as:
+Writing clean, readable, and well-structured code.
+Using meaningful variable and function names.
+Adding comments where necessary for clarity.
+Modularity: I ensure code is modular and reusable, separating concerns (e.g., HTML, CSS, JavaScript).
+Validation: I validate inputs and handle errors gracefully to ensure robustness.
+5. Testing and Debugging
+Test Incrementally: I test each part of the code as it is developed to catch issues early.
+Debugging: If errors occur, I analyze the error messages, identify the root cause, and fix the issue.
+User Feedback: I rely on user feedback to confirm that the solution works as expected.
+6. Communication
+Clear and Concise: My responses are direct and to the point, avoiding unnecessary conversational phrases.
+Technical Accuracy: I ensure all technical details are accurate and relevant to the task.
+Summarize Results: After completing a task, I summarize the changes made and the results achieved.
+7. Iterative Improvement
+User Feedback: I incorporate user feedback to refine the solution and address any issues.
+Continuous Learning: I adapt my approach based on the user's needs and preferences.
+8. Rules and Constraints
+Strict Adherence to Rules: I follow the rules provided in the system, such as:
+Not using conversational phrases like "Great" or "Certainly."
+Not assuming the success of a tool use without user confirmation.
+Always providing complete file content when using create_file.
+Tool Use Formatting: I use the correct XML-style format for tool use, ensuring proper parsing and execution.
+9. Behavior in Specific Scenarios
+Errors and Issues: If errors occur, I analyze the issue, provide a clear explanation, and suggest a fix.
+Complex Tasks: For complex tasks, I break them into smaller steps and proceed iteratively.
+User Requests: I prioritize the user's requests and focus on completing the task efficiently.
+10. Finalizing the Task
+Completion: Once the task is complete, I use the attempt_completion tool to present the final result.
+No Open-Ended Questions: I ensure the result is final and does not require further input from the user.
+Example Workflow
+User Request: "Add a new endpoint to the Flask API service."
+Analysis: I analyze the request and determine which files need to be modified.
+Plan: I create a plan to:
+Search for relevant files using search_code.
+Read the files using read_file.
+Make necessary changes using edit_file or create_file.
+Test the changes using execute_command.
+Execution: I execute each step, waiting for user confirmation after each tool use.
+Completion: Once the task is complete, I summarize the changes and present the result using attempt_completion.
+
+Table of Contents:
+-----------------
+1. Code Handling
+2. File Management
+3. Database Handling
+4. Error Handling
+5. Security
+6. Performance Optimization
+7. User Interface
+8. Testing
+9. Documentation
+
+1. CODE HANDLING
+---------------
+1.1. General Principles:
+    - Never refuse to work with files - always search the codebase if needed
+    - Read and analyze entire code files, don't ask for them to be added
+    - Provide complete solutions, not step-by-step descriptions
+    - Always show full code, no placeholder comments
+    - Use multiple codeblocks when showing changes to multiple files
+
+1.2. Code Quality:
+    - When fixing bugs, address root causes not just symptoms
+    - Include error handling and validation
+    - Add appropriate comments for complex logic
+    - Ensure consistent code formatting
+    - Follow PSR standards for PHP
+    - Use type hints where applicable
+    - Implement proper exception handling
+    - Follow SOLID principles
+    - Use dependency injection when appropriate
+    - Implement proper interfaces
+    - Use traits for shared functionality
+    - Implement proper namespacing
+    - Use autoloading
+    - Follow coding standards consistently
+    - Implement proper testing
+
+2. FILE MANAGEMENT
+----------------
+2.1. Naming and Structure:
+    - Follow naming convention: `module_action.php`
+    - Maintain consistent file structure
+    - Keep related files in appropriate directories
+    - Use proper file extensions
+    - Implement proper file organization
+    - Use proper file naming conventions
+
+2.2. File Operations:
+    - When creating new files:
+        * Update all related files
+        * Check all form field names match
+        * Verify all links and connections work
+        * Update any references in menus/navigation
+        * Check form actions and redirects
+    - Use PHP files for database changes
+    - Implement proper file permissions
+    - Handle file uploads securely
+    - Implement proper file deletion
+    - Handle file backups
+    - Implement proper file versioning
+    - Handle temporary files
+    - Implement proper file cleanup
+
+3. DATABASE HANDLING
+-------------------
+3.1. Query Management:
+    - Use prepared statements
+    - Implement proper transactions
+    - Handle database connections properly
+    - Use proper indexing
+    - Optimize queries
+    - Handle database errors
+    - Use proper data types
+    - Implement proper constraints
+    - Handle NULL values properly
+    - Implement proper joins
+    - Use proper foreign keys
+
+3.2. Data Management:
+    - Handle large datasets
+    - Implement proper pagination
+    - Use proper database design patterns
+    - Implement proper backup procedures
+
+4. ERROR HANDLING
+---------------
+4.1. Error Management:
+    - Implement proper try-catch blocks
+    - Log errors appropriately
+    - Display user-friendly error messages
+    - Handle database errors
+    - Handle file system errors
+    - Handle network errors
+    - Implement proper error reporting
+    - Handle validation errors
+    - Implement proper error logging
+    - Handle system errors
+
+4.2. Debugging:
+    - Implement proper debugging
+    - Handle runtime errors
+    - Implement proper error recovery
+    - Handle edge cases
+    - Use proper error codes
+
+5. SECURITY
+-----------
+5.1. Input/Output Security:
+    - Sanitize all user inputs
+    - Use prepared statements
+    - Validate file uploads
+    - Handle XSS prevention
+    - Handle SQL injection prevention
+    - Implement proper logging
+
+5.2. Authentication/Authorization:
+    - Implement proper authentication
+    - Follow authorization rules
+    - Protect sensitive data
+    - Maintain session security
+    - Implement CSRF protection
+    - Implement proper password hashing
+    - Implement proper access control
+    - Handle session management
+    - Implement proper encryption
+    - Handle secure communications
+    - Handle security updates
+
+6. PERFORMANCE OPTIMIZATION
+--------------------------
+6.1. Database Optimization:
+    - Optimize database queries
+    - Implement caching
+    - Minimize database calls
+    - Use proper indexing
+    - Handle large datasets
+
+6.2. System Optimization:
+    - Optimize file operations
+    - Handle memory management
+    - Implement proper pagination
+    - Use proper data structures
+    - Optimize code execution
+    - Implement proper load balancing
+    - Use proper caching strategies
+    - Handle concurrent requests
+    - Optimize network requests
+    - Implement proper resource management
+
+7. USER INTERFACE
+---------------
+7.1. Design Principles:
+    - Follow UI/UX best practices
+    - Implement responsive design
+    - Use proper layout
+    - Handle mobile devices
+    - Implement proper accessibility
+    - Use proper color schemes
+    - Handle user preferences
+
+7.2. User Interaction:
+    - Handle form validation
+    - Implement proper feedback
+    - Use proper error messages
+    - Handle user input
+    - Implement proper navigation
+    - Implement proper forms
+    - Use proper validation messages
+    - Handle user interactions
+
+8. TESTING
+----------
+8.1. Test Types:
+    - Implement unit tests
+    - Handle integration testing
+    - Implement functional tests
+    - Handle regression testing
+    - Implement security testing
+    - Handle performance testing
+
+8.2. Testing Framework:
+    - Implement proper test cases
+    - Use proper testing frameworks
+    - Handle test automation
+    - Implement proper test coverage
+    - Use proper test data
+    - Handle test environments
+    - Implement proper test documentation
+    - Handle test reporting
+    - Use proper test methodologies
+
+9. DOCUMENTATION
+---------------
+9.1. Code Documentation:
+    - Provide clear summaries of changes
+    - Explain modifications and reasons
+    - List connected files updated
+    - Note field names or links aligned
+    - Document new functions/features
+    - Include code comments
+    - Document database schema
+    - Document security measures
+
+9.2. User Documentation:
+    - Include usage examples
+    - Note configuration requirements
+    - Document dependencies
+    - Explain security considerations
+    - Provide API documentation
+    - Provide setup instructions
+    - Include troubleshooting guides
+    - Document testing procedures
+    - Include deployment instructions
+    - Provide maintenance guides
+    - Include version history
+
