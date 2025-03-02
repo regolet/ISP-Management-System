@@ -1,18 +1,66 @@
 <?php
-require_once "init.php";
+// Define root path
+define('APP_ROOT', __DIR__ . '/app');
 
-// Redirect to login page if not logged in
-if (!isset($_SESSION["user_id"])) {
-    header("Location: login.php");
-    exit();
+// Debug autoloading
+function debug_autoload($class) {
+    // Convert namespace separators to directory separators
+    $file = str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
+    
+    // First try loading from app directory
+    $appPath = APP_ROOT . DIRECTORY_SEPARATOR . $file;
+    if (file_exists($appPath)) {
+        require $appPath;
+        error_log("Loaded class from: " . $appPath);
+        return true;
+    }
+    
+    // Then try loading from root directory
+    $rootPath = __DIR__ . DIRECTORY_SEPARATOR . $file;
+    if (file_exists($rootPath)) {
+        require $rootPath;
+        error_log("Loaded class from: " . $rootPath);
+        return true;
+    }
+    
+    error_log("Failed to load class: " . $class);
+    error_log("Tried paths:");
+    error_log("  - " . $appPath);
+    error_log("  - " . $rootPath);
+    return false;
 }
 
-// If logged in, redirect based on user role
-$redirect_path = match($_SESSION["role"]) {
-    "admin" => "admin/dashboard.php",
-    "staff" => "admin/dashboard.php",
-    "customer" => "customer/dashboard.php",
-    default => "login.php"
-};
-header("Location: $redirect_path");
-exit();
+// Register autoloader
+spl_autoload_register('debug_autoload');
+
+// Start session
+session_start();
+
+// Load helper functions
+require_once APP_ROOT . '/helpers/Functions.php';
+
+// Import core classes
+require_once APP_ROOT . '/core/Application.php';
+require_once APP_ROOT . '/core/Request.php';
+require_once APP_ROOT . '/core/Response.php';
+require_once APP_ROOT . '/core/Router.php';
+require_once APP_ROOT . '/core/Database.php';
+require_once APP_ROOT . '/core/StaticFileHandler.php';
+
+use App\Core\Application;
+
+// Get application instance
+$app = Application::getInstance();
+
+// Set error handler
+$app->getRouter()->setErrorHandler(function($code) {
+    http_response_code($code);
+    require APP_ROOT . '/views/errors/' . $code . '.php';
+});
+
+// Load routes
+require APP_ROOT . '/routes/web.php';
+require APP_ROOT . '/routes/api.php';
+
+// Run application
+$app->run();
