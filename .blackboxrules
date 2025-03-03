@@ -1,0 +1,2 @@
+use always "cd /c/mysql/bin && ./mysql -u root" in command when starting mysql
+use always "php -S localhost:8000 -t ISP-Management-System/public" to host to locahost

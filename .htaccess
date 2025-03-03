@@ -1,0 +1,43 @@
+# Enable rewrite engine
+RewriteEngine On
+
+# Set the base directory
+RewriteBase /
+
+# Redirect all requests to public directory
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^(.*)$ public/$1 [L]
+
+# Prevent access to sensitive files
+<Files ~ "^\.">
+    Require all denied
+</Files>
+
+<Files ~ "(^|/)\.(git|env|env\.|example|cache|log|backup)">
+    Require all denied
+</Files>
+
+# Prevent directory listing
+Options -Indexes
+
+# Set security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options nosniff
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options DENY
+    Header set X-Download-Options noopen
+    Header set X-Permitted-Cross-Domain-Policies none
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header set Content-Security-Policy "default-src self; script-src self unsafe-inline unsafe-eval; style-src self unsafe-inline;"
+</IfModule>
+
+# PHP settings
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+    php_flag display_errors off
+    php_flag log_errors on
+</IfModule>

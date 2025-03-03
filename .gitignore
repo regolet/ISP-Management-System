@@ -1,0 +1,52 @@
+# IDE and Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Storage directories
+app/storage/logs/*
+!app/storage/logs/.gitkeep
+app/storage/cache/*
+!app/storage/cache/.gitkeep
+app/storage/backups/*
+!app/storage/backups/.gitkeep
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Dependency directories
+vendor/
+node_modules/
+
+# Compiled files
+*.compiled.*
+*.min.*
+*.map
+
+# Cache files
+*.cache
+
+# Log files
+*.log
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Keep .gitkeep files
+!.gitkeep
