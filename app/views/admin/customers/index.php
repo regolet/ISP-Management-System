@@ -1,5 +1,6 @@
 <?php
 $title = 'Manage Customers - Admin Panel';
+require_once dirname(__DIR__, 3) . '/helpers/Functions.php';
 ?>
 
 <div class="row mb-4">
@@ -391,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': '<?= \App\Middleware\CSRFMiddleware::getToken() ?>'
+                        'X-CSRF-Token': '<?= csrf_token() ?>'
                     },
                     body: JSON.stringify({
                         action: actionType,
@@ -419,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fetch(`/admin/customers/${customerId}/suspend`, {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-Token': '<?= \App\Middleware\CSRFMiddleware::getToken() ?>'
+                        'X-CSRF-Token': '<?= csrf_token() ?>'
                     }
                 })
                 .then(response => response.json())
@@ -442,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fetch(`/admin/customers/${customerId}`, {
                     method: 'DELETE',
                     headers: {
-                        'X-CSRF-Token': '<?= \App\Middleware\CSRFMiddleware::getToken() ?>'
+                        'X-CSRF-Token': '<?= csrf_token() ?>'
                     }
                 })
                 .then(response => response.json())

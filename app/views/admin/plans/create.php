@@ -1,234 +1,103 @@
 <?php
-$title = 'Create Plan - Admin Panel';
+$title = 'Add Plan - Admin Panel';
 ?>
 
 <div class="row mb-4">
     <div class="col-md-6">
-        <h2>Create New Plan</h2>
+        <h2><i class='bx bx-package'></i> Add Plan</h2>
     </div>
     <div class="col-md-6 text-end">
-        <a href="/admin/plans" class="btn btn-secondary">
-            <i class="fa fa-arrow-left"></i> Back to Plans
+        <a href="/admin/plans" class="btn btn-outline-secondary">
+            <i class='bx bx-arrow-back'></i> Back to Plans
         </a>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-md-8 mx-auto">
+    <div class="col-md-8">
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="/admin/plans" id="planForm" class="needs-validation" novalidate>
-                    <?= csrf_field() ?>
+                <?php if (!empty($errors['general'])): ?>
+                    <div class="alert alert-danger">
+                        <?= $errors['general'] ?>
+                    </div>
+                <?php endif; ?>
 
-                    <!-- Basic Information -->
-                    <h5 class="mb-4">Basic Information</h5>
-                    <div class="row g-3 mb-4">
+                <form method="POST" action="/admin/plans/store">
+                    <input type="hidden" name="_csrf" value="<?= csrf_token() ?>">
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Plan Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control <?= hasError('name', $errors) ? 'is-invalid' : '' ?>" 
+                               id="name" name="name" value="<?= old('name') ?>" required>
+                        <?php if (hasError('name', $errors)): ?>
+                            <div class="invalid-feedback"><?= getError('name', $errors) ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"><?= old('description') ?></textarea>
+                    </div>
+
+                    <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="name" class="form-label">Plan Name *</label>
-                            <input type="text" class="form-control" id="name" name="name" 
-                                   value="<?= old('name') ?>" required>
-                            <?php if (isset($errors['name'])): ?>
-                                <div class="invalid-feedback d-block">
-                                    <?= $errors['name'] ?>
-                                </div>
+                            <label for="bandwidth" class="form-label">Bandwidth (Mbps) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control <?= hasError('bandwidth', $errors) ? 'is-invalid' : '' ?>" 
+                                   id="bandwidth" name="bandwidth" value="<?= old('bandwidth') ?>" min="1" required>
+                            <?php if (hasError('bandwidth', $errors)): ?>
+                                <div class="invalid-feedback"><?= getError('bandwidth', $errors) ?></div>
                             <?php endif; ?>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="bandwidth" class="form-label">Bandwidth (Mbps) *</label>
-                            <input type="number" class="form-control" id="bandwidth" name="bandwidth" 
-                                   value="<?= old('bandwidth') ?>" required>
-                            <?php if (isset($errors['bandwidth'])): ?>
-                                <div class="invalid-feedback d-block">
-                                    <?= $errors['bandwidth'] ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="amount" class="form-label">Monthly Fee *</label>
+                            <label for="amount" class="form-label">Amount <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <span class="input-group-text">₱</span>
-                                <input type="number" class="form-control" id="amount" name="amount" 
-                                       step="0.01" min="0" value="<?= old('amount') ?>" required>
-                            </div>
-                            <?php if (isset($errors['amount'])): ?>
-                                <div class="invalid-feedback d-block">
-                                    <?= $errors['amount'] ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="col-12">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" 
-                                      rows="3"><?= old('description') ?></textarea>
-                            <?php if (isset($errors['description'])): ?>
-                                <div class="invalid-feedback d-block">
-                                    <?= $errors['description'] ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-
-                    <!-- Features -->
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0">Features</h5>
-                            <button type="button" class="btn btn-sm btn-outline-primary" id="addFeature">
-                                <i class="fa fa-plus"></i> Add Feature
-                            </button>
-                        </div>
-                        <div id="featuresContainer">
-                            <div class="input-group mb-2">
-                                <input type="text" class="form-control" name="features[]" 
-                                       placeholder="Enter feature">
-                                <button type="button" class="btn btn-outline-danger remove-feature">
-                                    <i class="fa fa-trash"></i>
-                                </button>
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control <?= hasError('amount', $errors) ? 'is-invalid' : '' ?>" 
+                                       id="amount" name="amount" value="<?= old('amount') ?>" min="0" step="0.01" required>
+                                <?php if (hasError('amount', $errors)): ?>
+                                    <div class="invalid-feedback"><?= getError('amount', $errors) ?></div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Advanced Settings -->
-                    <h5 class="mb-4">Advanced Settings</h5>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label for="upload_speed" class="form-label">Upload Speed (Mbps)</label>
-                            <input type="number" class="form-control" id="upload_speed" name="upload_speed" 
-                                   value="<?= old('upload_speed') ?>">
-                            <?php if (isset($errors['upload_speed'])): ?>
-                                <div class="invalid-feedback d-block">
-                                    <?= $errors['upload_speed'] ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="download_speed" class="form-label">Download Speed (Mbps)</label>
-                            <input type="number" class="form-control" id="download_speed" name="download_speed" 
-                                   value="<?= old('download_speed') ?>">
-                            <?php if (isset($errors['download_speed'])): ?>
-                                <div class="invalid-feedback d-block">
-                                    <?= $errors['download_speed'] ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="data_cap" class="form-label">Data Cap (GB)</label>
-                            <input type="number" class="form-control" id="data_cap" name="data_cap" 
-                                   value="<?= old('data_cap') ?>">
-                            <small class="text-muted">Leave empty for unlimited data</small>
-                            <?php if (isset($errors['data_cap'])): ?>
-                                <div class="invalid-feedback d-block">
-                                    <?= $errors['data_cap'] ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="contract_period" class="form-label">Contract Period (months)</label>
-                            <input type="number" class="form-control" id="contract_period" name="contract_period" 
-                                   value="<?= old('contract_period') ?>">
-                            <small class="text-muted">Leave empty for no contract</small>
-                            <?php if (isset($errors['contract_period'])): ?>
-                                <div class="invalid-feedback d-block">
-                                    <?= $errors['contract_period'] ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="active" <?= old('status', 'active') === 'active' ? 'selected' : '' ?>>Active</option>
+                            <option value="inactive" <?= old('status') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                        </select>
                     </div>
 
-                    <!-- Status -->
-                    <div class="mb-4">
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="is_active" 
-                                   name="is_active" value="1" checked>
-                            <label class="form-check-label" for="is_active">
-                                Make this plan active and available for subscription
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <button type="button" class="btn btn-secondary me-md-2" 
-                                onclick="history.back()">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Create Plan</button>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class='bx bx-save'></i> Save Plan
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class='bx bx-info-circle'></i> Help</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Create a new internet service plan by providing the following information:
+                </p>
+                <ul class="text-muted small">
+                    <li><strong>Plan Name:</strong> A unique name for the plan (e.g., "Basic", "Premium")</li>
+                    <li><strong>Description:</strong> Optional details about the plan features</li>
+                    <li><strong>Bandwidth:</strong> Internet speed in Mbps (e.g., 10, 50, 100)</li>
+                    <li><strong>Amount:</strong> Monthly subscription fee</li>
+                    <li><strong>Status:</strong> Set to inactive to hide from new subscriptions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const featuresContainer = document.getElementById('featuresContainer');
-    const addFeatureBtn = document.getElementById('addFeature');
-
-    // Add feature
-    addFeatureBtn.addEventListener('click', function() {
-        const div = document.createElement('div');
-        div.className = 'input-group mb-2';
-        div.innerHTML = `
-            <input type="text" class="form-control" name="features[]" placeholder="Enter feature">
-            <button type="button" class="btn btn-outline-danger remove-feature">
-                <i class="fa fa-trash"></i>
-            </button>
-        `;
-        featuresContainer.appendChild(div);
-    });
-
-    // Remove feature
-    featuresContainer.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-feature')) {
-            const row = e.target.closest('.input-group');
-            if (featuresContainer.children.length > 1) {
-                row.remove();
-            } else {
-                row.querySelector('input').value = '';
-            }
-        }
-    });
-
-    // Auto-populate speeds based on bandwidth
-    const bandwidthInput = document.getElementById('bandwidth');
-    const uploadSpeedInput = document.getElementById('upload_speed');
-    const downloadSpeedInput = document.getElementById('download_speed');
-
-    bandwidthInput.addEventListener('input', function() {
-        const bandwidth = parseInt(this.value) || 0;
-        if (!uploadSpeedInput.value) {
-            uploadSpeedInput.value = Math.floor(bandwidth * 0.2); // 20% of bandwidth
-        }
-        if (!downloadSpeedInput.value) {
-            downloadSpeedInput.value = bandwidth;
-        }
-    });
-
-    // Form validation
-    const form = document.getElementById('planForm');
-    form.addEventListener('submit', function(e) {
-        if (!form.checkValidity()) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        form.classList.add('was-validated');
-
-        // Validate features
-        const features = document.querySelectorAll('input[name="features[]"]');
-        let hasFeature = false;
-        features.forEach(input => {
-            if (input.value.trim()) {
-                hasFeature = true;
-            }
-        });
-
-        if (!hasFeature) {
-            e.preventDefault();
-            alert('Please add at least one feature for the plan');
-        }
-    });
-});
-</script>

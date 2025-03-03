@@ -3,6 +3,9 @@
  * ISP Management System - Entry Point
  */
 
+// Define application root path
+define('APP_ROOT', dirname(__DIR__));
+
 // Define the application start time
 define('APP_START', microtime(true));
 

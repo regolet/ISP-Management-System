@@ -7,18 +7,36 @@
  * @return string Formatted amount
  */
 function formatCurrency($amount, $currency = null) {
-    $config = require APP_ROOT . '/config/app.php';
-    
-    $currency = $currency ?? $config['currency']['code'];
-    $symbol = $config['currency']['symbol'];
-    $decimals = $config['currency']['decimals'];
-    $dec_point = $config['currency']['decimal_separator'];
-    $thousands_sep = $config['currency']['thousands_separator'];
-    $position = $config['currency']['position'];
+    try {
+        $config = require dirname(__DIR__, 2) . '/app/config/app.php';
+        
+        // Default values if config is not available
+        $defaults = [
+            'code' => 'USD',
+            'symbol' => '$',
+            'position' => 'before',
+            'decimals' => 2,
+            'decimal_separator' => '.',
+            'thousands_separator' => ',',
+        ];
 
-    $formatted = number_format($amount, $decimals, $dec_point, $thousands_sep);
-    
-    return $position === 'before' ? $symbol . $formatted : $formatted . $symbol;
+        // Get currency settings from config or use defaults
+        $settings = $config['currency'] ?? $defaults;
+        
+        $currency = $currency ?? $settings['code'];
+        $symbol = $settings['symbol'];
+        $decimals = $settings['decimals'];
+        $dec_point = $settings['decimal_separator'];
+        $thousands_sep = $settings['thousands_separator'];
+        $position = $settings['position'];
+
+        $formatted = number_format($amount, $decimals, $dec_point, $thousands_sep);
+        
+        return $position === 'before' ? $symbol . $formatted : $formatted . $symbol;
+    } catch (\Throwable $e) {
+        // If anything goes wrong, return a basic formatted number
+        return '$' . number_format($amount, 2);
+    }
 }
 
 /**
@@ -28,15 +46,32 @@ function formatCurrency($amount, $currency = null) {
  * @return string Formatted date/time
  */
 function formatDate($datetime, $withTime = false) {
-    $config = require APP_ROOT . '/config/app.php';
-    
-    if (!$datetime) return '';
-    
-    $format = $withTime ? 
-        $config['datetime']['datetime_format'] : 
-        $config['datetime']['date_format'];
-    
-    return date($format, strtotime($datetime));
+    try {
+        $config = require dirname(__DIR__, 2) . '/app/config/app.php';
+        
+        if (!$datetime) return '';
+        
+        // Default formats if config is not available
+        $defaults = [
+            'date_format' => 'Y-m-d',
+            'datetime_format' => 'Y-m-d H:i:s',
+            'time_format' => 'H:i:s'
+        ];
+
+        // Get datetime settings from config or use defaults
+        $settings = $config['datetime'] ?? $defaults;
+        
+        $format = $withTime ? 
+            $settings['datetime_format'] : 
+            $settings['date_format'];
+        
+        return date($format, strtotime($datetime));
+    } catch (\Throwable $e) {
+        // If anything goes wrong, return a basic formatted date
+        return $withTime ? 
+            date('Y-m-d H:i:s', strtotime($datetime)) : 
+            date('Y-m-d', strtotime($datetime));
+    }
 }
 
 /**
@@ -104,7 +139,7 @@ function config($key, $default = null) {
     static $config = null;
     
     if ($config === null) {
-        $config = require APP_ROOT . '/config/app.php';
+        $config = require dirname(__DIR__, 2) . '/app/config/app.php';
     }
     
     $keys = explode('.', $key);
@@ -261,6 +296,6 @@ function currentUrl() {
  * @return string Asset URL
  */
 function asset($path) {
-    $config = require APP_ROOT . '/config/app.php';
+    $config = require dirname(__DIR__, 2) . '/app/config/app.php';
     return rtrim($config['url'], '/') . '/' . ltrim($path, '/');
 }

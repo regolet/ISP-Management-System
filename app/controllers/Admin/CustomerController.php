@@ -224,8 +224,12 @@ class CustomerController extends Controller {
      */
     private function getPlansList() {
         try {
-            return [];  // Return empty array for now since plans table doesn't exist yet
+            $sql = "SELECT id, name, amount FROM plans WHERE status = 'active' ORDER BY amount";
+            $stmt = $this->app->getDB()->getConnection()->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
+            error_log("Error getting plans list: " . $e->getMessage());
             return [];
         }
     }
@@ -235,8 +239,12 @@ class CustomerController extends Controller {
      */
     private function getRoutersList() {
         try {
-            return [];  // Return empty array for now since routers table doesn't exist yet
+            $sql = "SELECT * FROM routers WHERE status = 'active' ORDER BY model";
+            $stmt = $this->app->getDB()->getConnection()->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
+            error_log("Error getting routers list: " . $e->getMessage());
             return [];
         }
     }
@@ -246,8 +254,12 @@ class CustomerController extends Controller {
      */
     private function getONTsList() {
         try {
-            return [];  // Return empty array for now since onts table doesn't exist yet
+            $sql = "SELECT * FROM onts WHERE status = 'active' ORDER BY model";
+            $stmt = $this->app->getDB()->getConnection()->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
+            error_log("Error getting ONTs list: " . $e->getMessage());
             return [];
         }
     }

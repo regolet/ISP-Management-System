@@ -17,9 +17,11 @@ class PlanController extends Controller {
      */
     public function index() {
         $plans = $this->planModel->getPlansWithSubscribers();
-        
+
         return $this->view('admin/plans/index', [
-            'plans' => $plans
+            'plans' => $plans,
+            'layout' => 'navbar',
+            'title' => 'Manage Plans'
         ]);
     }
 
@@ -27,7 +29,10 @@ class PlanController extends Controller {
      * Show plan creation form
      */
     public function create() {
-        return $this->view('admin/plans/create');
+        return $this->view('admin/plans/create', [
+            'layout' => 'navbar',
+            'title' => 'Add Plan'
+        ]);
     }
 
     /**
@@ -41,7 +46,9 @@ class PlanController extends Controller {
         if (!empty($errors)) {
             return $this->view('admin/plans/create', [
                 'errors' => $errors,
-                'data' => $data
+                'data' => $data,
+                'layout' => 'navbar',
+                'title' => 'Add Plan'
             ]);
         }
 
@@ -49,12 +56,13 @@ class PlanController extends Controller {
             $this->planModel->create($data);
             $this->setFlash('success', 'Plan created successfully');
             return $this->redirect('/admin/plans');
-
         } catch (\Exception $e) {
             $this->setFlash('error', 'Failed to create plan: ' . $e->getMessage());
             return $this->view('admin/plans/create', [
                 'errors' => ['general' => $e->getMessage()],
-                'data' => $data
+                'data' => $data,
+                'layout' => 'navbar',
+                'title' => 'Add Plan'
             ]);
         }
     }
@@ -70,7 +78,9 @@ class PlanController extends Controller {
         }
 
         return $this->view('admin/plans/edit', [
-            'plan' => $plan
+            'plan' => $plan,
+            'layout' => 'navbar',
+            'title' => 'Edit Plan'
         ]);
     }
 
@@ -85,15 +95,16 @@ class PlanController extends Controller {
         }
 
         $data = $this->getRequestData();
-        $data['id'] = $id;
-
+        
         // Validate input
-        $errors = $this->planModel->validate($data);
+        $errors = $this->planModel->validate(array_merge($data, ['id' => $id]));
         if (!empty($errors)) {
             return $this->view('admin/plans/edit', [
                 'errors' => $errors,
                 'data' => $data,
-                'plan' => $plan
+                'plan' => $plan,
+                'layout' => 'navbar',
+                'title' => 'Edit Plan'
             ]);
         }
 
@@ -101,53 +112,40 @@ class PlanController extends Controller {
             $this->planModel->update($id, $data);
             $this->setFlash('success', 'Plan updated successfully');
             return $this->redirect('/admin/plans');
-
         } catch (\Exception $e) {
             $this->setFlash('error', 'Failed to update plan: ' . $e->getMessage());
             return $this->view('admin/plans/edit', [
                 'errors' => ['general' => $e->getMessage()],
                 'data' => $data,
-                'plan' => $plan
+                'plan' => $plan,
+                'layout' => 'navbar',
+                'title' => 'Edit Plan'
             ]);
         }
     }
 
     /**
-     * Toggle plan status
+     * Delete plan
      */
-    public function toggleStatus($id) {
-        $plan = $this->planModel->find($id);
-        if (!$plan) {
-            return $this->json(['error' => 'Plan not found'], 404);
-        }
-
-        $newStatus = $plan['status'] === 'active' ? 'inactive' : 'active';
-
-        // Check if plan can be deactivated
-        if ($newStatus === 'inactive' && !$this->planModel->canDeactivate($id)) {
-            return $this->json([
-                'error' => 'Cannot deactivate plan: Plan has active subscribers'
-            ], 400);
-        }
-
+    public function delete($id) {
         try {
-            $this->planModel->toggleStatus($id, $newStatus);
+            // Check if plan has subscribers
+            $plan = $this->planModel->getPlansWithSubscribers();
+            $plan = array_filter($plan, function($p) use ($id) {
+                return $p['id'] == $id && $p['subscribers'] > 0;
+            });
+
+            if (!empty($plan)) {
+                return $this->json([
+                    'error' => 'Cannot delete plan that has active subscribers'
+                ], 400);
+            }
+
+            $this->planModel->delete($id);
             return $this->json(['success' => true]);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 500);
         }
-    }
-
-    /**
-     * Get plan details
-     */
-    public function getPlanDetails($id) {
-        $plan = $this->planModel->getPlanDetails($id);
-        if (!$plan) {
-            return $this->json(['error' => 'Plan not found'], 404);
-        }
-
-        return $this->json($plan);
     }
 
     /**
@@ -158,7 +156,8 @@ class PlanController extends Controller {
             'name' => $_POST['name'] ?? null,
             'description' => $_POST['description'] ?? null,
             'bandwidth' => $_POST['bandwidth'] ?? null,
-            'amount' => $_POST['amount'] ?? null
+            'amount' => $_POST['amount'] ?? null,
+            'status' => $_POST['status'] ?? 'active'
         ];
     }
 }

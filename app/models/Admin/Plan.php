@@ -11,48 +11,41 @@ class Plan extends Model {
         'description',
         'bandwidth',
         'amount',
-        'status',
-        'created_at',
-        'updated_at'
+        'status'
     ];
 
     /**
-     * Get all plans with subscriber count
+     * Get all active plans
+     */
+    public function getActivePlans() {
+        try {
+            $sql = "SELECT * FROM {$this->table} WHERE status = 'active' ORDER BY amount";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            error_log("Error getting active plans: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get plans with subscriber count
      */
     public function getPlansWithSubscribers() {
-        $sql = "SELECT p.*, 
-                (SELECT COUNT(*) FROM subscriptions 
-                 WHERE plan_id = p.id AND status = 'active') as subscriber_count 
-                FROM {$this->table} p 
-                ORDER BY p.name";
-        
-        return $this->db->query($sql)->fetch_all(MYSQLI_ASSOC);
-    }
-
-    /**
-     * Toggle plan status
-     */
-    public function toggleStatus($id, $status) {
-        $sql = "UPDATE {$this->table} SET status = ? WHERE id = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bind_param('si', $status, $id);
-        return $stmt->execute();
-    }
-
-    /**
-     * Check if plan can be deactivated
-     */
-    public function canDeactivate($id) {
-        $sql = "SELECT COUNT(*) as active_subscribers 
-                FROM subscriptions 
-                WHERE plan_id = ? AND status = 'active'";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        $result = $stmt->get_result()->fetch_assoc();
-        
-        return $result['active_subscribers'] == 0;
+        try {
+            $sql = "SELECT p.*, COALESCE(COUNT(c.id), 0) as subscribers
+                    FROM {$this->table} p
+                    LEFT JOIN customers c ON p.id = c.plan_id AND c.status != 'terminated'
+                    GROUP BY p.id, p.name, p.description, p.bandwidth, p.amount, p.status, p.created_at, p.updated_at
+                    ORDER BY p.amount";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            error_log("Error getting plans with subscribers: " . $e->getMessage());
+            return [];
+        }
     }
 
     /**
@@ -61,30 +54,36 @@ class Plan extends Model {
     public function validate($data) {
         $errors = [];
 
-        if (empty($data['name'])) {
-            $errors['name'] = 'Plan name is required';
+        // Required fields
+        $required = [
+            'name' => 'Plan name is required',
+            'bandwidth' => 'Bandwidth is required',
+            'amount' => 'Amount is required'
+        ];
+
+        foreach ($required as $field => $message) {
+            if (empty($data[$field])) {
+                $errors[$field] = $message;
+            }
         }
 
-        if (empty($data['description'])) {
-            $errors['description'] = 'Description is required';
+        // Bandwidth validation
+        if (!empty($data['bandwidth']) && (!is_numeric($data['bandwidth']) || $data['bandwidth'] <= 0)) {
+            $errors['bandwidth'] = 'Bandwidth must be a positive number';
         }
 
-        if (empty($data['bandwidth']) || !is_numeric($data['bandwidth']) || $data['bandwidth'] <= 0) {
-            $errors['bandwidth'] = 'Valid bandwidth is required';
+        // Amount validation
+        if (!empty($data['amount']) && (!is_numeric($data['amount']) || $data['amount'] <= 0)) {
+            $errors['amount'] = 'Amount must be a positive number';
         }
 
-        if (empty($data['amount']) || !is_numeric($data['amount']) || $data['amount'] <= 0) {
-            $errors['amount'] = 'Valid amount is required';
-        }
-
-        // Check name uniqueness
+        // Check plan name uniqueness
         if (!empty($data['name'])) {
             $sql = "SELECT id FROM {$this->table} WHERE name = ? AND id != ?";
             $stmt = $this->db->prepare($sql);
             $id = $data['id'] ?? 0;
-            $stmt->bind_param('si', $data['name'], $id);
-            $stmt->execute();
-            if ($stmt->get_result()->num_rows > 0) {
+            $stmt->execute([$data['name'], $id]);
+            if ($stmt->rowCount() > 0) {
                 $errors['name'] = 'Plan name already exists';
             }
         }
@@ -93,26 +92,27 @@ class Plan extends Model {
     }
 
     /**
-     * Get active plans
+     * Delete a plan
      */
-    public function getActivePlans() {
-        $sql = "SELECT * FROM {$this->table} WHERE status = 'active' ORDER BY amount";
-        return $this->db->query($sql)->fetch_all(MYSQLI_ASSOC);
-    }
+    public function delete($id) {
+        try {
+            // Check if plan has subscribers
+            $sql = "SELECT COUNT(*) FROM customers WHERE plan_id = ? AND status != 'terminated'";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$id]);
+            $count = $stmt->fetchColumn();
 
-    /**
-     * Get plan details with subscriber count
-     */
-    public function getPlanDetails($id) {
-        $sql = "SELECT p.*, 
-                (SELECT COUNT(*) FROM subscriptions 
-                 WHERE plan_id = p.id AND status = 'active') as subscriber_count 
-                FROM {$this->table} p 
-                WHERE p.id = ?";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+            if ($count > 0) {
+                throw new \Exception('Cannot delete plan that has active subscribers');
+            }
+
+            // Delete the plan
+            $sql = "DELETE FROM {$this->table} WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$id]);
+        } catch (\Exception $e) {
+            error_log("Error deleting plan: " . $e->getMessage());
+            throw $e;
+        }
     }
 }
