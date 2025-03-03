@@ -1,31 +1,21 @@
 <?php
-namespace App\Database;
+require_once __DIR__ . '/../../vendor/autoload.php';
 
-use App\Core\Database;
+use App\Core\Application;
 
-require_once '../core/Database.php';
-
-// Load database configuration
-$config = require_once '../config/database.php';
-
-// Create a new database instance
-$db = new Database($config);
-
-// Check if SQL command is provided
-if (isset($argv[1])) {
-    $sql = $argv[1];
-
-    // Execute the SQL command
-    try {
-        $result = $db->execute($sql);
-        if ($result) {
-            echo "SQL command executed successfully.\n";
-        } else {
-            echo "Failed to execute SQL command.\n";
-        }
-    } catch (\Exception $e) {
-        echo "Error: " . $e->getMessage() . "\n";
-    }
-} else {
-    echo "No SQL command provided.\n";
+try {
+    // Get database connection
+    $db = Application::getInstance()->getDB()->getConnection();
+    
+    // Read and execute the SQL file
+    $sql = file_get_contents(__DIR__ . '/migrations/create_users_table.sql');
+    
+    // Execute the SQL
+    $result = $db->exec($sql);
+    
+    echo "Users table created/updated successfully.\n";
+    
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage() . "\n";
+    exit(1);
 }

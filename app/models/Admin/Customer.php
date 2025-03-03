@@ -39,25 +39,21 @@ class Customer extends Model {
         $offset = ($page - 1) * $limit;
         $where = ['1 = 1'];
         $params = [];
-        $types = '';
 
         if (!empty($filters['search'])) {
             $search = "%{$filters['search']}%";
             $where[] = "(first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR account_number LIKE ?)";
             $params = array_merge($params, [$search, $search, $search, $search]);
-            $types .= 'ssss';
         }
 
         if (!empty($filters['status'])) {
             $where[] = "status = ?";
             $params[] = $filters['status'];
-            $types .= 's';
         }
 
         if (!empty($filters['plan'])) {
             $where[] = "plan_id = ?";
             $params[] = $filters['plan'];
-            $types .= 'i';
         }
 
         if (!empty($filters['date_range'])) {
@@ -83,28 +79,27 @@ class Customer extends Model {
         $countSql = "SELECT COUNT(*) as total FROM {$this->table} WHERE {$whereClause}";
         $stmt = $this->db->prepare($countSql);
         if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
+            $stmt->execute($params);
+        } else {
+            $stmt->execute();
         }
-        $stmt->execute();
-        $total = $stmt->get_result()->fetch_assoc()['total'];
+        $total = $stmt->fetchColumn();
 
         // Get customers
-        $sql = "SELECT c.*, 
-                       p.name as plan_name,
-                       p.bandwidth
+        $sql = "SELECT c.*
                 FROM {$this->table} c
-                LEFT JOIN plans p ON c.plan_id = p.id
                 WHERE {$whereClause}
                 ORDER BY c.created_at DESC
-                LIMIT ? OFFSET ?";
+                LIMIT :limit OFFSET :offset";
 
         $stmt = $this->db->prepare($sql);
-        $params[] = $limit;
-        $params[] = $offset;
-        $types .= 'ii';
-        $stmt->bind_param($types, ...$params);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key + 1, $value);
+        }
+        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
         $stmt->execute();
-        $customers = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $customers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         return [
             'customers' => $customers,
@@ -145,9 +140,8 @@ class Customer extends Model {
         
         $pattern = $prefix . '%';
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param('s', $pattern);
-        $stmt->execute();
-        $result = $stmt->get_result()->fetch_assoc();
+        $stmt->execute([$pattern]);
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if ($result) {
             $lastNumber = intval(substr($result['account_number'], -4));
@@ -168,7 +162,7 @@ class Customer extends Model {
             throw new \Exception('Invalid action');
         }
 
-        $this->db->getConnection()->begin_transaction();
+        $this->db->beginTransaction();
 
         try {
             if ($action === 'delete') {
@@ -180,15 +174,13 @@ class Customer extends Model {
             }
 
             $stmt = $this->db->prepare($sql);
-            $types = str_repeat('i', count($ids));
-            $stmt->bind_param($types, ...$ids);
-            $stmt->execute();
+            $stmt->execute($ids);
 
-            $this->db->getConnection()->commit();
+            $this->db->commit();
             return true;
 
         } catch (\Exception $e) {
-            $this->db->getConnection()->rollback();
+            $this->db->rollBack();
             throw $e;
         }
     }
@@ -198,8 +190,8 @@ class Customer extends Model {
      */
     public function getTotalCustomers() {
         $sql = "SELECT COUNT(*) as total FROM {$this->table}";
-        $result = $this->db->query($sql);
-        return $result->fetch_assoc()['total'];
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchColumn();
     }
 
     /**
@@ -207,8 +199,8 @@ class Customer extends Model {
      */
     public function getActiveCustomers() {
         $sql = "SELECT COUNT(*) as total FROM {$this->table} WHERE status = 'active'";
-        $result = $this->db->query($sql);
-        return $result->fetch_assoc()['total'];
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchColumn();
     }
 
     /**
@@ -240,8 +232,8 @@ class Customer extends Model {
             default => throw new \Exception('Invalid period')
         };
 
-        $result = $this->db->query($sql);
-        return $result->fetch_all(MYSQLI_ASSOC);
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function validate($data) {
@@ -281,9 +273,8 @@ class Customer extends Model {
             $sql = "SELECT id FROM {$this->table} WHERE email = ? AND id != ?";
             $stmt = $this->db->prepare($sql);
             $id = $data['id'] ?? 0;
-            $stmt->bind_param('si', $data['email'], $id);
-            $stmt->execute();
-            if ($stmt->get_result()->num_rows > 0) {
+            $stmt->execute([$data['email'], $id]);
+            if ($stmt->rowCount() > 0) {
                 $errors['email'] = 'Email already exists';
             }
         }
@@ -293,9 +284,8 @@ class Customer extends Model {
             $sql = "SELECT id FROM {$this->table} WHERE username = ? AND id != ?";
             $stmt = $this->db->prepare($sql);
             $id = $data['id'] ?? 0;
-            $stmt->bind_param('si', $data['username'], $id);
-            $stmt->execute();
-            if ($stmt->get_result()->num_rows > 0) {
+            $stmt->execute([$data['username'], $id]);
+            if ($stmt->rowCount() > 0) {
                 $errors['username'] = 'Username already exists';
             }
         }

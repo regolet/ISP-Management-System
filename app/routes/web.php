@@ -29,6 +29,8 @@ $router->group(['middleware' => 'GuestMiddleware'], function($router) {
     $router->get('/', [AuthController::class, 'showLogin']);
     $router->get('/login', [AuthController::class, 'showLogin']);
     $router->post('/login', [AuthController::class, 'login']);
+    $router->get('/register', [AuthController::class, 'register']);
+    $router->post('/register', [AuthController::class, 'register']);
 });
 
 // Auth required routes

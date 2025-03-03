@@ -158,14 +158,22 @@ class Router
 
         foreach ($middlewareStack as $middleware) {
             if (is_string($middleware)) {
+                // Parse middleware string for parameters
+                $parts = explode(':', $middleware);
+                $middlewareClass = $parts[0];
+                $args = isset($parts[1]) ? explode(',', $parts[1]) : [];
+
                 // Add namespace if not provided
-                if (strpos($middleware, '\\') === false) {
-                    $middleware = "\\App\\Middleware\\{$middleware}";
+                if (strpos($middlewareClass, '\\') === false) {
+                    $middlewareClass = "\\App\\Middleware\\{$middlewareClass}";
                 }
-                $middleware = new $middleware();
+
+                // Create middleware instance
+                $middleware = new $middlewareClass();
             }
             
-            if (!$middleware->handle()) {
+            // Handle middleware with arguments
+            if (!$middleware->handle($args ?? [])) {
                 throw new \RuntimeException('Middleware check failed');
             }
         }

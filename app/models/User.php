@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Core\Model;
+use PDO; // Importing PDO class
 
 class User extends Model 
 {
@@ -32,9 +33,9 @@ class User extends Model
                 WHERE u.username = ?";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param('s', $username);
+        $stmt->bindValue(1, $username); // Use bindValue for PDO
         $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -46,7 +47,7 @@ class User extends Model
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param('s', $email);
         $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -111,7 +112,7 @@ class User extends Model
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param('i', $userId);
         $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        return $stmt->fetch_all(MYSQLI_ASSOC);
     }
 
     /**
@@ -129,7 +130,7 @@ class User extends Model
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param('is', $userId, $permissionSlug);
         $stmt->execute();
-        return $stmt->get_result()->num_rows > 0;
+        return $stmt->num_rows > 0;
     }
 
     /**
@@ -167,7 +168,7 @@ class User extends Model
                 $id = $data['id'] ?? 0;
                 $stmt->bind_param('si', $data['username'], $id);
                 $stmt->execute();
-                if ($stmt->get_result()->num_rows > 0) {
+                if ($stmt->num_rows > 0) {
                     $errors['username'] = 'Username already exists';
                 }
             }
@@ -184,7 +185,7 @@ class User extends Model
                 $id = $data['id'] ?? 0;
                 $stmt->bind_param('si', $data['email'], $id);
                 $stmt->execute();
-                if ($stmt->get_result()->num_rows > 0) {
+                if ($stmt->num_rows > 0) {
                     $errors['email'] = 'Email already exists';
                 }
             }
