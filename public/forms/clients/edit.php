@@ -30,7 +30,7 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 }
 
 $clientId = (int)$_GET['id'];
-$client = $clientController->getClient($clientId);
+$client = $clientController->getClientById($clientId);
 
 // Check if client exists
 if (!$client) {
@@ -57,34 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['flash_message'] = 'Client updated successfully!';
             $_SESSION['flash_message_type'] = 'success';
             
-            // Update subscription
-            $subscriptionData = [
-                'plan_name' => $_POST['plan_name']
-            ];
-            // Fetch the client's subscription
-            $subscriptions = $subscriptionController->getSubscriptions(['client_id' => $clientId]);
-            if (!empty($subscriptions['data'])) {
-                $subscription = $subscriptions['data'][0];
-                $subscriptionResult = $subscriptionController->updateSubscription($subscription['id'], $subscriptionData);
-                if (!$subscriptionResult['success']) {
-                    $message = 'Error updating subscription: ' . $subscriptionResult['message'];
-                    $messageType = 'danger';
-                }
-            } else {
-                // Create subscription if it doesn't exist
-                $subscriptionData = [
-                    'client_id' => $clientId,
-                    'plan_name' => $_POST['plan_name'],
-                    'status' => 'active',
-                    'start_date' => date('Y-m-d')
-                ];
-                $subscriptionResult = $subscriptionController->createSubscription($subscriptionData);
-                if (!$subscriptionResult['success']) {
-                    $message = 'Error creating subscription: ' . $subscriptionResult['message'];
-                    $messageType = 'danger';
-                }
-            }
-
             // Redirect after successful update
             header("Location: /clients.php");
             exit();
@@ -201,10 +173,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label for="clientNumber" class="form-label">Client Number</label>
                                 <input type="text" class="form-control" id="clientNumber" name="client_number" value="<?php echo htmlspecialchars($client['client_number'] ?? ''); ?>" readonly>
                                 <small class="text-muted">Client number cannot be changed</small>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="planName" class="form-label">Plan Name</label>
-                                <input type="text" class="form-control" id="planName" name="plan_name" required>
                             </div>
                             <div class="col-12 mt-4">
                                 <button type="submit" class="btn btn-primary">

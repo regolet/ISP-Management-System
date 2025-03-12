@@ -228,6 +228,20 @@ function renderSidebar($activePage = 'dashboard') {
                 </ul>
             </div>
 
+            <!-- Billing -->
+            <div class="nav-section">
+                <div class="nav-section-title">Billing</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo ($activePage == 'invoices') ? 'active' : ''; ?>" 
+                           href="/invoices.php">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <span>Invoices</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
             <!-- Network Equipment -->
             <div class="nav-section">
                 <div class="nav-section-title">Network</div>
@@ -251,30 +265,6 @@ function renderSidebar($activePage = 'dashboard') {
                            href="/network-equipment.php">
                             <i class="fas fa-hdd"></i>
                             <span>Network Equipment</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Billing & Payments -->
-            <div class="nav-section">
-                <div class="nav-section-title">Billing</div>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo ($activePage == 'billing') ? 'active' : ''; ?>" 
-                           href="/billing.php">
-                            <i class="fas fa-file-invoice-dollar"></i>
-                            <span>Invoices</span>
-                            <?php if (isset($pendingBills) && $pendingBills > 0): ?>
-                                <span class="badge bg-warning rounded-pill ms-2"><?php echo $pendingBills; ?></span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo ($activePage == 'payments') ? 'active' : ''; ?>" 
-                           href="/payments.php">
-                            <i class="fas fa-money-bill-wave"></i>
-                            <span>Payments</span>
                         </a>
                     </li>
                 </ul>

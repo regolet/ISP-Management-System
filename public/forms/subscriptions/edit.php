@@ -41,7 +41,7 @@ if (!$subscription) {
 // Get client information if client_id exists
 $client = null;
 if (isset($subscription['client_id']) && !empty($subscription['client_id'])) {
-    $client = $clientController->getClient($subscription['client_id']);
+    $client = $clientController->getClientById($subscription['client_id']);
 }
 
 // Handle form submission
@@ -205,7 +205,6 @@ $plans = get_all_plans();
                             <div class="col-md-12">
                                 <label for="identifier" class="form-label">Identifier (Optional)</label>
                                 <input type="text" class="form-control" id="identifier" name="identifier" placeholder="Custom identifier for this subscription" value="<?php echo htmlspecialchars($subscription['identifier'] ?? ''); ?>">
-                                <small class="text-muted">Leave blank to use auto-generated subscription number</small>
                             </div>
                             <div class="col-12 mt-4">
                                 <button type="submit" class="btn btn-primary">

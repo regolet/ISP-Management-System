@@ -253,7 +253,7 @@ if (isset($_SESSION['flash_message'])) {
                                                 <?php echo !empty($client['connection_date']) ? date('M d, Y', strtotime($client['connection_date'])) : 'N/A'; ?>
                                             </td>
                                             <td>
-                                                <?php echo htmlspecialchars($client['subscription_plan'] ?? 'N/A'); ?>
+                                                <?php echo htmlspecialchars($client['plan_name'] ?? 'N/A'); ?>
                                             </td>
                                             <td>
                                                 <div class="btn-group">

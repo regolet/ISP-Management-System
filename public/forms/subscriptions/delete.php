@@ -47,7 +47,7 @@ if (!$subscription) {
 }
 
 // Get client and plan details
-$client = $clientController->getClient($subscription['client_id']);
+$client = $clientController->getClientById($subscription['client_id']);
 $plan = $planController->getPlan($subscription['plan_id']);
 
 // Handle form submission

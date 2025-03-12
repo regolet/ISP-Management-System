@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 
 // Set response headers
@@ -80,7 +83,7 @@ try {
                 echo json_encode(['success' => true, 'stats' => $stats]);
             } else if ($clientId) {
                 // Get single client
-                $result = $clientController->getClient($clientId);
+                $result = $clientController->getClientById($clientId);
                 echo json_encode(['success' => true, 'client' => $result]);
             } else {
                 // Get all clients with filters
@@ -121,7 +124,7 @@ try {
                     'client' => $result['client']
                 ]);
             } else {
-                throw new Exception($result['message']);
+                echo json_encode($result);
             }
             break;
 
@@ -146,15 +149,7 @@ try {
             }
 
             $result = $clientController->updateClient($clientId, $data);
-            if ($result['success']) {
-                echo json_encode([
-                    'success' => true,
-                    'message' => $result['message'],
-                    'client' => $result['client']
-                ]);
-            } else {
-                throw new Exception($result['message']);
-            }
+            echo json_encode($result);
             break;
 
         case 'DELETE':
@@ -174,7 +169,7 @@ try {
                     'message' => $result['message']
                 ]);
             } else {
-                throw new Exception($result['message']);
+                echo json_encode($result);
             }
             break;
 

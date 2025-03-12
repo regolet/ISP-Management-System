@@ -43,7 +43,7 @@ class Client {
         // Base query
         $query = "SELECT 
             c.*,
-            (SELECT s.plan_name FROM client_subscriptions s WHERE s.client_id = c.id AND s.status = 'active' ORDER BY s.created_at DESC LIMIT 1) AS subscription_plan
+            (SELECT p.name FROM client_subscriptions s JOIN plans p ON s.plan_id = p.id WHERE s.client_id = c.id AND s.status = 'active' ORDER BY s.created_at DESC LIMIT 1) AS subscription_plan
         FROM " . $this->table_name . " c";
         
         // Add search condition

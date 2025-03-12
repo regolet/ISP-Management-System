@@ -41,7 +41,7 @@ if (!$subscription) {
 // Get client information if client_id exists
 $client = null;
 if (isset($subscription['client_id']) && !empty($subscription['client_id'])) {
-    $client = $clientController->getClient($subscription['client_id']);
+    $client = $clientController->getClientById($subscription['client_id']);
 }
 
 ?>

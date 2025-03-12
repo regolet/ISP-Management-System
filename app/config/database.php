@@ -9,10 +9,18 @@ use Exception;
 class Database {
     private $db_path;
     public $conn = null;
+    private static $instance = null;
 
-    public function __construct() {
+    private function __construct() {
         // Set the SQLite database file path
         $this->db_path = dirname(dirname(__DIR__)) . '/database/isp-management.sqlite';
+    }
+
+    public static function getInstance() {
+        if (self::$instance === null) {
+            self::$instance = new Database();
+        }
+        return self::$instance;
     }
 
     /**
@@ -278,4 +286,3 @@ class Database {
         }
     }
 }
-?>

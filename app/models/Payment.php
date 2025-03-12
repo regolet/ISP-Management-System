@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use PDO;
+use DateTime;
 
 class Payment {
     // Database connection and table name
@@ -30,16 +31,17 @@ class Payment {
      */
     public function getAll($page = 1, $per_page = 10, $search = '', $status = '', $sort = 'id', $order = 'DESC') {
         // Prepare query
-        $query = "SELECT p.*, b.invoice_number, c.first_name, c.last_name, c.email 
+        $query = "SELECT p.*, b.invoice_number, c.first_name, c.last_name, c.email
                 FROM " . $this->table_name . " p
                 JOIN billing b ON p.billing_id = b.id
-                JOIN clients c ON b.client_id = c.id
+                JOIN client_subscriptions cs ON b.id = cs.id -- Assuming billing.id relates to client_subscriptions.id
+                JOIN clients c ON cs.client_id = c.id
                 WHERE 1=1";
 
         // Apply search filter
         if (!empty($search)) {
             $query .= " AND (
-                p.payment_number LIKE :search 
+                p.payment_number LIKE :search
                 OR p.transaction_id LIKE :search
                 OR c.first_name LIKE :search
                 OR c.last_name LIKE :search
@@ -88,16 +90,17 @@ class Payment {
      */
     public function getTotal($search = '', $status = '') {
         // Prepare query
-        $query = "SELECT COUNT(*) as total 
+        $query = "SELECT COUNT(*) as total
                 FROM " . $this->table_name . " p
                 JOIN billing b ON p.billing_id = b.id
-                JOIN clients c ON b.client_id = c.id
+                JOIN client_subscriptions cs ON b.id = cs.id -- Assuming billing.id relates to client_subscriptions.id
+                JOIN clients c ON cs.client_id = c.id
                 WHERE 1=1";
 
         // Apply search filter
         if (!empty($search)) {
             $query .= " AND (
-                p.payment_number LIKE :search 
+                p.payment_number LIKE :search
                 OR p.transaction_id LIKE :search
                 OR c.first_name LIKE :search
                 OR c.last_name LIKE :search
@@ -135,7 +138,7 @@ class Payment {
      */
     public function getById($id) {
         // Prepare query
-        $query = "SELECT p.*, b.invoice_number, b.client_id, c.first_name, c.last_name 
+        $query = "SELECT p.*, b.invoice_number, b.client_id, c.first_name, c.last_name
                 FROM " . $this->table_name . " p
                 JOIN billing b ON p.billing_id = b.id
                 JOIN clients c ON b.client_id = c.id
@@ -304,14 +307,14 @@ class Payment {
         $year = date('Y');
         $month = date('m');
 
-        $query = "SELECT MAX(CAST(SUBSTRING(payment_number, ?) AS UNSIGNED)) as max_num 
-                 FROM " . $this->table_name . " 
-                 WHERE payment_number LIKE ?";
+        $query = "SELECT MAX(CAST(SUBSTRING(payment_number, " . (strlen($prefix) + strlen($year) + strlen($month) + 1) . ") AS UNSIGNED)) as max_num
+                 FROM " . $this->table_name . "
+                 WHERE payment_number LIKE :search_prefix";
         
-        $prefixLength = strlen($prefix) + strlen($year) + strlen($month);
         $stmt = $this->conn->prepare($query);
         $searchPrefix = $prefix . $year . $month . '%';
-        $stmt->execute([$prefixLength + 1, $searchPrefix]);
+        $stmt->bindParam(':search_prefix', $searchPrefix);
+        $stmt->execute();
         
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $nextNum = ($row['max_num'] ?? 0) + 1;
@@ -339,8 +342,8 @@ class Payment {
         }
 
         // Get total payments for this invoice
-        $query = "SELECT SUM(amount) as paid_amount 
-                 FROM " . $this->table_name . " 
+        $query = "SELECT SUM(amount) as paid_amount
+                 FROM " . $this->table_name . "
                  WHERE billing_id = :billing_id
                  AND status = 'completed'";
         $stmt = $this->conn->prepare($query);
@@ -366,7 +369,7 @@ class Payment {
 
         // Update invoice status if changed
         if ($newStatus !== $invoice['status']) {
-            $query = "UPDATE billing 
+            $query = "UPDATE billing
                      SET status = :status,
                          updated_at = NOW()
                      WHERE id = :id";
@@ -384,7 +387,7 @@ class Payment {
      */
     public function getPaymentsByInvoice($billing_id) {
         // Prepare query
-        $query = "SELECT * 
+        $query = "SELECT *
                 FROM " . $this->table_name . "
                 WHERE billing_id = :billing_id
                 ORDER BY payment_date DESC";
@@ -397,4 +400,3 @@ class Payment {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
-?>

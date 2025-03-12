@@ -20,6 +20,7 @@ class Subscription {
     public $identifier;
     public $created_at;
     public $updated_at;
+    public $plan_name;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -156,10 +157,10 @@ class Subscription {
 
         $query = "INSERT INTO " . $this->table . "
                 (client_id, plan_id, speed_mbps, price, subscription_number, status, 
-                 start_date, billing_cycle, identifier)
+                 start_date, billing_cycle, identifier, plan_name)
                 VALUES
                 (:client_id, :plan_id, :speed_mbps, :price, :subscription_number, :status,
-                 :start_date, :billing_cycle, :identifier)";
+                 :start_date, :billing_cycle, :identifier, :plan_name)";
 
         $stmt = $this->conn->prepare($query);
 
@@ -172,6 +173,7 @@ class Subscription {
         $this->start_date = $this->start_date ? htmlspecialchars(strip_tags($this->start_date)) : null;
         $this->billing_cycle = $this->billing_cycle ? htmlspecialchars(strip_tags($this->billing_cycle)) : null;
         $this->identifier = $this->identifier ? htmlspecialchars(strip_tags($this->identifier)) : null;
+        $this->plan_name = $this->plan_name ? htmlspecialchars(strip_tags($this->plan_name)) : null;
         
         $stmt->bindParam(':client_id', $this->client_id);
         $stmt->bindParam(':plan_id', $this->plan_id);
@@ -182,6 +184,7 @@ class Subscription {
         $stmt->bindParam(':start_date', $this->start_date);
         $stmt->bindParam(':billing_cycle', $this->billing_cycle);
         $stmt->bindParam(':identifier', $this->identifier);
+        $stmt->bindParam(':plan_name', $this->plan_name);
 
         if ($stmt->execute()) {
             $this->id = $this->conn->lastInsertId();

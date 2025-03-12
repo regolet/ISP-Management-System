@@ -34,7 +34,7 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 }
 
 $clientId = (int)$_GET['id'];
-$client = $clientController->getClient($clientId);
+$client = $clientController->getClientById($clientId);
 
 // Check if client exists
 if (!$client) {

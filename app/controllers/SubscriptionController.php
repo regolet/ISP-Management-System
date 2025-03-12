@@ -94,6 +94,11 @@ class SubscriptionController {
      */
     public function createSubscription($data) {
         try {
+            // Verify CSRF token
+            if (!isset($data['csrf_token']) || !isset($_SESSION['csrf_token']) || $data['csrf_token'] !== $_SESSION['csrf_token']) {
+                throw new \Exception('Invalid CSRF token');
+            }
+
             $this->validateSubscriptionData($data);
 
             foreach ($data as $key => $value) {

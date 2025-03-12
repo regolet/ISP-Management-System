@@ -28,7 +28,7 @@ $clientId = isset($_GET['client_id']) ? (int)$_GET['client_id'] : null;
 $client = null;
 
 if ($clientId) {
-    $client = $clientController->getClient($clientId);
+    $client = $clientController->getClientById($clientId);
     if (!$client) {
         $_SESSION['flash_message'] = 'Client not found.';
         $_SESSION['flash_message_type'] = 'danger';
@@ -52,6 +52,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($_POST['client_id'])) {
             throw new Exception('Client ID is required');
         }
+
+        // Fetch plan name based on plan_id
+        $planId = $_POST['plan_id'];
+        $query = "SELECT name FROM plans WHERE id = ?";
+        $stmt = $db->prepare($query);
+        $stmt->execute([$planId]);
+        $plan = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$plan) {
+            throw new Exception('Selected plan not found.');
+        }
+
+        // Add plan_name to the $_POST array
+        $_POST['plan_name'] = $plan['name'];
         
         $result = $subscriptionController->createSubscription($_POST);
         
@@ -226,7 +240,6 @@ $plans = get_all_plans();
                             <div class="col-md-12">
                                 <label for="identifier" class="form-label">Identifier (Optional)</label>
                                 <input type="text" class="form-control" id="identifier" name="identifier" placeholder="Custom identifier for this subscription">
-                                <small class="text-muted">Leave blank to use auto-generated subscription number</small>
                             </div>
                             <div class="col-12 mt-4">
                                 <button type="submit" class="btn btn-primary">
