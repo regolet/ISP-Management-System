@@ -1,6 +1,8 @@
 
 <?php
-// Prevent endless redirects
+// Prevent output before session_start
+ob_start();
+
 // Start session only if it hasn't been started yet
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

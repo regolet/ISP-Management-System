@@ -209,16 +209,6 @@ function dd($var, $die = true) {
 }
 
 /**
- * Check if user is logged in
- * 
- * @return bool Whether user is logged in
- */
-function is_logged_in()
-{
-    return isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
-}
-
-/**
  * Check if user has a specific role
  * 
  * @param string $role The role to check for
