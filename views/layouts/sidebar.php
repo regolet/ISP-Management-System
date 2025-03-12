@@ -1,5 +1,5 @@
 <?php
-function renderSidebar($activePage = 'dashboard') {
+function renderSidebarComponent($activePage = 'dashboard') {
 ?>
     <style>
         /* Sidebar Styles */
@@ -53,63 +53,6 @@ function renderSidebar($activePage = 'dashboard') {
         .sidebar-header {
             padding: 1rem 1rem; /* Reduced padding */
             border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .sidebar-header h3 {
-            margin: 0;
-            font-size: 1.2rem; /* Reduced font size */
-            color: white;
-        }
-
-        .sidebar-header i {
-            color: #3498db;
-            margin-right: 0.5rem;
-        }
-
-        /* Navigation Links */
-        .nav-link {
-            color: rgba(255,255,255,.75);
-            padding: 0.6rem 1rem; /* Reduced padding */
-            transition: all 0.3s;
-            border-radius: 0.25rem;
-            margin: 0.1rem 0.5rem; /* Reduced margin */
-            display: flex;
-            align-items: center;
-            font-size: 0.9rem; /* Reduced font size */
-        }
-
-        .nav-link:hover {
-            color: rgba(255,255,255,1);
-            background: rgba(255,255,255,.1);
-            padding-left: 1.5rem;
-        }
-
-        .nav-link.active {
-            color: white;
-            background: rgba(255,255,255,.1);
-        }
-
-        .nav-link i {
-            width: 1.2rem; /* Reduced width */
-            text-align: center;
-            margin-right: 0.5rem;
-            font-size: 1rem; /* Reduced font size */
-        }
-
-        .nav-link .badge {
-            margin-left: auto;
-        }
-
-        /* Navigation Container */
-        .nav-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0.5rem 0; /* Reduced padding */
-        }
-
-        /* Navigation Section */
-        .nav-section {
-            margin-bottom: 0.5rem; /* Reduced margin */
         }
 
         .nav-section-title {
@@ -167,11 +110,6 @@ function renderSidebar($activePage = 'dashboard') {
             color: #dc3545 !important;
             margin-top: 0.5rem;
         }
-
-        .nav-link.text-danger:hover {
-            background: rgba(220, 53, 69, 0.1);
-            color: #ff4757 !important;
-        }
     </style>
 
     <!-- Sidebar -->
@@ -199,7 +137,6 @@ function renderSidebar($activePage = 'dashboard') {
                     </li>
                 </ul>
             </div>
-
             <!-- Subscription Management -->
             <div class="nav-section">
                 <div class="nav-section-title">Subscriptions</div>
@@ -227,7 +164,6 @@ function renderSidebar($activePage = 'dashboard') {
                     </li>
                 </ul>
             </div>
-
             <!-- Billing -->
             <div class="nav-section">
                 <div class="nav-section-title">Billing</div>
@@ -331,83 +267,53 @@ function renderSidebar($activePage = 'dashboard') {
     <div class="sidebar-backdrop"></div>
 
     <script>
-        // Sidebar functionality
         document.addEventListener('DOMContentLoaded', function() {
-            // Get elements
             const sidebar = document.getElementById('sidebar');
             const toggleButton = document.getElementById('sidebarToggle');
-            const content = document.querySelector('.dashboard-container');
-            
+
             if (!sidebar) return;
 
-            // Create backdrop
-            const backdrop = document.createElement('div');
-            backdrop.className = 'sidebar-backdrop';
-            backdrop.addEventListener('click', toggleSidebar);
-
-            // Toggle function
-            function toggleSidebar(e) {
-                if (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                
+            function toggleSidebar() {
                 sidebar.classList.toggle('active');
-                
+
+                // Add or remove backdrop when sidebar toggled
                 if (sidebar.classList.contains('active')) {
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'sidebar-backdrop';
                     document.body.appendChild(backdrop);
                     setTimeout(() => backdrop.classList.add('show'), 0);
+
+                    backdrop.addEventListener('click', () => {
+                        toggleSidebar();
+                    });
                 } else {
-                    backdrop.classList.remove('show');
-                    setTimeout(() => {
-                        if (backdrop.parentNode) {
-                            backdrop.remove();
-                        }
-                    }, 300);
+                    const backdrop = document.querySelector('.sidebar-backdrop');
+                    if (backdrop) {
+                        backdrop.classList.remove('show');
+                        setTimeout(() => backdrop.remove(), 300);
+                    }
                 }
             }
 
-            // Add click event to toggle button if it exists
-            if (toggleButton) {
-                toggleButton.addEventListener('click', toggleSidebar);
-            }
-
-            // Handle window resize
-            window.addEventListener('resize', () => {
-                if (window.innerWidth > 768) {
-                    sidebar.classList.remove('active');
-                    if (backdrop.parentNode) {
-                        backdrop.remove();
-                    }
-                    if (content) {
-                        content.style.paddingLeft = '250px';
-                    }
-                } else {
-                    if (content) {
-                        content.style.paddingLeft = '0';
-                    }
-                }
-            });
-
-            // Handle swipe gestures on mobile
+            // Touch events for mobile swipe
             let touchStartX = 0;
             let touchEndX = 0;
-            
+
             document.addEventListener('touchstart', e => {
                 touchStartX = e.changedTouches[0].screenX;
-            }, { passive: true });
-            
+            }, false);
+
             document.addEventListener('touchend', e => {
                 touchEndX = e.changedTouches[0].screenX;
                 handleSwipe();
-            }, { passive: true });
+            }, false);
 
             function handleSwipe() {
                 const swipeThreshold = 100;
                 const difference = touchEndX - touchStartX;
-                
+
                 if (Math.abs(difference) < swipeThreshold) return;
-                
+
                 if (difference > 0 && touchStartX < 50) {
                     // Swipe right from left edge - show sidebar
                     sidebar.classList.add('active');
@@ -438,7 +344,7 @@ function renderSidebar($activePage = 'dashboard') {
 
             // Export toggle function
             window.toggleSidebar = toggleSidebar;
-            
+
             // Add toggle button if it doesn't exist
             if (!toggleButton) {
                 const mobileToggle = document.createElement('button');
@@ -452,7 +358,7 @@ function renderSidebar($activePage = 'dashboard') {
             }
         });
     </script>
-    
+
 <?php
 }
 ?>

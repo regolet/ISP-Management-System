@@ -143,7 +143,7 @@ $stats = $oltController->getOltStats();
     <!-- Toast Container -->
     <div class="toast-container"></div>
     <!-- Render Sidebar -->
-    <?php renderSidebar('olt'); ?>
+    <?php renderSidebar('olt'); /* Using the function from helpers.php */ ?>
 
     <!-- Main Content -->
     <div class="dashboard-container">
