@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
         ini_set('session.use_only_cookies', 1);
         ini_set('session.use_strict_mode', 1);
         ini_set('session.gc_maxlifetime', 1800); // 30 minutes
-        
+
         session_start();
     }
 }
@@ -15,42 +15,38 @@ if (session_status() === PHP_SESSION_NONE) {
 // Load configuration
 $config = require_once __DIR__ . '/../config/app.php';
 
-// Set error reporting based on debug mode
-if ($config['app']['debug']) {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-} else {
-    error_reporting(0);
-    ini_set('display_errors', 0);
-}
-
-// Set timezone
-date_default_timezone_set($config['app']['timezone']);
+// Error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Load helpers
 require_once __DIR__ . '/helpers.php';
 
-// Autoload classes
+// Create logs directory if it doesn't exist
+$logsDir = dirname(__DIR__) . '/logs';
+if (!is_dir($logsDir)) {
+    mkdir($logsDir, 0755, true);
+}
+
+// Auto-load classes (basic implementation)
 spl_autoload_register(function ($class) {
-    $prefix = 'App\\';
-    $base_dir = __DIR__ . '/';
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return;
-    }
-    $relative_class = substr($class, $len);
-    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+    // Convert namespace separator to directory separator
+    $class = str_replace('\\', '/', $class);
+
+    // Base directory for class files
+    $baseDir = dirname(__DIR__);
+
+    // Load the file if it exists
+    $file = $baseDir . '/' . $class . '.php';
     if (file_exists($file)) {
-        require $file;
+        require_once $file;
     }
 });
 
-// Ensure AuthController is loaded
-if (file_exists(__DIR__ . '/Controllers/AuthController.php')) {
-    require_once __DIR__ . '/Controllers/AuthController.php';
-} elseif (file_exists(__DIR__ . '/controllers/AuthController.php')) {
-    require_once __DIR__ . '/controllers/AuthController.php';
-}
+
+// Set timezone
+date_default_timezone_set($config['app']['timezone']);
+
 
 // Initialize database connection
 require_once __DIR__ . '/../config/database.php';
@@ -76,28 +72,28 @@ if (!isset($_SESSION['csrf_token']) || !isset($_SESSION['csrf_token_time']) || (
 if (isset($_SERVER['REQUEST_METHOD']) && in_array($_SERVER['REQUEST_METHOD'], ['POST', 'PUT', 'DELETE'])) {
     // Get token from various sources
     $token = $_POST['csrf_token'] ?? null;
-    
+
     // Check header if not in POST
     if ($token === null) {
         $headers = function_exists('getallheaders') ? getallheaders() : [];
         $token = $headers['X-CSRF-TOKEN'] ?? $headers['X-Csrf-Token'] ?? $headers['x-csrf-token'] ?? null;
     }
-    
+
     // Check custom header if not in standard headers
     if ($token === null) {
         $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
     }
-    
+
     // Verify token
     if ($token === null || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
         // Skip CSRF check for login page and API endpoints with their own CSRF checks
         $currentScript = basename($_SERVER['SCRIPT_NAME']);
         $skipCsrfCheck = in_array($currentScript, ['login.php', 'api.php']);
-        
+
         if (!$skipCsrfCheck) {
             error_log("CSRF token verification failed. Expected: " . ($_SESSION['csrf_token'] ?? 'not set') . ", Got: " . ($token ?? 'not provided'));
             http_response_code(403);
-            
+
             // Check if it's an AJAX request
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
                 die(json_encode(['error' => 'Invalid CSRF token']));
@@ -125,7 +121,7 @@ if (isset($_SESSION['user_id'])) {
             // Session expired
             session_unset();
             session_destroy();
-            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
                 strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
                 // AJAX request
                 http_response_code(401);

@@ -147,7 +147,7 @@ function get_client_ip() {
  * @param string $description
  * @param int|null $user_id
  */
-function log_activity($type, $description, $user_id = null) {
+function log_activity_db($type, $description, $user_id = null) {
     global $db;
     try {
         $user_id = $user_id ?? ($_SESSION['user_id'] ?? null);
@@ -206,4 +206,58 @@ function dd($var, $die = true) {
     var_dump($var);
     echo '</pre>';
     if ($die) die();
+}
+
+/**
+ * Check if user is logged in
+ * 
+ * @return bool Whether user is logged in
+ */
+function is_logged_in()
+{
+    return isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
+}
+
+/**
+ * Check if user has a specific role
+ * 
+ * @param string $role The role to check for
+ * @return bool Whether user has the role
+ */
+function has_role($role)
+{
+    return isset($_SESSION['role']) && $_SESSION['role'] === $role;
+}
+
+/**
+ * Require authentication to access a page
+ * If not authenticated, redirect to login page
+ * 
+ * @return void
+ */
+function require_auth()
+{
+    if (!is_logged_in()) {
+        header("Location: /login.php");
+        exit();
+    }
+}
+
+/**
+ * Log activity for audit purposes
+ * 
+ * @param string $action The action being performed
+ * @param string $description Description of the activity
+ * @param int|null $user_id The user ID (optional)
+ * @return void
+ */
+function log_activity($action, $description, $user_id = null)
+{
+    // Simple logging implementation
+    // In a real application, you would log to database
+    $user_id = $user_id ?? ($_SESSION['user_id'] ?? 0);
+    $log_entry = date('Y-m-d H:i:s') . " | User ID: $user_id | $action | $description\n";
+
+    // Append to log file
+    file_put_contents(dirname(__DIR__) . '/logs/activity.log', $log_entry, FILE_APPEND);
 }

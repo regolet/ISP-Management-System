@@ -1,19 +1,12 @@
 <?php
+// Start session
+session_start();
+
+// Load initialization file
 require_once dirname(__DIR__) . '/app/init.php';
-require_once dirname(__DIR__) . '/app/Controllers/AuthController.php';
-require_once dirname(__DIR__) . '/app/Controllers/DashboardController.php';
-require_once dirname(__DIR__) . '/views/dashboard/index.php';
-require_once dirname(__DIR__) . '/views/dashboard/recent_activity.php';
-require_once dirname(__DIR__) . '/views/layouts/sidebar.php';
 
-// Initialize Auth Controller
-$auth = new \App\Controllers\AuthController();
-
-// Check if user is not logged in
-if (!$auth->isLoggedIn()) {
-    header("Location: login.php");
-    exit();
-}
+// Require authentication
+require_auth();
 
 // Get database connection
 $database = new Database();
@@ -40,11 +33,11 @@ $dashboardController->logActivity(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - ISP Management System</title>
-    
+
     <!-- Core CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <!-- Custom CSS -->
     <link href="/assets/css/main.css" rel="stylesheet">
     <link href="/assets/css/dashboard.css" rel="stylesheet">
