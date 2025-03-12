@@ -1,13 +1,15 @@
 <?php
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
-    // Set secure session parameters
-    ini_set('session.cookie_httponly', 1);
-    ini_set('session.use_only_cookies', 1);
-    ini_set('session.use_strict_mode', 1);
-    ini_set('session.gc_maxlifetime', 1800); // 30 minutes
-    
-    session_start();
+    // Set secure session parameters - only if session not started yet
+    if (!headers_sent()) {
+        ini_set('session.cookie_httponly', 1);
+        ini_set('session.use_only_cookies', 1);
+        ini_set('session.use_strict_mode', 1);
+        ini_set('session.gc_maxlifetime', 1800); // 30 minutes
+        
+        session_start();
+    }
 }
 
 // Load configuration
@@ -139,19 +141,21 @@ if (isset($_SESSION['user_id'])) {
     $_SESSION['last_activity'] = time();
 }
 
-// XSS Protection Headers
-header('X-XSS-Protection: 1; mode=block');
-header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: SAMEORIGIN');
+// XSS Protection Headers - only if headers not sent
+if (!headers_sent()) {
+    header('X-XSS-Protection: 1; mode=block');
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: SAMEORIGIN');
 
-// Content Security Policy
-$csp = "default-src 'self'; " .
-       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://code.jquery.com; " .
-       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " .
-       "font-src 'self' https://cdnjs.cloudflare.com; " .
-       "img-src 'self' data: https:; " .
-       "connect-src 'self';";
-header("Content-Security-Policy: " . $csp);
+    // Content Security Policy
+    $csp = "default-src 'self'; " .
+           "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://code.jquery.com; " .
+           "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " .
+           "font-src 'self' https://cdnjs.cloudflare.com; " .
+           "img-src 'self' data: https:; " .
+           "connect-src 'self';";
+    header("Content-Security-Policy: " . $csp);
+}
 
 // Function to handle uncaught exceptions
 function handleException($exception) {
