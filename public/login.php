@@ -1,3 +1,19 @@
+
+<?php
+session_start();
+
+// Clear session if requested (from redirect loop prevention)
+if (isset($_GET['clear']) && $_GET['clear'] == 1) {
+    session_unset();
+    session_destroy();
+    session_start();
+}
+
+// Reset redirect counter on login page
+$_SESSION['redirect_count'] = 0;
+
+// Rest of your login page code follows...
+
 <?php
 session_start();
 
