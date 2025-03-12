@@ -1,7 +1,7 @@
 
 <?php
-// Start session only if not already started
-if (session_status() === PHP_SESSION_NONE) {
+// Start session only if not already started and headers haven't been sent
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 
@@ -11,7 +11,9 @@ if (isset($_GET['clear']) && $_GET['clear'] == 1) {
     if (session_status() === PHP_SESSION_ACTIVE) {
         session_destroy();
     }
-    session_start();
+    if (!headers_sent()) {
+        session_start();
+    }
 }
 
 // Reset redirect counter on login page
@@ -22,8 +24,10 @@ session_unset();
 if (session_status() === PHP_SESSION_ACTIVE) {
     session_destroy();
 }
-// Start a new session
-session_start();
+// Start a new session if headers haven't been sent
+if (!headers_sent()) {
+    session_start();
+}
 
 // Load initialization file
 require_once dirname(__DIR__) . '/app/init.php';
