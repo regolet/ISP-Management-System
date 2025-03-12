@@ -1,7 +1,10 @@
 
 <?php
 // Prevent endless redirects
-session_start();
+// Start session only if it hasn't been started yet
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Reset redirect counter if we're on a new page request
 if (!isset($_SESSION['last_request_uri']) || $_SESSION['last_request_uri'] !== $_SERVER['REQUEST_URI']) {
@@ -56,12 +59,24 @@ $auth = new \App\Controllers\AuthController();
 if (!$auth->isLoggedIn()) {
     // Clear redirect counter before redirecting to login
     $_SESSION['redirect_count'] = 0;
-    header("Location: /login.php");
-    exit();
+    if (!headers_sent()) {
+        header("Location: /login.php");
+        exit();
+    } else {
+        echo '<script>window.location.href = "/login.php";</script>';
+        echo '<noscript><meta http-equiv="refresh" content="0;url=/login.php"></noscript>';
+        exit();
+    }
 }
 
 // Clear redirect counter before redirecting to dashboard
 $_SESSION['redirect_count'] = 0;
-header("Location: /dashboard.php");
-exit();
+if (!headers_sent()) {
+    header("Location: /dashboard.php");
+    exit();
+} else {
+    echo '<script>window.location.href = "/dashboard.php";</script>';
+    echo '<noscript><meta http-equiv="refresh" content="0;url=/dashboard.php"></noscript>';
+    exit();
+}
 ?>
