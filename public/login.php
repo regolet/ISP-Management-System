@@ -8,7 +8,7 @@ require_once dirname(__DIR__) . '/app/Controllers/AuthController.php';
 
 // Check if user is already logged in
 if (is_logged_in()) {
-    header("Location: dashboard.php");
+    header("Location: clients.php");
     exit();
 }
 
@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $auth = new \App\Controllers\AuthController();
             if ($auth->login($username, $password)) {
-                // Redirect to dashboard
-                header("Location: dashboard.php");
+                // Redirect to clients page
+                header("Location: clients.php");
                 exit();
             } else {
                 $error = "Invalid username or password";

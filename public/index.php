@@ -73,14 +73,14 @@ if (!$auth->isLoggedIn()) {
     }
 }
 
-// Clear redirect counter before redirecting to dashboard
+// Clear redirect counter before redirecting to clients page
 $_SESSION['redirect_count'] = 0;
 if (!headers_sent()) {
-    header("Location: /dashboard.php");
+    header("Location: /clients.php");
     exit();
 } else {
-    echo '<script>window.location.href = "/dashboard.php";</script>';
-    echo '<noscript><meta http-equiv="refresh" content="0;url=/dashboard.php"></noscript>';
+    echo '<script>window.location.href = "/clients.php";</script>';
+    echo '<noscript><meta http-equiv="refresh" content="0;url=/clients.php"></noscript>';
     exit();
 }
 ?>

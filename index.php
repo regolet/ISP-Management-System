@@ -23,7 +23,7 @@ spl_autoload_register('autoload');
 
 // Check if user is already logged in
 if (isset($_SESSION['user_id'])) {
-    header("Location: dashboard.php");
+    header("Location: public/clients.php");
     exit();
 }
 
