@@ -1,0 +1,30 @@
+/**
+ * Sidebar fix
+ * This CSS ensures the sidebar works properly without a backdrop
+ */
+
+/* Ensure sidebar is properly positioned */
+#sidebar {
+    z-index: 1030;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* Fix for mobile view */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: -250px;
+    }
+    
+    #sidebar.active {
+        margin-left: 0;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dashboard-container {
+        transition: margin-left 0.3s ease-in-out;
+    }
+    
+    #sidebar.active + .dashboard-container {
+        margin-left: 250px;
+    }
+}

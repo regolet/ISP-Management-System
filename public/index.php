@@ -1,114 +1,44 @@
 <?php
-/**
- * ISP Management System - Entry Point
- */
-
-// Define application root path
-define('APP_ROOT', dirname(__DIR__));
-
-// Define the application start time
-define('APP_START', microtime(true));
-
-// Set error reporting
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-
-// Define base paths
-define('BASE_PATH', dirname(__DIR__));
-define('APP_PATH', BASE_PATH . '/app');
-define('STORAGE_PATH', BASE_PATH . '/storage');
-
-// Start output buffering
-ob_start();
-
-// Start session
+// Prevent endless redirects
 session_start();
 
-// Require the Composer autoloader
-require_once BASE_PATH . '/vendor/autoload.php';
-
-// Load environment variables
-if (file_exists(BASE_PATH . '/.env')) {
-    $lines = file(BASE_PATH . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
-            list($key, $value) = explode('=', $line, 2);
-            $key = trim($key);
-            $value = trim($value);
-            // Remove quotes if present
-            $value = trim($value, '"\'');
-            // Handle variable interpolation
-            $value = preg_replace_callback('/\${([^}]+)}/', function($matches) {
-                return getenv($matches[1]) ?: '';
-            }, $value);
-            putenv("$key=$value");
-            $_ENV[$key] = $value;
-        }
-    }
+// Make sure we haven't been here before to prevent redirect loops
+if (isset($_SESSION['redirect_count']) && $_SESSION['redirect_count'] > 3) {
+    echo "<html><body>";
+    echo "<h1>Redirect Loop Detected</h1>";
+    echo "<p>The system detected too many redirects. This could be due to:</p>";
+    echo "<ul>";
+    echo "<li>Missing or incorrect JavaScript files</li>";
+    echo "<li>Authentication issues</li>";
+    echo "<li>Server configuration problems</li>";
+    echo "</ul>";
+    echo "<p>Please check your server logs for more information.</p>";
+    echo "<p><a href='lcp.php'>Try accessing the LCP page directly</a></p>";
+    echo "</body></html>";
+    
+    // Reset the redirect counter
+    $_SESSION['redirect_count'] = 0;
+    exit;
 }
 
-// Initialize the application
-$app = \App\Core\Application::getInstance();
+// Increment redirect counter
+$_SESSION['redirect_count'] = ($_SESSION['redirect_count'] ?? 0) + 1;
 
-try {
-    // Register error handler
-    set_error_handler(function($severity, $message, $file, $line) {
-        if (!(error_reporting() & $severity)) {
-            return;
-        }
-        throw new \ErrorException($message, 0, $severity, $file, $line);
-    });
+// Normal index behavior
+require_once dirname(__DIR__) . '/app/init.php';
+require_once dirname(__DIR__) . '/config/database.php';
+require_once dirname(__DIR__) . '/app/Controllers/AuthController.php';
 
-    // Register shutdown function
-    register_shutdown_function(function() {
-        $error = error_get_last();
-        if ($error !== null && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
-            ob_clean();
-            if (getenv('APP_DEBUG') === 'true') {
-                echo "<pre>";
-                print_r($error);
-                echo "</pre>";
-            } else {
-                http_response_code(500);
-                echo "Internal Server Error";
-            }
-        }
-    });
+// Initialize Auth Controller
+$auth = new \App\Controllers\AuthController(); // Use fully qualified name
 
-    // Register core middleware
-    $app->registerMiddleware(\App\Middleware\CSRFMiddleware::class);
-    $app->registerMiddleware(\App\Middleware\CacheMiddleware::class);
-
-    // Load routes
-    $router = $app->getRouter();
-
-    // Web routes
-    require_once APP_PATH . '/routes/web.php';
-
-    // API routes
-    if (file_exists(APP_PATH . '/routes/api.php')) {
-        require_once APP_PATH . '/routes/api.php';
-    }
-
-    // Set execution time header if in debug mode
-    if (getenv('APP_DEBUG') === 'true') {
-        header("X-Execution-Time: " . number_format((microtime(true) - APP_START) * 1000, 2) . "ms");
-    }
-
-    // Handle the request
-    $app->run();
-
-} catch (\Throwable $e) {
-    // Handle any uncaught exceptions
-    ob_clean();
-    if (getenv('APP_DEBUG') === 'true') {
-        throw $e;
-    } else {
-        error_log($e->getMessage());
-        http_response_code(500);
-        echo "Internal Server Error";
-    }
+// Check if user is not logged in
+if (!$auth->isLoggedIn()) {
+    header("Location: login.php");
+    exit();
 }
 
-// Flush output buffer
-ob_end_flush();
+// Redirect to dashboard
+header("Location: dashboard.php");
+exit();
+?>

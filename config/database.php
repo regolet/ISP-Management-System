@@ -1,23 +1,25 @@
 <?php
-namespace App\Config;
-
-// Add this line to reference the global PDO class
-use PDO;
-use PDOException;
-use Exception;
-
 class Database {
-    private $db_path;
+    public $db_path;
     public $conn = null;
 
     public function __construct() {
-        // Set the SQLite database file path
-        $this->db_path = dirname(dirname(__DIR__)) . '/database/isp-management.sqlite';
+        // Set the SQLite database file path - use absolute path to avoid issues
+        $this->db_path = realpath(dirname(__DIR__) . '/database/isp-management.sqlite');
+        
+        // If the file doesn't exist, use the relative path for creation
+        if (!$this->db_path) {
+            $this->db_path = dirname(__DIR__) . '/database/isp-management.sqlite';
+        }
+        
+        // Debug log
+        error_log("Database path set to: " . $this->db_path);
+        error_log("Database file exists: " . (file_exists($this->db_path) ? "Yes" : "No"));
     }
 
     /**
      * Get database connection with proper error handling and parameter binding support
-     * @return PDO
+     * @return PDO|null
      */
     public function getConnection() {
         try {
@@ -25,9 +27,15 @@ class Database {
                 // Create the database directory if it doesn't exist
                 $db_dir = dirname($this->db_path);
                 if (!file_exists($db_dir)) {
-                    mkdir($db_dir, 0755, true);
+                    if (!mkdir($db_dir, 0755, true)) {
+                        error_log("Failed to create database directory: " . $db_dir);
+                        return null;
+                    }
                 }
 
+                // Log the connection attempt
+                error_log("Connecting to SQLite database at: " . $this->db_path);
+                
                 // Create a new PDO connection to SQLite
                 $this->conn = new PDO(
                     "sqlite:" . $this->db_path,
@@ -40,13 +48,19 @@ class Database {
                     ]
                 );
                 
+                // Log successful connection
+                error_log("Successfully connected to SQLite database");
+                
                 // Enable foreign keys support in SQLite
                 $this->conn->exec('PRAGMA foreign_keys = ON');
             }
             return $this->conn;
         } catch(PDOException $e) {
             error_log("Database Connection Error: " . $e->getMessage());
-            throw new Exception("Database connection error. Please try again later.");
+            return null;
+        } catch(Exception $e) {
+            error_log("General Error in getConnection: " . $e->getMessage());
+            return null;
         }
     }
 
@@ -181,6 +195,16 @@ class Database {
      */
     public function tableExists($table) {
         try {
+            // Ensure connection is established
+            if ($this->conn === null) {
+                $this->getConnection();
+            }
+            
+            if ($this->conn === null) {
+                error_log("Database connection is null in tableExists method");
+                return false;
+            }
+            
             $result = $this->conn->query("SELECT name FROM sqlite_master WHERE type='table' AND name='{$table}'");
             return $result->rowCount() > 0;
         } catch(PDOException $e) {
@@ -232,16 +256,25 @@ class Database {
      */
     public function initializeDatabase($force = false) {
         try {
+            // Ensure connection is established
+            if ($this->conn === null) {
+                $this->getConnection();
+            }
+            
+            if ($this->conn === null) {
+                error_log("Database connection is null in initializeDatabase method");
+                return false;
+            }
+            
             // Check if the database file exists
             $db_exists = file_exists($this->db_path);
-            
-            // Get connection
-            $conn = $this->getConnection();
+            error_log("Initializing database. File exists: " . ($db_exists ? "Yes" : "No"));
             
             // If database doesn't exist, is empty, or force is true
-            if (!$db_exists || !$this->tableExists('users') || $force) {
+            if ($force || !$db_exists || !$this->tableExists('users')) {
+                error_log("Creating database schema...");
                 // Read the SQL schema file
-                $sqlFile = dirname(dirname(__DIR__)) . '/database/sqlite_schema.sql';
+                $sqlFile = dirname(__DIR__) . '/database/sqlite_schema.sql';
                 
                 if (file_exists($sqlFile)) {
                     $sql = file_get_contents($sqlFile);
@@ -260,7 +293,13 @@ class Database {
                         // Convert MySQL syntax to SQLite syntax
                         $statement = $this->convertMySQLToSQLite($statement);
                         if (!empty($statement)) {
-                            $conn->exec($statement);
+                            try {
+                                $this->conn->exec($statement);
+                            } catch (PDOException $ex) {
+                                error_log("Error executing SQL statement: " . $ex->getMessage());
+                                error_log("Statement: " . $statement);
+                                // Continue with other statements
+                            }
                         }
                     }
                     

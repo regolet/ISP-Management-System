@@ -1,53 +1,32 @@
 <?php
-/**
- * ISP Management System - Root Redirect
- * 
- * This file redirects all requests to the public directory for security.
- * The application's actual entry point is in public/index.php.
- */
+// Start session
+session_start();
 
-// Get the requested URI
-$uri = urldecode(
-    parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? ''
-);
+// Autoloader function with browser output debugging
+function autoload($class) {
+    $projectRoot = '../'; 
+    $path = $projectRoot . str_replace('\\', '/', $class) . '.php'; 
 
-// Remove any dots from the URI to prevent directory traversal
-$uri = str_replace('..', '', $uri);
+    error_log("Autoloader: Class: " . $class); 
+    error_log("Autoloader: Path: " . $path); 
 
-// Build the path to the public directory
-$publicPath = __DIR__ . DIRECTORY_SEPARATOR . 'public';
-
-// Check if we're accessing a file directly
-if ($uri !== '/' && file_exists($publicPath . $uri)) {
-    // If it's a PHP file, include it
-    if (substr($uri, -4) === '.php') {
-        require_once $publicPath . $uri;
-        exit;
-    }
-    
-    // For other files, serve them with proper content type
-    $mimeTypes = [
-        'css' => 'text/css',
-        'js' => 'application/javascript',
-        'jpg' => 'image/jpeg',
-        'jpeg' => 'image/jpeg',
-        'png' => 'image/png',
-        'gif' => 'image/gif',
-        'svg' => 'image/svg+xml',
-        'ico' => 'image/x-icon',
-        'pdf' => 'application/pdf',
-        'json' => 'application/json',
-        'xml' => 'application/xml',
-    ];
-    
-    $extension = strtolower(pathinfo($uri, PATHINFO_EXTENSION));
-    if (isset($mimeTypes[$extension])) {
-        header('Content-Type: ' . $mimeTypes[$extension]);
-        readfile($publicPath . $uri);
-        exit;
+    if (file_exists($path)) {
+        error_log("Autoloader: File found: " . $path); 
+        require_once $path;
+    } else {
+        error_log("Autoloader: File NOT found: " . $path); 
     }
 }
 
-// If no specific file is requested or it's not found,
-// redirect to the main application entry point
-require_once $publicPath . DIRECTORY_SEPARATOR . 'index.php';
+// Register autoloader
+spl_autoload_register('autoload');
+
+// Check if user is already logged in
+if (isset($_SESSION['user_id'])) {
+    header("Location: dashboard.php");
+    exit();
+}
+
+// Redirect to login page
+header("Location: login.php");
+exit();
