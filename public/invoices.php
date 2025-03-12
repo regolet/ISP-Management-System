@@ -143,15 +143,48 @@ $pagination = $result['pagination'];
                         </div>
 
                         <!-- Pagination -->
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination">
-                                <?php for ($i = 1; $i <= $pagination['last_page']; $i++): ?>
-                                    <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
-                                        <a class="page-link" href="invoices.php?page=<?php echo $i; ?>&search=<?php echo htmlspecialchars($search); ?>&status=<?php echo htmlspecialchars($status); ?>"><?php echo $i; ?></a>
+                        <?php if ($pagination['last_page'] > 1): ?>
+                            <nav aria-label="Page navigation" class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                                        <a class="page-link" href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($status); ?>">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
                                     </li>
-                                <?php endfor; ?>
-                            </ul>
-                        </nav>
+                                    
+                                    <?php
+                                    $startPage = max(1, $page - 2);
+                                    $endPage = min($pagination['last_page'], $page + 2);
+                                    
+                                    if ($startPage > 1) {
+                                        echo '<li class="page-item"><a class="page-link" href="?page=1&search=' . urlencode($search) . '&status=' . urlencode($status) . '">1</a></li>';
+                                        if ($startPage > 2) {
+                                            echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                                        }
+                                    }
+                                    
+                                    for ($i = $startPage; $i <= $endPage; $i++) {
+                                        echo '<li class="page-item ' . (($page == $i) ? 'active' : '') . '">
+                                            <a class="page-link" href="?page=' . $i . '&search=' . urlencode($search) . '&status=' . urlencode($status) . '">' . $i . '</a>
+                                        </li>';
+                                    }
+                                    
+                                    if ($endPage < $pagination['last_page']) {
+                                        if ($endPage < $pagination['last_page'] - 1) {
+                                            echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                                        }
+                                        echo '<li class="page-item"><a class="page-link" href="?page=' . $pagination['last_page'] . '&search=' . urlencode($search) . '&status=' . urlencode($status) . '">' . $pagination['last_page'] . '</a></li>';
+                                    }
+                                    ?>
+                                    
+                                    <li class="page-item <?php echo ($page >= $pagination['last_page']) ? 'disabled' : ''; ?>">
+                                        <a class="page-link" href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($status); ?>">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
@@ -164,10 +197,22 @@ $pagination = $result['pagination'];
 
     <!-- Custom JavaScript -->
     <script>
+        /**
+         * Clear search filters and reload results
+         */
         function clearSearch() {
             document.getElementById('search').value = '';
             document.getElementById('status').value = '';
             document.getElementById('filterForm').submit();
+        }
+        
+        /**
+         * Confirm deletion action
+         */
+        function confirmDelete(id) {
+            if (confirm('Are you sure you want to delete this invoice? This action cannot be undone.')) {
+                window.location.href = '/forms/invoices/delete.php?id=' + id;
+            }
         }
     </script>
 </body>

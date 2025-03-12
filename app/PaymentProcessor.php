@@ -401,16 +401,35 @@ class PaymentProcessor {
     }
 
     /**
-     * Log message
+     * Log message with enhanced details
      */
-    private function log($message, $level = 'INFO') {
+    private function log($message, $level = 'INFO', $context = []) {
+        // Add request ID for tracking related log entries
+        $requestId = $_SESSION['request_id'] ?? uniqid('req_');
+        
+        // Convert context array to JSON if present
+        $contextStr = !empty($context) ? ' - Context: ' . json_encode($context) : '';
+        
         $logMessage = sprintf(
-            "[%s] [%s] %s\n",
+            "[%s] [%s] [%s] %s%s\n",
             date('Y-m-d H:i:s'),
             $level,
-            $message
+            $requestId,
+            $message,
+            $contextStr
         );
         
+        // Ensure log directory exists
+        if (!file_exists(dirname($this->logFile))) {
+            mkdir(dirname($this->logFile), 0755, true);
+        }
+        
+        // Append to log file
         file_put_contents($this->logFile, $logMessage, FILE_APPEND);
+        
+        // For critical errors, also log to PHP error log
+        if ($level === 'ERROR' || $level === 'CRITICAL') {
+            error_log("Payment Processor: $message$contextStr");
+        }
     }
 }

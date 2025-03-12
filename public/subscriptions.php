@@ -64,6 +64,11 @@ $subscriptionsData = $subscriptionController->getSubscriptions([
 
     <!-- Main Content -->
     <div class="dashboard-container">
+        <!-- Mobile Toggle Button -->
+        <button type="button" id="sidebarToggle" class="btn btn-link d-md-none position-fixed" style="top: 1rem; left: 1rem; z-index: 1040;">
+            <i class="fas fa-bars"></i>
+        </button>
+        
         <div class="main-content p-4">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -271,10 +276,7 @@ $subscriptionsData = $subscriptionController->getSubscriptions([
     <script src="/assets/js/sidebar.js"></script>
     <script src="/assets/js/subscriptions.js"></script>
     
-    <!-- Mobile Toggle Button -->
-    <button type="button" id="sidebarToggle" class="btn btn-link d-md-none position-fixed" style="top: 1rem; left: 1rem; z-index: 1040;">
-        <i class="fas fa-bars"></i>
-    </button>
+    <!-- Mobile toggle button moved to main dashboard container -->
     
     <script>
         // Initialize modals when the document is loaded
