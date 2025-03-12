@@ -1,10 +1,12 @@
 
 <?php
-// Prevent output before session_start
-ob_start();
+// Ensure no output is sent before session_start
+if (ob_get_level() === 0) {
+    ob_start();
+}
 
 // Start session only if it hasn't been started yet
-if (session_status() === PHP_SESSION_NONE) {
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 

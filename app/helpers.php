@@ -219,19 +219,7 @@ function has_role($role)
     return isset($_SESSION['role']) && $_SESSION['role'] === $role;
 }
 
-/**
- * Require authentication to access a page
- * If not authenticated, redirect to login page
- * 
- * @return void
- */
-function require_auth()
-{
-    if (!is_logged_in()) {
-        header("Location: /login.php");
-        exit();
-    }
-}
+// require_auth function is already defined in app/init.php
 
 /**
  * Log activity for audit purposes
