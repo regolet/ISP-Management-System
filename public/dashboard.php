@@ -54,7 +54,13 @@ $dashboardController->logActivity(
         </button>
 
         <div class="main-content">
-            <?php renderDashboardContent($dashboardData); ?>
+            <?php
+// Include dashboard content renderer
+require_once 'dashboard-content.php';
+
+// Render dashboard content
+renderDashboardContent($dashboardData);
+?>
         </div>
     </div>
 
