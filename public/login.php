@@ -1,20 +1,28 @@
 
 <?php
-session_start();
+// Start session only if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Clear session if requested (from redirect loop prevention)
 if (isset($_GET['clear']) && $_GET['clear'] == 1) {
     session_unset();
-    session_destroy();
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_destroy();
+    }
     session_start();
 }
 
 // Reset redirect counter on login page
 $_SESSION['redirect_count'] = 0;
 
-// Clear any existing session data
+// Clear any existing session data (only destroy if active)
 session_unset();
-session_destroy();
+if (session_status() === PHP_SESSION_ACTIVE) {
+    session_destroy();
+}
+// Start a new session
 session_start();
 
 // Load initialization file
