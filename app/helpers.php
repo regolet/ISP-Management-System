@@ -209,6 +209,55 @@ function dd($var, $die = true) {
 }
 
 /**
+ * Render sidebar
+ * 
+ * @param string $active_page Current active page
+ * @return void
+ */
+function renderSidebar($active_page = '')
+{
+    ?>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h2>ISP Manager</h2>
+        </div>
+        <div class="sidebar-menu">
+            <ul>
+                <li class="<?php echo $active_page === 'dashboard' ? 'active' : ''; ?>">
+                    <a href="/dashboard.php"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                </li>
+                <li class="<?php echo $active_page === 'clients' ? 'active' : ''; ?>">
+                    <a href="/clients.php"><i class="fas fa-users"></i><span>Clients</span></a>
+                </li>
+                <li class="<?php echo $active_page === 'subscriptions' ? 'active' : ''; ?>">
+                    <a href="/subscriptions.php"><i class="fas fa-wifi"></i><span>Subscriptions</span></a>
+                </li>
+                <li class="<?php echo $active_page === 'invoices' ? 'active' : ''; ?>">
+                    <a href="/invoices.php"><i class="fas fa-file-invoice-dollar"></i><span>Invoices</span></a>
+                </li>
+                <li class="<?php echo $active_page === 'plans' ? 'active' : ''; ?>">
+                    <a href="/plans.php"><i class="fas fa-project-diagram"></i><span>Plans</span></a>
+                </li>
+                <li class="<?php echo $active_page === 'olt' ? 'active' : ''; ?>">
+                    <a href="/olt.php"><i class="fas fa-network-wired"></i><span>OLT Management</span></a>
+                </li>
+                <li class="<?php echo $active_page === 'lcp' ? 'active' : ''; ?>">
+                    <a href="/lcp.php"><i class="fas fa-broadcast-tower"></i><span>LCP Management</span></a>
+                </li>
+                <li class="<?php echo $active_page === 'settings' ? 'active' : ''; ?>">
+                    <a href="/settings.php"><i class="fas fa-cog"></i><span>Settings</span></a>
+                </li>
+                <li>
+                    <a href="/logout.php"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <?php
+}
+
+/**
  * Check if user has a specific role
  * 
  * @param string $role The role to check for

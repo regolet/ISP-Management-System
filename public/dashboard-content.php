@@ -215,3 +215,175 @@ function renderDashboardContent($data)
     <?php
 }
 ?>
+<?php
+/**
+ * Render dashboard content
+ * 
+ * @param array $data Dashboard data
+ * @return void
+ */
+function renderDashboardContent($data)
+{
+    ?>
+    <div class="container-fluid p-4">
+        <!-- Welcome Banner -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-primary text-white shadow">
+                    <div class="card-body p-4">
+                        <h2 class="card-title">Welcome, <?php echo htmlspecialchars($_SESSION['username'] ?? 'User'); ?>!</h2>
+                        <p class="card-text">
+                            This is your ISP Management System dashboard. Get a quick overview of your business stats and recent activities.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Total Clients</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $data['statistics']['clients'] ?? 0; ?></div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Active Subscriptions</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $data['statistics']['active_subscriptions'] ?? 0; ?></div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-wifi fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                    Total Revenue</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">$<?php echo number_format($data['statistics']['total_revenue'] ?? 0, 2); ?></div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Pending Invoices</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $data['statistics']['pending_invoices'] ?? 0; ?></div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-file-invoice-dollar fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Row -->
+        <div class="row">
+            <!-- Recent Activities -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Recent Activities</h6>
+                    </div>
+                    <div class="card-body">
+                        <?php if (empty($data['recent_activities'])): ?>
+                            <p class="text-center text-muted">No recent activities found.</p>
+                        <?php else: ?>
+                            <div class="table-responsive">
+                                <table class="table table-bordered" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Action</th>
+                                            <th>Description</th>
+                                            <th>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($data['recent_activities'] as $activity): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($activity['action'] ?? ''); ?></td>
+                                                <td><?php echo htmlspecialchars($activity['description'] ?? ''); ?></td>
+                                                <td><?php echo htmlspecialchars($activity['created_at'] ?? ''); ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Payments -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Upcoming Payments</h6>
+                    </div>
+                    <div class="card-body">
+                        <?php if (empty($data['upcoming_payments'])): ?>
+                            <p class="text-center text-muted">No upcoming payments found.</p>
+                        <?php else: ?>
+                            <div class="table-responsive">
+                                <table class="table table-bordered" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Client</th>
+                                            <th>Amount</th>
+                                            <th>Due Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($data['upcoming_payments'] as $payment): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($payment['client_name'] ?? ''); ?></td>
+                                                <td>$<?php echo number_format($payment['amount'] ?? 0, 2); ?></td>
+                                                <td><?php echo htmlspecialchars($payment['due_date'] ?? ''); ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+}
+?>
