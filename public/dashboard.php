@@ -1,9 +1,12 @@
 <?php
 // Include initialization file
-require_once __DIR__ . '/../app/init.php';
+require_once '../app/init.php';
 
 // Check if user is logged in
 require_auth();
+
+// Manually include the DashboardController class
+require_once __DIR__ . '/../app/Controllers/DashboardController.php';
 
 // Get database connection
 $database = new Database();
