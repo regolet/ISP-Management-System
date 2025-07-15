@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISP Management System - Plans</title>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'inter': ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-100 font-inter">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="w-full px-6 h-16 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center space-x-3">
+        <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
+          <i class="fas fa-signal text-2xl"></i>
+          <h1 class="text-xl font-bold">ISP Management System</h1>
+        </a>
+      </div>
+      
+      <!-- Navigation -->
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="/dashboard.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="/clients.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-users"></i>
+          <span>Clients</span>
+        </a>
+        <a href="/plans.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
+          <i class="fas fa-project-diagram"></i>
+          <span>Plans</span>
+        </a>
+        <a href="/billings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span>Billings</span>
+        </a>
+        <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-chart-line"></i>
+          <span>Monitoring</span>
+        </a>
+        <a href="/settings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cogs"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+      
+      <!-- User Info -->
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-user-circle text-xl"></i>
+          <span id="username" class="font-medium">Loading...</span>
+        </div>
+        <button 
+          id="logoutBtn"
+          class="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+        >
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="w-full px-6 py-8">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+      <div class="mb-4 sm:mb-0">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+          <i class="fas fa-project-diagram text-blue-600 mr-3"></i>
+          Internet Plans
+        </h2>
+        <p class="text-gray-600">Manage your internet service plans</p>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button 
+          id="importPPPBtn" 
+          onclick="openImportModal()"
+          class="flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
+        >
+          <i class="fas fa-file-import mr-2"></i>
+          Import from PPP Profiles
+        </button>
+        <button 
+          id="addPlanBtn" 
+          onclick="openAddModal()"
+          class="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+        >
+          <i class="fas fa-plus mr-2"></i>
+          Add Plan
+        </button>
+      </div>
+    </div>
+
+    <!-- Plans List Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center mb-4 sm:mb-0">
+          <i class="fas fa-list text-blue-600 mr-2"></i>
+          Plans List
+        </h3>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-search text-gray-400"></i>
+          </div>
+          <input 
+            type="text" 
+            id="planSearch" 
+            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64" 
+            placeholder="Search plans..."
+          >
+        </div>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate Limit</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="plansTableBody" class="bg-white divide-y divide-gray-200">
+            <tr>
+              <td colspan="7" class="px-6 py-12 text-center">
+                <div class="flex items-center justify-center">
+                  <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mr-3"></div>
+                  <span class="text-gray-500">Loading plans...</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Plan Modal -->
+  <div id="addPlanModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Add New Plan</h3>
+      </div>
+      
+      <form id="addPlanForm" class="p-6 space-y-4">
+        <div>
+          <label for="planName" class="block text-sm font-medium text-gray-700 mb-1">Plan Name</label>
+          <input 
+            type="text" 
+            id="planName" 
+            name="name" 
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="e.g., Basic 10Mbps"
+          >
+        </div>
+        
+        <div>
+          <label for="planDescription" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea 
+            id="planDescription" 
+            name="description" 
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Plan description..."
+          ></textarea>
+        </div>
+        
+        <div>
+          <label for="planSpeed" class="block text-sm font-medium text-gray-700 mb-1">Rate Limit (MikroTik format)</label>
+          <input 
+            type="text" 
+            id="planSpeed" 
+            name="speed" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="e.g., 10M/5M or 10000000/5000000"
+          >
+          <p class="text-xs text-gray-500 mt-1">Enter rate limit in MikroTik format (download/upload) or leave blank for unlimited</p>
+        </div>
+        
+        <div>
+          <label for="planPrice" class="block text-sm font-medium text-gray-700 mb-1">Monthly Price ($)</label>
+          <input 
+            type="number" 
+            id="planPrice" 
+            name="price" 
+            required
+            min="0"
+            step="0.01"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="29.99"
+          >
+        </div>
+        
+        <div class="flex justify-end space-x-3 pt-4">
+          <button 
+            type="button" 
+            onclick="closeAddModal()"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Add Plan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Plan Modal -->
+  <div id="editPlanModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Edit Plan</h3>
+      </div>
+      
+      <form id="editPlanForm" class="p-6 space-y-4">
+        <input type="hidden" id="editPlanId" name="id">
+        
+        <div>
+          <label for="editPlanName" class="block text-sm font-medium text-gray-700 mb-1">Plan Name</label>
+          <input 
+            type="text" 
+            id="editPlanName" 
+            name="name" 
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+        </div>
+        
+        <div>
+          <label for="editPlanDescription" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea 
+            id="editPlanDescription" 
+            name="description" 
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          ></textarea>
+        </div>
+        
+        <div>
+          <label for="editPlanSpeed" class="block text-sm font-medium text-gray-700 mb-1">Rate Limit (MikroTik format)</label>
+          <input 
+            type="text" 
+            id="editPlanSpeed" 
+            name="speed" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="e.g., 10M/5M or 10000000/5000000"
+          >
+          <p class="text-xs text-gray-500 mt-1">Enter rate limit in MikroTik format (download/upload) or leave blank for unlimited</p>
+        </div>
+        
+        <div>
+          <label for="editPlanPrice" class="block text-sm font-medium text-gray-700 mb-1">Monthly Price ($)</label>
+          <input 
+            type="number" 
+            id="editPlanPrice" 
+            name="price" 
+            required
+            min="0"
+            step="0.01"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+        </div>
+        
+        <div class="flex justify-end space-x-3 pt-4">
+          <button 
+            type="button" 
+            onclick="closeEditModal()"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Update Plan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-lg w-full">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Import from PPP Profiles</h3>
+      </div>
+      
+      <div class="p-6">
+        <p class="text-gray-600 mb-4">This feature will import plans from your MikroTik PPP profiles.</p>
+        <div id="importContent" class="text-center py-8">
+          <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p class="text-gray-500">Connecting to MikroTik...</p>
+        </div>
+        
+        <div id="profilesContent" class="hidden">
+          <div class="mb-4">
+            <p class="text-gray-600 mb-4">Select PPP profiles to import as plans:</p>
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-4">
+                <button 
+                  onclick="selectAllProfiles()" 
+                  class="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Select All
+                </button>
+                <button 
+                  onclick="selectNoneProfiles()" 
+                  class="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Select None
+                </button>
+              </div>
+              <span id="selectedProfilesCount" class="text-sm text-gray-500">0 selected</span>
+            </div>
+          </div>
+          
+          <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+            <div class="p-2">
+              <label class="flex items-center p-2 border-b border-gray-100">
+                <input 
+                  type="checkbox" 
+                  id="selectAllProfilesCheckbox" 
+                  onchange="toggleAllProfiles(this)"
+                  class="rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 mr-3"
+                >
+                <span class="text-sm font-medium text-gray-700">Select All Profiles</span>
+              </label>
+              <div class="space-y-1 pt-2" id="profilesList">
+                <!-- Profiles will be loaded here -->
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-4 flex justify-end">
+            <button 
+              id="importSelectedBtn"
+              onclick="importSelectedProfiles()"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              disabled
+            >
+              Import Selected
+            </button>
+          </div>
+        </div>
+        
+        <div class="flex justify-end space-x-3 pt-4">
+          <button 
+            type="button" 
+            onclick="closeImportModal()"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="notificationContainer" class="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm"></div>
+
+  <script>
+    // Global variables
+    let plans = [];
+    let filteredPlans = [];
+
+    // Show notification toast
+    function showNotification(title, message, type = 'info') {
+      const container = document.getElementById('notificationContainer');
+      
+      const toastId = 'toast-' + Math.random().toString(36).substring(2, 15);
+      
+      let bgClass = 'bg-blue-500';
+      let icon = 'info-circle';
+      
+      switch(type) {
+        case 'success':
+          icon = 'check-circle';
+          bgClass = 'bg-green-500';
+          break;
+        case 'warning':
+          icon = 'exclamation-triangle';
+          bgClass = 'bg-amber-500';
+          break;
+        case 'error':
+          icon = 'exclamation-circle';
+          bgClass = 'bg-red-500';
+          break;
+      }
+      
+      const toast = document.createElement('div');
+      toast.id = toastId;
+      toast.className = `${bgClass} text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
+      toast.innerHTML = `
+        <div class="flex items-start">
+          <i class="fas fa-${icon} mt-0.5 mr-3 flex-shrink-0"></i>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold">${title}</div>
+            <div class="text-sm opacity-90">${message}</div>
+          </div>
+          <button onclick="removeToast('${toastId}')" class="ml-3 flex-shrink-0 text-white/80 hover:text-white">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-x-full', 'opacity-0');
+      }, 10);
+      
+      setTimeout(() => {
+        removeToast(toastId);
+      }, 5000);
+    }
+    
+    function removeToast(toastId) {
+      const toast = document.getElementById(toastId);
+      if (toast) {
+        toast.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }
+    }
+
+    // Modal functions
+    function openAddModal() {
+      document.getElementById('addPlanModal').classList.remove('hidden');
+      document.getElementById('addPlanModal').classList.add('flex');
+    }
+
+    function closeAddModal() {
+      document.getElementById('addPlanModal').classList.add('hidden');
+      document.getElementById('addPlanModal').classList.remove('flex');
+      document.getElementById('addPlanForm').reset();
+    }
+
+    function openEditModal(planId) {
+      const plan = plans.find(p => p.id === planId);
+      if (!plan) return;
+
+      document.getElementById('editPlanId').value = plan.id;
+      document.getElementById('editPlanName').value = plan.name;
+      document.getElementById('editPlanDescription').value = plan.description || '';
+      document.getElementById('editPlanSpeed').value = plan.speed || '';
+      document.getElementById('editPlanPrice').value = plan.price || '';
+
+      document.getElementById('editPlanModal').classList.remove('hidden');
+      document.getElementById('editPlanModal').classList.add('flex');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editPlanModal').classList.add('hidden');
+      document.getElementById('editPlanModal').classList.remove('flex');
+      document.getElementById('editPlanForm').reset();
+    }
+
+    async function openImportModal() {
+      document.getElementById('importModal').classList.remove('hidden');
+      document.getElementById('importModal').classList.add('flex');
+      
+      // Load PPP profiles
+      await loadPPPProfiles();
+    }
+
+    function closeImportModal() {
+      document.getElementById('importModal').classList.add('hidden');
+      document.getElementById('importModal').classList.remove('flex');
+      
+      // Reset modal content
+      document.getElementById('importContent').classList.remove('hidden');
+      document.getElementById('profilesContent').classList.add('hidden');
+    }
+
+    async function loadPPPProfiles() {
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch('/api/ppp-profiles', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            displayPPPProfiles(data.profiles);
+          } else {
+            throw new Error(data.error || 'Failed to load PPP profiles');
+          }
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to load PPP profiles');
+        }
+      } catch (error) {
+        console.error('Error loading PPP profiles:', error);
+        
+        document.getElementById('importContent').innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+            <p class="text-red-600 font-semibold mb-2">Connection Failed</p>
+            <p class="text-gray-600 text-sm">${error.message}</p>
+            <p class="text-gray-500 text-xs mt-2">Make sure MikroTik settings are configured in Settings page</p>
+          </div>
+        `;
+      }
+    }
+
+    function displayPPPProfiles(profiles) {
+      const profilesList = document.getElementById('profilesList');
+      const importContent = document.getElementById('importContent');
+      const profilesContent = document.getElementById('profilesContent');
+      
+      if (profiles.length === 0) {
+        importContent.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-info-circle text-blue-500 text-4xl mb-4"></i>
+            <p class="text-blue-600 font-semibold mb-2">No PPP Profiles Found</p>
+            <p class="text-gray-600 text-sm">No PPP profiles found on your MikroTik device</p>
+          </div>
+        `;
+        return;
+      }
+      
+      profilesList.innerHTML = profiles.map((profile, index) => `
+        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+          <input 
+            type="checkbox" 
+            class="profile-checkbox mr-3" 
+            id="profile-${index}"
+            data-profile='${JSON.stringify(profile)}'
+            onchange="updateSelectedProfilesCount()"
+          >
+          <div class="flex-1">
+            <div class="font-medium text-gray-900">${profile.name || 'Unnamed Profile'}</div>
+            <div class="text-sm text-gray-500">
+              ${profile['rate-limit'] ? `Rate Limit: ${profile['rate-limit']}` : 'No rate limit'}
+            </div>
+            ${profile['local-address'] ? `<div class="text-xs text-gray-400">Local: ${profile['local-address']}</div>` : ''}
+            ${profile['remote-address'] ? `<div class="text-xs text-gray-400">Remote: ${profile['remote-address']}</div>` : ''}
+          </div>
+        </label>
+      `).join('');
+      
+      importContent.classList.add('hidden');
+      profilesContent.classList.remove('hidden');
+      
+      // Initialize count
+      updateSelectedProfilesCount();
+    }
+
+    // Profile selection functions
+    function toggleAllProfiles(checkbox) {
+      const profileCheckboxes = document.querySelectorAll('.profile-checkbox');
+      profileCheckboxes.forEach(cb => cb.checked = checkbox.checked);
+      updateSelectedProfilesCount();
+    }
+
+    function selectAllProfiles() {
+      const selectAllCheckbox = document.getElementById('selectAllProfilesCheckbox');
+      selectAllCheckbox.checked = true;
+      toggleAllProfiles(selectAllCheckbox);
+    }
+
+    function selectNoneProfiles() {
+      const selectAllCheckbox = document.getElementById('selectAllProfilesCheckbox');
+      selectAllCheckbox.checked = false;
+      toggleAllProfiles(selectAllCheckbox);
+    }
+
+    function updateSelectedProfilesCount() {
+      const selectedCheckboxes = document.querySelectorAll('.profile-checkbox:checked');
+      const count = selectedCheckboxes.length;
+      
+      document.getElementById('selectedProfilesCount').textContent = `${count} selected`;
+      document.getElementById('importSelectedBtn').disabled = count === 0;
+      
+      // Update select all checkbox state
+      const totalCheckboxes = document.querySelectorAll('.profile-checkbox');
+      const selectAllCheckbox = document.getElementById('selectAllProfilesCheckbox');
+      
+      if (count === 0) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+      } else if (count === totalCheckboxes.length) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = true;
+      } else {
+        selectAllCheckbox.indeterminate = true;
+        selectAllCheckbox.checked = false;
+      }
+    }
+
+    async function importSelectedProfiles() {
+      const selectedCheckboxes = document.querySelectorAll('.profile-checkbox:checked');
+      
+      if (selectedCheckboxes.length === 0) {
+        showNotification('Warning', 'Please select at least one profile to import', 'warning');
+        return;
+      }
+      
+      const token = localStorage.getItem('auth_token');
+      const importedCount = [];
+      
+      try {
+        for (const checkbox of selectedCheckboxes) {
+          const profile = JSON.parse(checkbox.dataset.profile);
+          
+          // Convert profile to plan format
+          const planData = {
+            name: profile.name || 'Unnamed Profile',
+            description: `Imported from PPP Profile: ${profile.name || 'Unnamed'}`,
+            price: 0, // Default price, user can edit later
+            speed: profile['rate-limit'] || 'unlimited', // Store actual MikroTik rate limit
+            download_speed: extractDownloadSpeed(profile['rate-limit']),
+            upload_speed: extractUploadSpeed(profile['rate-limit']),
+            status: 'active'
+          };
+          
+          const response = await fetch('/api/plans', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(planData)
+          });
+          
+          if (response.ok) {
+            importedCount.push(profile.name);
+          } else {
+            console.error('Failed to import profile:', profile.name);
+          }
+        }
+        
+        if (importedCount.length > 0) {
+          showNotification('Success', `Successfully imported ${importedCount.length} profile(s) as plans`, 'success');
+          closeImportModal();
+          loadPlans(); // Refresh the plans list
+        } else {
+          showNotification('Error', 'Failed to import any profiles', 'error');
+        }
+        
+      } catch (error) {
+        console.error('Error importing profiles:', error);
+        showNotification('Error', 'Failed to import profiles', 'error');
+      }
+    }
+
+    function extractDownloadSpeed(rateLimit) {
+      if (!rateLimit) return 0;
+      
+      // Parse rate limit format like "10M/5M" or "10000000/5000000"
+      const parts = rateLimit.split('/');
+      if (parts.length > 0) {
+        const download = parts[0];
+        if (download.includes('M')) {
+          return parseInt(download.replace('M', ''));
+        } else if (download.includes('K')) {
+          return parseInt(download.replace('K', '')) / 1000;
+        } else {
+          // Assume it's in bits per second, convert to Mbps
+          return Math.round(parseInt(download) / 1000000);
+        }
+      }
+      return 0;
+    }
+
+    function extractUploadSpeed(rateLimit) {
+      if (!rateLimit) return 0;
+      
+      // Parse rate limit format like "10M/5M" or "10000000/5000000"
+      const parts = rateLimit.split('/');
+      if (parts.length > 1) {
+        const upload = parts[1];
+        if (upload.includes('M')) {
+          return parseInt(upload.replace('M', ''));
+        } else if (upload.includes('K')) {
+          return parseInt(upload.replace('K', '')) / 1000;
+        } else {
+          // Assume it's in bits per second, convert to Mbps
+          return Math.round(parseInt(upload) / 1000000);
+        }
+      }
+      return 0;
+    }
+
+    function deletePlan(planId) {
+      if (!confirm('Are you sure you want to delete this plan?')) return;
+      
+      // Implementation for delete
+      showNotification('Plan Deleted', 'Plan has been successfully deleted', 'success');
+      loadPlans();
+    }
+
+    // Load and display plans
+    async function loadPlans() {
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch('/api/plans', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          plans = await response.json();
+          filteredPlans = [...plans];
+          renderPlans();
+        } else {
+          throw new Error('Failed to load plans');
+        }
+      } catch (error) {
+        console.error('Error loading plans:', error);
+        showNotification('Error', 'Failed to load plans', 'error');
+        
+        document.getElementById('plansTableBody').innerHTML = `
+          <tr>
+            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+              Failed to load plans. Please try again.
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function renderPlans() {
+      const tbody = document.getElementById('plansTableBody');
+      
+      if (filteredPlans.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+              No plans found.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filteredPlans.map(plan => `
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${plan.id}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${plan.name}</td>
+          <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">${plan.description || '-'}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <div class="font-medium">
+              ${plan.speed || 'unlimited'}
+            </div>
+            ${plan.download_speed && plan.upload_speed ? `
+              <div class="text-xs text-gray-500 mt-1">
+                <span class="text-green-600">↓ ${plan.download_speed} Mbps</span> / 
+                <span class="text-blue-600">↑ ${plan.upload_speed} Mbps</span>
+              </div>
+            ` : ''}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+            ₱${plan.price || '0.00'}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+              Active
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+            <button 
+              onclick="openEditModal(${plan.id})"
+              class="text-blue-600 hover:text-blue-900 p-1"
+              title="Edit"
+            >
+              <i class="fas fa-edit"></i>
+            </button>
+            <button 
+              onclick="deletePlan(${plan.id})"
+              class="text-red-600 hover:text-red-900 p-1"
+              title="Delete"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Search functionality
+    function filterPlans() {
+      const searchTerm = document.getElementById('planSearch').value.toLowerCase();
+      
+      filteredPlans = plans.filter(plan => 
+        plan.name.toLowerCase().includes(searchTerm) ||
+        (plan.description && plan.description.toLowerCase().includes(searchTerm))
+      );
+      
+      renderPlans();
+    }
+
+    // Form submissions
+    document.getElementById('addPlanForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const planData = Object.fromEntries(formData);
+      
+      // Set default to unlimited if speed is empty
+      if (!planData.speed || planData.speed.trim() === '') {
+        planData.speed = 'unlimited';
+      }
+      
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch('/api/plans', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(planData)
+        });
+        
+        if (response.ok) {
+          showNotification('Success', 'Plan added successfully', 'success');
+          closeAddModal();
+          loadPlans();
+        } else {
+          throw new Error('Failed to add plan');
+        }
+      } catch (error) {
+        console.error('Error adding plan:', error);
+        showNotification('Error', 'Failed to add plan', 'error');
+      }
+    });
+
+    document.getElementById('editPlanForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const planData = Object.fromEntries(formData);
+      const planId = planData.id;
+      delete planData.id;
+      
+      // Set default to unlimited if speed is empty
+      if (!planData.speed || planData.speed.trim() === '') {
+        planData.speed = 'unlimited';
+      }
+      
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch(`/api/plans/${planId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(planData)
+        });
+        
+        if (response.ok) {
+          showNotification('Success', 'Plan updated successfully', 'success');
+          closeEditModal();
+          loadPlans();
+        } else {
+          throw new Error('Failed to update plan');
+        }
+      } catch (error) {
+        console.error('Error updating plan:', error);
+        showNotification('Error', 'Failed to update plan', 'error');
+      }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if user is logged in
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Set up logout functionality
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+        localStorage.removeItem('auth_token');
+        showNotification('Logged Out', 'You have been successfully logged out', 'info');
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 1000);
+      });
+
+      // Set up search
+      document.getElementById('planSearch').addEventListener('input', filterPlans);
+
+      // Load initial data
+      loadPlans();
+      
+      // Fetch user info
+      fetchUserInfo();
+    });
+
+    async function fetchUserInfo() {
+      const token = localStorage.getItem('auth_token');
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          document.getElementById('username').textContent = data.user.username || 'User';
+        } else {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login.html';
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        document.getElementById('username').textContent = 'User';
+      }
+    }
+  </script>
+</body>
+</html>

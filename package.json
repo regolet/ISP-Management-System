@@ -1,15 +1,38 @@
 {
-  "name": "workspace",
+  "name": "isp-management-system",
   "version": "1.0.0",
-  "description": "A comprehensive system for managing Internet Service Provider operations, including client management, subscriptions, billing, and network infrastructure.",
-  "main": "db_alter.js",
+  "description": "ISP Management System with Neon PostgreSQL database and Express backend.",
+  "main": "server/index.js",
   "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js",
+    "build-css": "tailwindcss -i ./src/styles.css -o ./public/assets/css/styles.css --watch",
+    "build-css-prod": "tailwindcss -i ./src/styles.css -o ./public/assets/css/styles.css --minify",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "isp",
+    "management",
+    "express",
+    "postgresql",
+    "neon"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "sqlite3": "^5.1.7"
+    "axios": "^1.6.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3",
+    "routeros-api": "^1.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.11",
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/typography": "^0.5.16",
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.11"
   }
 }

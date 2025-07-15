@@ -1,0 +1,2159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISP Management System - Network Monitoring</title>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'inter': ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-100 font-inter">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="w-full px-6 h-16 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center space-x-3">
+        <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
+          <i class="fas fa-signal text-2xl"></i>
+          <h1 class="text-xl font-bold">ISP Management System</h1>
+        </a>
+      </div>
+      
+      <!-- Navigation -->
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="/dashboard.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="/clients.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-users"></i>
+          <span>Clients</span>
+        </a>
+        <a href="/plans.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-project-diagram"></i>
+          <span>Plans</span>
+        </a>
+        <a href="/billings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span>Billings</span>
+        </a>
+        <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
+          <i class="fas fa-chart-line"></i>
+          <span>Monitoring</span>
+        </a>
+        <a href="/settings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cogs"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+      
+      <!-- User Info -->
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-user-circle text-xl"></i>
+          <span id="username" class="font-medium">Loading...</span>
+        </div>
+        <button 
+          id="logoutBtn"
+          class="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+        >
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="w-full px-6 py-8">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+      <div class="mb-4 sm:mb-0">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+          <i class="fas fa-chart-line text-blue-600 mr-3"></i>
+          Network Monitoring
+        </h2>
+        <p class="text-gray-600">Real-time monitoring of your MikroTik network</p>
+      </div>
+      <div class="flex items-center space-x-4">
+        <!-- MikroTik Status -->
+        <div class="flex items-center space-x-2">
+          <span class="text-sm font-medium text-gray-700">MikroTik:</span>
+          <span id="mikrotikStatus" class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+            Not configured
+          </span>
+        </div>
+        <!-- Tab Navigation -->
+        <div class="flex bg-gray-200 rounded-lg p-1">
+          <button id="dashboardTab" class="px-4 py-2 text-sm font-medium rounded-md transition-colors bg-white text-blue-600 shadow-sm">
+            Dashboard
+          </button>
+          <button id="groupsTab" class="px-4 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 hover:text-gray-900">
+            Groups
+          </button>
+          <button id="categoriesTab" class="px-4 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 hover:text-gray-900">
+            Categories
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Tab Content -->
+    <div id="dashboardContent" class="tab-content">
+      <!-- Network Summary -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-chart-bar text-blue-600 mr-2"></i>
+            Network Summary
+          </h3>
+          <p class="text-sm text-gray-500 mt-1">
+            Last updated: <span id="lastUpdated">-</span>
+          </p>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+            <!-- Total Accounts -->
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="flex items-center">
+                <div class="p-2 bg-gray-100 rounded-lg">
+                  <i class="fas fa-users text-gray-600"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-gray-600">Total Accounts</p>
+                  <p class="text-2xl font-bold text-gray-900" id="totalAccounts">-</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Online Accounts -->
+            <div class="bg-green-50 rounded-lg p-4">
+              <div class="flex items-center">
+                <div class="p-2 bg-green-100 rounded-lg">
+                  <i class="fas fa-wifi text-green-600"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-green-600">Online</p>
+                  <p class="text-2xl font-bold text-green-900" id="onlineAccounts">-</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Offline Accounts -->
+            <div class="bg-red-50 rounded-lg p-4">
+              <div class="flex items-center">
+                <div class="p-2 bg-red-100 rounded-lg">
+                  <i class="fas fa-wifi-slash text-red-600"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-red-600">Offline</p>
+                  <p class="text-2xl font-bold text-red-900" id="offlineAccounts">-</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Enabled Accounts -->
+            <div class="bg-blue-50 rounded-lg p-4">
+              <div class="flex items-center">
+                <div class="p-2 bg-blue-100 rounded-lg">
+                  <i class="fas fa-toggle-on text-blue-600"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-blue-600">Enabled</p>
+                  <p class="text-2xl font-bold text-blue-900" id="enabledAccounts">-</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Disabled Accounts -->
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="flex items-center">
+                <div class="p-2 bg-gray-100 rounded-lg">
+                  <i class="fas fa-toggle-off text-gray-600"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-gray-600">Disabled</p>
+                  <p class="text-2xl font-bold text-gray-900" id="disabledAccounts">-</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Total Upload -->
+            <div class="bg-cyan-50 rounded-lg p-4">
+              <div class="flex items-center">
+                <div class="p-2 bg-cyan-100 rounded-lg">
+                  <i class="fas fa-upload text-cyan-600"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-cyan-600">Total Upload</p>
+                  <p class="text-xl font-bold text-cyan-900" id="totalUpload">- Mbps</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Total Download -->
+            <div class="bg-purple-50 rounded-lg p-4">
+              <div class="flex items-center">
+                <div class="p-2 bg-purple-100 rounded-lg">
+                  <i class="fas fa-download text-purple-600"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-purple-600">Total Download</p>
+                  <p class="text-xl font-bold text-purple-900" id="totalDownload">- Mbps</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Online & Offline Accounts Tables -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Online Accounts Table -->
+        <div class="lg:col-span-2">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">Online Accounts</h3>
+                <div class="flex items-center space-x-2">
+                  <input type="text" id="onlineSearch" placeholder="Search..." class="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <select id="onlineRowsPerPage" class="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="10">10 rows</option>
+                    <option value="20" selected>20 rows</option>
+                    <option value="50">50 rows</option>
+                    <option value="100">100 rows</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('name')">
+                      <div class="flex items-center space-x-1">
+                        <span>Name</span>
+                        <span id="sort-name"></span>
+                      </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('profile')">
+                      <div class="flex items-center space-x-1">
+                        <span>Profile</span>
+                        <span id="sort-profile"></span>
+                      </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('uploadSpeed')">
+                      <div class="flex items-center space-x-1">
+                        <span>Upload</span>
+                        <span id="sort-uploadSpeed"></span>
+                      </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('downloadSpeed')">
+                      <div class="flex items-center space-x-1">
+                        <span>Download</span>
+                        <span id="sort-downloadSpeed"></span>
+                      </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('address')">
+                      <div class="flex items-center space-x-1">
+                        <span>Address</span>
+                        <span id="sort-address"></span>
+                      </div>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('uptime')">
+                      <div class="flex items-center space-x-1">
+                        <span>Uptime</span>
+                        <span id="sort-uptime"></span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="onlineAccountsTableBody" class="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                      No online accounts found
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="onlinePagination" class="px-6 py-4 border-t border-gray-200"></div>
+          </div>
+        </div>
+
+        <!-- Offline Accounts Table -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">Offline Accounts</h3>
+                <select id="offlineRowsPerPage" class="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <option value="10">10 rows</option>
+                  <option value="20" selected>20 rows</option>
+                  <option value="50">50 rows</option>
+                  <option value="100">100 rows</option>
+                </select>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Downtime</th>
+                  </tr>
+                </thead>
+                <tbody id="offlineAccountsTableBody" class="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td colspan="3" class="px-6 py-12 text-center text-gray-500">
+                      No offline accounts found
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="offlinePagination" class="px-6 py-4 border-t border-gray-200"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Groups Tab Content -->
+    <div id="groupsContent" class="tab-content hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+              <i class="fas fa-layer-group text-blue-600 mr-2"></i>
+              Groups Management
+            </h3>
+            <button id="addGroupBtn" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <i class="fas fa-plus"></i>
+              <span>Add Group</span>
+            </button>
+          </div>
+          <div class="mt-4">
+            <input type="text" id="groupSearch" placeholder="Search groups..." class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full max-w-md">
+          </div>
+        </div>
+        <div class="p-6">
+          <div id="groupsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Groups will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories Tab Content -->
+    <div id="categoriesContent" class="tab-content hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+              <i class="fas fa-sitemap text-blue-600 mr-2"></i>
+              Categories Management
+            </h3>
+            <button id="addCategoryBtn" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <i class="fas fa-plus"></i>
+              <span>Add Category</span>
+            </button>
+          </div>
+        </div>
+        <div class="p-6">
+          <div id="categoriesContainer">
+            <!-- Categories will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="notificationContainer" class="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm"></div>
+
+  <script>
+    // Global variables
+    let currentTab = 'dashboard';
+    let onlineAccounts = [];
+    let offlineAccounts = [];
+    let groups = [];
+    let categories = [];
+    let currentOnlineAccounts = [];
+    let updateInterval = null;
+    let mikrotikConfigured = false;
+    
+    // Search and pagination state
+    let onlineSearch = '';
+    let onlineRowsPerPage = 20;
+    let onlinePage = 1;
+    let onlineSortField = 'name';
+    let onlineSortDirection = 'asc';
+    
+    let offlineRowsPerPage = 20;
+    let offlinePage = 1;
+
+    // Show notification toast
+    function showNotification(title, message, type = 'info') {
+      const container = document.getElementById('notificationContainer');
+      
+      const toastId = 'toast-' + Math.random().toString(36).substring(2, 15);
+      
+      let bgClass = 'bg-blue-500';
+      let icon = 'info-circle';
+      
+      switch(type) {
+        case 'success':
+          icon = 'check-circle';
+          bgClass = 'bg-green-500';
+          break;
+        case 'warning':
+          icon = 'exclamation-triangle';
+          bgClass = 'bg-amber-500';
+          break;
+        case 'error':
+          icon = 'exclamation-circle';
+          bgClass = 'bg-red-500';
+          break;
+      }
+      
+      const toast = document.createElement('div');
+      toast.id = toastId;
+      toast.className = `${bgClass} text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
+      toast.innerHTML = `
+        <div class="flex items-start">
+          <i class="fas fa-${icon} mt-0.5 mr-3 flex-shrink-0"></i>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold">${title}</div>
+            <div class="text-sm opacity-90">${message}</div>
+          </div>
+          <button onclick="removeToast('${toastId}')" class="ml-3 flex-shrink-0 text-white/80 hover:text-white">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-x-full', 'opacity-0');
+      }, 10);
+      
+      setTimeout(() => {
+        removeToast(toastId);
+      }, 5000);
+    }
+    
+    function removeToast(toastId) {
+      const toast = document.getElementById(toastId);
+      if (toast) {
+        toast.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }
+    }
+
+    // Tab switching
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('[id$="Tab"]').forEach(tab => {
+        tab.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+        tab.classList.add('text-gray-600', 'hover:text-gray-900');
+      });
+      
+      document.getElementById(tabName + 'Tab').classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+      document.getElementById(tabName + 'Tab').classList.remove('text-gray-600', 'hover:text-gray-900');
+      
+      // Update content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      
+      document.getElementById(tabName + 'Content').classList.remove('hidden');
+      currentTab = tabName;
+      
+      // Load tab-specific data
+      if (mikrotikConfigured) {
+        switch(tabName) {
+          case 'dashboard':
+            loadDashboardData();
+            break;
+          case 'groups':
+            // Load dashboard data first to get current online accounts, then load groups
+            loadDashboardData().then(() => loadGroups());
+            break;
+          case 'categories':
+            loadCategories();
+            break;
+        }
+      } else {
+        // Show message to configure MikroTik for the current tab
+        showEmptyStateMessage(tabName);
+      }
+    }
+
+    // Show empty state message when MikroTik is not configured
+    function showEmptyStateMessage(tabName) {
+      const message = `
+        <div class="flex flex-col items-center justify-center py-12 text-center">
+          <i class="fas fa-exclamation-triangle text-6xl text-yellow-500 mb-4"></i>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">MikroTik Not Configured</h3>
+          <p class="text-gray-600 mb-4">Please configure your MikroTik settings first to view monitoring data.</p>
+          <a href="/settings.html" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <i class="fas fa-cogs mr-2"></i>
+            Go to Settings
+          </a>
+        </div>
+      `;
+      
+      switch(tabName) {
+        case 'dashboard':
+          // Clear dashboard stats
+          document.getElementById('totalAccounts').textContent = '-';
+          document.getElementById('onlineAccounts').textContent = '-';
+          document.getElementById('offlineAccounts').textContent = '-';
+          document.getElementById('enabledAccounts').textContent = '-';
+          document.getElementById('disabledAccounts').textContent = '-';
+          document.getElementById('totalUpload').textContent = '0.00 Mbps';
+          document.getElementById('totalDownload').textContent = '0.00 Mbps';
+          document.getElementById('lastUpdated').textContent = '-';
+          
+          // Show message in tables
+          document.getElementById('onlineAccountsTableBody').innerHTML = `<tr><td colspan="7" class="text-center py-8">${message}</td></tr>`;
+          document.getElementById('offlineAccountsTableBody').innerHTML = `<tr><td colspan="4" class="text-center py-8">${message}</td></tr>`;
+          break;
+        case 'groups':
+          document.getElementById('groupsGrid').innerHTML = message;
+          break;
+        case 'categories':
+          document.getElementById('categoriesContainer').innerHTML = message;
+          break;
+      }
+    }
+
+    // Check MikroTik configuration
+    async function checkMikrotikConfig() {
+      try {
+        const response = await fetch('/api/mikrotik/settings', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        const statusEl = document.getElementById('mikrotikStatus');
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data && data.host) {
+            mikrotikConfigured = true;
+            statusEl.textContent = `Connected to ${data.host}:${data.port || 8728}`;
+            statusEl.className = 'px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800';
+            
+            // Load initial data for current tab
+            switchTab(currentTab);
+          } else {
+            mikrotikConfigured = false;
+            statusEl.textContent = 'Not configured';
+            statusEl.className = 'px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800';
+            
+            // Show message to configure MikroTik
+            showNotification('MikroTik Not Configured', 'Please configure MikroTik settings in the Settings page first.', 'warning');
+          }
+        } else {
+          mikrotikConfigured = false;
+          statusEl.textContent = 'Error loading config';
+          statusEl.className = 'px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800';
+        }
+      } catch (error) {
+        console.error('Error checking MikroTik config:', error);
+        mikrotikConfigured = false;
+        document.getElementById('mikrotikStatus').textContent = 'Error checking config';
+        document.getElementById('mikrotikStatus').className = 'px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800';
+      }
+    }
+
+    // Load dashboard data
+    async function loadDashboardData() {
+      if (!mikrotikConfigured) return;
+      
+      try {
+        const response = await fetch('/api/monitoring/dashboard', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Store current online accounts globally
+          currentOnlineAccounts = data.ppp_active || [];
+          
+          updateDashboardStats(data.aggregate_stats);
+          updateAccountsTables(data.ppp_active || [], data.ppp_accounts || [], data.pppoe_interfaces || []);
+          document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+          
+          // Update groups with current online status if groups are loaded
+          if (groups.length > 0) {
+            updateGroupsOnlineStatus();
+            renderGroups();
+          }
+        } else {
+          showNotification('Error', data.error || 'Failed to load dashboard data', 'error');
+        }
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        showNotification('Error', 'Failed to load dashboard data', 'error');
+      }
+    }
+
+    // Update groups with current online status
+    function updateGroupsOnlineStatus() {
+      const onlineAccountNames = new Set(
+        currentOnlineAccounts.map(account => account.name)
+      );
+      
+      groups = groups.map(group => ({
+        ...group,
+        accounts: (group.accounts || []).map(account => {
+          const accountName = typeof account === 'string' ? account : account.name;
+          return {
+            name: accountName,
+            online: onlineAccountNames.has(accountName)
+          };
+        })
+      }));
+    }
+
+    // Update dashboard statistics
+    function updateDashboardStats(stats) {
+      document.getElementById('totalAccounts').textContent = stats.total_accounts || 0;
+      document.getElementById('onlineAccounts').textContent = stats.online_accounts || 0;
+      document.getElementById('offlineAccounts').textContent = stats.offline_accounts || 0;
+      document.getElementById('enabledAccounts').textContent = stats.enabled_accounts || 0;
+      document.getElementById('disabledAccounts').textContent = stats.disabled_accounts || 0;
+      // Upload/Download will be calculated from interface data in calculateInterfaceSpeeds
+    }
+
+    // Helper to normalize names
+    function normalizeName(name) {
+      if (!name) return '';
+      // Remove angle brackets and pppoe- prefix if present
+      const match = name.match(/^<?pppoe-?([^>]+)>?$/i);
+      if (match && match[1]) return match[1].toLowerCase();
+      return name
+        .replace(/[<>]/g, '')
+        .replace(/^pppoe-/, '')
+        .trim()
+        .toLowerCase();
+    }
+    
+    // Helper to parse uptime string to seconds for sorting
+    function parseUptimeToSeconds(uptime) {
+      if (!uptime || typeof uptime !== 'string') return 0;
+      let total = 0;
+      const regex = /(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?/;
+      const match = uptime.match(regex);
+      if (!match) return 0;
+      const [, w, d, h, m, s] = match.map(x => parseInt(x) || 0);
+      total += w * 604800 + d * 86400 + h * 3600 + m * 60 + s;
+      return total;
+    }
+    
+    // Sort function
+    function sortAccounts(accounts, field, direction) {
+      return [...accounts].sort((a, b) => {
+        let aVal = a[field];
+        let bVal = b[field];
+        
+        // Handle numeric values
+        if (field === 'uploadSpeed' || field === 'downloadSpeed') {
+          aVal = parseFloat(aVal) || 0;
+          bVal = parseFloat(bVal) || 0;
+        } else if (field === 'uptime') {
+          aVal = parseUptimeToSeconds(aVal);
+          bVal = parseUptimeToSeconds(bVal);
+        } else {
+          // String values
+          aVal = String(aVal || '').toLowerCase();
+          bVal = String(bVal || '').toLowerCase();
+        }
+        
+        if (direction === 'asc') {
+          return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+        } else {
+          return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+        }
+      });
+    }
+    
+    // Handle sort click
+    function handleOnlineSort(field) {
+      if (onlineSortField === field) {
+        onlineSortDirection = onlineSortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        onlineSortField = field;
+        onlineSortDirection = 'asc';
+      }
+      onlinePage = 1;
+      renderOnlineAccountsTable();
+    }
+    
+    // Get sort indicator
+    function getSortIndicator(field) {
+      if (onlineSortField !== field) {
+        return '<i class="bi bi-arrow-down-up text-gray-400 opacity-50"></i>';
+      }
+      return onlineSortDirection === 'asc' 
+        ? '<i class="bi bi-arrow-up text-blue-600"></i>' 
+        : '<i class="bi bi-arrow-down text-blue-600"></i>';
+    }
+
+    // Update accounts tables
+    function updateAccountsTables(online, allAccounts, pppoeInterfaces) {
+      onlineAccounts = online || [];
+      
+      // Calculate offline accounts
+      const onlineNames = new Set(onlineAccounts.map(acc => acc.name));
+      offlineAccounts = (allAccounts || []).filter(acc => !onlineNames.has(acc.name));
+      
+      // Store PPPoE interfaces globally for rendering
+      window.lastPppoeInterfaces = pppoeInterfaces || [];
+      
+      // Calculate speeds from PPPoE interfaces
+      calculateInterfaceSpeeds(pppoeInterfaces || []);
+      
+      renderOnlineAccountsTable();
+      renderOfflineAccountsTable();
+    }
+    
+    // Calculate interface speeds using localStorage for previous values
+    function calculateInterfaceSpeeds(pppoeInterfaces) {
+      const now = Date.now();
+      let totalUploadBits = 0;
+      let totalDownloadBits = 0;
+      
+      // Create a set of online account names for quick lookup
+      const onlineAccountNames = new Set(onlineAccounts.map(acc => normalizeName(acc.name)));
+      
+      // Process each interface
+      pppoeInterfaces.forEach(iface => {
+        const username = normalizeName(iface.name);
+        const rxBytes = parseFloat(iface['rx-byte'] || 0);
+        const txBytes = parseFloat(iface['tx-byte'] || 0);
+        
+        const storageKey = `pppoe_stats_${username}`;
+        const prevStatsStr = localStorage.getItem(storageKey);
+        
+        let uploadMbps = 0;
+        let downloadMbps = 0;
+        
+        if (prevStatsStr) {
+          try {
+            const prevStats = JSON.parse(prevStatsStr);
+            const dt = (now - prevStats.t) / 1000; // Time difference in seconds
+            
+            if (dt > 0 && dt < 60) { // Only calculate if time difference is reasonable
+              const rxDiff = rxBytes - prevStats.rx;
+              const txDiff = txBytes - prevStats.tx;
+              
+              if (rxDiff >= 0 && txDiff >= 0) {
+                // Upload = RX (data from client to router), Download = TX (data from router to client)
+                uploadMbps = (rxDiff * 8) / dt / 1e6;
+                downloadMbps = (txDiff * 8) / dt / 1e6;
+                
+                // Only add to totals if this interface corresponds to an online account
+                if (onlineAccountNames.has(username)) {
+                  totalUploadBits += rxDiff > 0 ? (rxDiff * 8) / dt : 0;
+                  totalDownloadBits += txDiff > 0 ? (txDiff * 8) / dt : 0;
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error parsing previous stats:', error);
+          }
+        } else {
+          // First time loading, show 0 speeds but store the data
+          uploadMbps = 0;
+          downloadMbps = 0;
+        }
+        
+        // Store current stats for next calculation
+        localStorage.setItem(storageKey, JSON.stringify({ rx: rxBytes, tx: txBytes, t: now }));
+        
+        // Store speed data for rendering
+        iface.uploadSpeed = uploadMbps.toFixed(2);
+        iface.downloadSpeed = downloadMbps.toFixed(2);
+      });
+      
+      // Update total speeds in Mbps
+      const totalUploadMbps = (totalUploadBits / 1e6).toFixed(2);
+      const totalDownloadMbps = (totalDownloadBits / 1e6).toFixed(2);
+      
+      document.getElementById('totalUpload').textContent = `${totalUploadMbps} Mbps`;
+      document.getElementById('totalDownload').textContent = `${totalDownloadMbps} Mbps`;
+      
+      // Store totals for debugging
+      window.lastTotalUpload = totalUploadMbps;
+      window.lastTotalDownload = totalDownloadMbps;
+    }
+
+    // Render online accounts table
+    function renderOnlineAccountsTable() {
+      const tbody = document.getElementById('onlineAccountsTableBody');
+      
+      // Update sort indicators
+      ['name', 'profile', 'uploadSpeed', 'downloadSpeed', 'address', 'uptime'].forEach(field => {
+        const indicator = document.getElementById(`sort-${field}`);
+        if (indicator) {
+          indicator.innerHTML = getSortIndicator(field);
+        }
+      });
+      
+      if (onlineAccounts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-gray-500">No online accounts found</td></tr>';
+        document.getElementById('onlinePagination').innerHTML = '';
+        return;
+      }
+      
+      // Create a map of speeds from PPPoE interfaces
+      const speedMap = {};
+      const pppoeInterfaces = window.lastPppoeInterfaces || [];
+      pppoeInterfaces.forEach(iface => {
+        const username = normalizeName(iface.name);
+        speedMap[username] = {
+          uploadSpeed: iface.uploadSpeed || '0.00',
+          downloadSpeed: iface.downloadSpeed || '0.00'
+        };
+      });
+      
+      // Prepare data with speeds
+      const accountsWithSpeeds = onlineAccounts.map(account => {
+        const username = normalizeName(account.name);
+        const speeds = speedMap[username] || { uploadSpeed: '0.00', downloadSpeed: '0.00' };
+        return {
+          ...account,
+          uploadSpeed: speeds.uploadSpeed,
+          downloadSpeed: speeds.downloadSpeed
+        };
+      });
+      
+      // Filter by search
+      let filteredAccounts = accountsWithSpeeds;
+      if (onlineSearch) {
+        const searchLower = onlineSearch.toLowerCase();
+        filteredAccounts = accountsWithSpeeds.filter(account => 
+          account.name.toLowerCase().includes(searchLower) ||
+          (account.profile || '').toLowerCase().includes(searchLower) ||
+          (account.address || '').toLowerCase().includes(searchLower)
+        );
+      }
+      
+      // Sort
+      const sortedAccounts = sortAccounts(filteredAccounts, onlineSortField, onlineSortDirection);
+      
+      // Paginate
+      const totalPages = Math.ceil(sortedAccounts.length / onlineRowsPerPage);
+      const startIndex = (onlinePage - 1) * onlineRowsPerPage;
+      const endIndex = startIndex + onlineRowsPerPage;
+      const paginatedAccounts = sortedAccounts.slice(startIndex, endIndex);
+      
+      // Render table
+      if (paginatedAccounts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-gray-500">No accounts found matching your search</td></tr>';
+      } else {
+        tbody.innerHTML = paginatedAccounts.map(account => `
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${account.name}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${account.profile || '-'}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                Online
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${account.uploadSpeed} Mbps</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${account.downloadSpeed} Mbps</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${account.address || '-'}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${account.uptime || '-'}</td>
+          </tr>
+        `).join('');
+      }
+      
+      // Render pagination
+      renderOnlinePagination(sortedAccounts.length, totalPages);
+    }
+    
+    // Render online pagination
+    function renderOnlinePagination(totalItems, totalPages) {
+      const container = document.getElementById('onlinePagination');
+      
+      if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+      
+      container.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-700">
+            Showing <span class="font-medium">${((onlinePage - 1) * onlineRowsPerPage) + 1}</span> to 
+            <span class="font-medium">${Math.min(onlinePage * onlineRowsPerPage, totalItems)}</span> of 
+            <span class="font-medium">${totalItems}</span> results
+          </div>
+          <div class="flex items-center space-x-2">
+            <button 
+              onclick="changeOnlinePage(${onlinePage - 1})"
+              class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 ${onlinePage === 1 ? 'opacity-50 cursor-not-allowed' : ''}"
+              ${onlinePage === 1 ? 'disabled' : ''}
+            >
+              Previous
+            </button>
+            ${renderPageNumbers(totalPages, onlinePage, 'changeOnlinePage')}
+            <button 
+              onclick="changeOnlinePage(${onlinePage + 1})"
+              class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 ${onlinePage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}"
+              ${onlinePage === totalPages ? 'disabled' : ''}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Helper to render page numbers
+    function renderPageNumbers(totalPages, currentPage, changeFunction) {
+      let pages = [];
+      
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        if (currentPage <= 3) {
+          pages = [1, 2, 3, 4, '...', totalPages];
+        } else if (currentPage >= totalPages - 2) {
+          pages = [1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+        } else {
+          pages = [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+        }
+      }
+      
+      return pages.map(page => {
+        if (page === '...') {
+          return '<span class="px-3 py-1 text-sm text-gray-700">...</span>';
+        }
+        const isActive = page === currentPage;
+        return `
+          <button 
+            onclick="${changeFunction}(${page})"
+            class="px-3 py-1 text-sm font-medium rounded-md ${isActive ? 'bg-blue-600 text-white' : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'}"
+          >
+            ${page}
+          </button>
+        `;
+      }).join('');
+    }
+    
+    // Change online page
+    function changeOnlinePage(page) {
+      onlinePage = page;
+      renderOnlineAccountsTable();
+    }
+
+    // Render offline accounts table
+    function renderOfflineAccountsTable() {
+      const tbody = document.getElementById('offlineAccountsTableBody');
+      
+      if (offlineAccounts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-12 text-center text-gray-500">No offline accounts found</td></tr>';
+        document.getElementById('offlinePagination').innerHTML = '';
+        return;
+      }
+      
+      // Paginate
+      const totalPages = Math.ceil(offlineAccounts.length / offlineRowsPerPage);
+      const startIndex = (offlinePage - 1) * offlineRowsPerPage;
+      const endIndex = startIndex + offlineRowsPerPage;
+      const paginatedAccounts = offlineAccounts.slice(startIndex, endIndex);
+      
+      tbody.innerHTML = paginatedAccounts.map(account => `
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${account.name}</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+              account.disabled === 'true' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800'
+            }">
+              ${account.disabled === 'true' ? 'Disabled' : 'Offline'}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${account['last-logged-out'] || '-'}</td>
+        </tr>
+      `).join('');
+      
+      // Render pagination
+      renderOfflinePagination(offlineAccounts.length, totalPages);
+    }
+    
+    // Render offline pagination
+    function renderOfflinePagination(totalItems, totalPages) {
+      const container = document.getElementById('offlinePagination');
+      
+      if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+      
+      container.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-700">
+            Showing <span class="font-medium">${((offlinePage - 1) * offlineRowsPerPage) + 1}</span> to 
+            <span class="font-medium">${Math.min(offlinePage * offlineRowsPerPage, totalItems)}</span> of 
+            <span class="font-medium">${totalItems}</span> results
+          </div>
+          <div class="flex items-center space-x-2">
+            <button 
+              onclick="changeOfflinePage(${offlinePage - 1})"
+              class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 ${offlinePage === 1 ? 'opacity-50 cursor-not-allowed' : ''}"
+              ${offlinePage === 1 ? 'disabled' : ''}
+            >
+              Previous
+            </button>
+            ${renderPageNumbers(totalPages, offlinePage, 'changeOfflinePage')}
+            <button 
+              onclick="changeOfflinePage(${offlinePage + 1})"
+              class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 ${offlinePage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}"
+              ${offlinePage === totalPages ? 'disabled' : ''}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Change offline page
+    function changeOfflinePage(page) {
+      offlinePage = page;
+      renderOfflineAccountsTable();
+    }
+
+    // Load groups with online status cross-reference
+    async function loadGroups() {
+      if (!mikrotikConfigured) return;
+      
+      try {
+        const response = await fetch('/api/monitoring/groups', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          groups = data.groups || [];
+          
+          // Update with current online status
+          updateGroupsOnlineStatus();
+          renderGroups();
+        } else if (data.error && data.error.includes('table does not exist')) {
+          console.log('Database tables not initialized');
+          showNotification('Database Error', 'Database tables not found. Please initialize the database in Settings > Database Management.', 'error');
+        } else {
+          console.error('Error loading groups:', data.error);
+          showNotification('Error', data.error || 'Failed to load groups', 'error');
+        }
+      } catch (error) {
+        console.error('Error loading groups:', error);
+        showNotification('Error', 'Failed to load groups', 'error');
+      }
+    }
+
+
+    // Render groups
+    function renderGroups() {
+      const container = document.getElementById('groupsGrid');
+      
+      if (groups.length === 0) {
+        container.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">No groups found</div>';
+        return;
+      }
+      
+      console.log('Rendering groups:', groups);
+      
+      container.innerHTML = groups.map(group => {
+        console.log('Rendering group with ID:', group.id, 'Name:', group.name);
+        // Backend already parses JSONB, so accounts should be an array
+        const accounts = Array.isArray(group.accounts) ? group.accounts : [];
+        const totalCount = accounts.length;
+        const onlineCount = accounts.filter(acc => acc.online).length;
+        const offlineCount = totalCount - onlineCount;
+        
+        let statusClass = 'bg-blue-600';
+        if (totalCount > 0) {
+          if (onlineCount === totalCount) statusClass = 'bg-green-600';
+          else if (onlineCount === 0) statusClass = 'bg-red-600';
+          else if (offlineCount >= totalCount * 0.5) statusClass = 'bg-red-600';
+        }
+        
+        return `
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="${statusClass} text-white px-4 py-3">
+              <div class="flex items-center justify-between">
+                <h4 class="font-medium">${group.name}</h4>
+                <div class="flex items-center space-x-2">
+                  <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded ${onlineCount === 0 ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}">
+                    Online: ${onlineCount}
+                  </span>
+                  <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded ${offlineCount === 0 ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'}">
+                    Offline: ${offlineCount}
+                  </span>
+                  <button onclick="editGroup(${group.id})" class="text-white hover:text-gray-200" title="Edit Group">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button onclick="deleteGroup(${group.id})" class="text-white hover:text-gray-200" title="Delete Group">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="p-4">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center space-x-4">
+                  <div class="flex items-center space-x-1">
+                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span class="text-sm text-gray-600">Online: ${onlineCount}</span>
+                  </div>
+                  <div class="flex items-center space-x-1">
+                    <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span class="text-sm text-gray-600">Offline: ${offlineCount}</span>
+                  </div>
+                </div>
+                ${group.max_members ? `<span class="text-xs text-gray-500">${totalCount}/${group.max_members}</span>` : ''}
+              </div>
+              ${group.description ? `<p class="text-sm text-gray-600 mb-3">${group.description}</p>` : ''}
+              <div class="flex flex-wrap gap-1">
+                ${accounts.map(account => {
+                  const accountName = typeof account === 'string' ? account : account.name;
+                  const isOnline = typeof account === 'object' ? account.online : false;
+                  return `
+                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded ${isOnline ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
+                      ${accountName}
+                    </span>
+                  `;
+                }).join('')}
+                ${accounts.length === 0 ? '<span class="text-sm text-gray-500 italic">No members</span>' : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Load categories
+    async function loadCategories() {
+      if (!mikrotikConfigured) return;
+      
+      try {
+        // Load both categories and groups in parallel
+        const [categoriesResponse, groupsResponse] = await Promise.all([
+          fetch('/api/monitoring/categories', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+          }),
+          fetch('/api/monitoring/groups', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+          })
+        ]);
+        
+        const categoriesData = await categoriesResponse.json();
+        const groupsData = await groupsResponse.json();
+        
+        if (categoriesData.success) {
+          categories = categoriesData.categories || [];
+          
+          // Update groups data for name lookups
+          if (groupsData.success) {
+            groups = groupsData.groups || [];
+          }
+          
+          renderCategories();
+        } else if (categoriesData.error && categoriesData.error.includes('table does not exist')) {
+          console.log('Database tables not initialized');
+          showNotification('Database Error', 'Database tables not found. Please initialize the database in Settings > Database Management.', 'error');
+        } else {
+          console.error('Error loading categories:', categoriesData.error);
+          showNotification('Error', categoriesData.error || 'Failed to load categories', 'error');
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error);
+        showNotification('Error', 'Failed to load categories', 'error');
+      }
+    }
+
+    // Render categories
+    function renderCategories() {
+      const container = document.getElementById('categoriesContainer');
+      
+      if (categories.length === 0) {
+        container.innerHTML = '<div class="text-center py-12 text-gray-500">No categories found</div>';
+        return;
+      }
+      
+      container.innerHTML = categories.map(category => {
+        // Calculate category-wide totals across all subcategories
+        let categoryTotalMembers = 0;
+        let categoryTotalMaxMembers = 0;
+        let categoryHasMaxMembers = false;
+        
+        (category.subcategories || []).forEach(sub => {
+          (sub.groups || []).forEach(groupId => {
+            const group = groups.find(g => g.id === groupId);
+            if (group) {
+              categoryTotalMembers += group.accounts?.length || 0;
+              if (group.max_members) {
+                categoryTotalMaxMembers += group.max_members;
+                categoryHasMaxMembers = true;
+              }
+            }
+          });
+        });
+        
+        const categoryVacant = categoryHasMaxMembers ? categoryTotalMaxMembers - categoryTotalMembers : 0;
+        const categoryStats = categoryHasMaxMembers ? 
+          `(${categoryTotalMembers}/${categoryTotalMaxMembers}, vacant: ${categoryVacant})` : 
+          categoryTotalMembers > 0 ? `(${categoryTotalMembers})` : '';
+        
+        return `<div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+          <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <h4 class="font-medium text-gray-900">${category.category}</h4>
+                ${categoryStats ? `<span class="text-sm text-gray-600">${categoryStats}</span>` : ''}
+              </div>
+              <div class="flex items-center space-x-2">
+                <button onclick="addSubcategory('${category.category}')" class="text-green-600 hover:text-green-800">
+                  <i class="fas fa-plus"></i>
+                </button>
+                <button onclick="editCategory('${category.category}')" class="text-blue-600 hover:text-blue-800">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteCategory('${category.category}')" class="text-red-600 hover:text-red-800">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              ${(category.subcategories || []).map(sub => {
+                // Calculate subcategory totals
+                let totalMembers = 0;
+                let totalMaxMembers = 0;
+                let hasMaxMembers = false;
+                
+                (sub.groups || []).forEach(groupId => {
+                  const group = groups.find(g => g.id === groupId);
+                  if (group) {
+                    totalMembers += group.accounts?.length || 0;
+                    if (group.max_members) {
+                      totalMaxMembers += group.max_members;
+                      hasMaxMembers = true;
+                    }
+                  }
+                });
+                
+                const vacant = hasMaxMembers ? totalMaxMembers - totalMembers : 0;
+                const subcategoryStats = hasMaxMembers ? 
+                  `(${totalMembers}/${totalMaxMembers}, vacant: ${vacant})` : 
+                  totalMembers > 0 ? `(${totalMembers})` : '';
+                
+                return `<div class="bg-gray-50 rounded-lg p-4 min-w-0">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2">
+                      <h5 class="font-medium text-gray-800">${sub.subcategory}</h5>
+                      ${subcategoryStats ? `<span class="text-xs text-gray-600">${subcategoryStats}</span>` : ''}
+                    </div>
+                    <div class="flex items-center space-x-1">
+                      <button onclick="assignGroups('${category.category}', '${sub.subcategory}')" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-layer-group"></i>
+                      </button>
+                      <button onclick="editSubcategory('${category.category}', '${sub.subcategory}')" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button onclick="deleteSubcategory('${category.category}', '${sub.subcategory}')" class="text-red-600 hover:text-red-800">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    ${(Array.isArray(sub.groups) ? sub.groups : []).map(groupId => {
+                      const group = groups.find(g => g.id === groupId);
+                      if (group) {
+                        const memberCount = group.accounts?.length || 0;
+                        const maxMembers = group.max_members;
+                        const displayText = maxMembers ? 
+                          `${group.name} (${memberCount}/${maxMembers})` : 
+                          `${group.name} (${memberCount})`;
+                        return `<span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                          ${displayText}
+                        </span>`;
+                      } else {
+                        return `<span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                          Unknown Group (ID: ${groupId})
+                        </span>`;
+                      }
+                    }).join('')}
+                  </div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // Event listeners
+    document.getElementById('dashboardTab').addEventListener('click', () => switchTab('dashboard'));
+    document.getElementById('groupsTab').addEventListener('click', () => switchTab('groups'));
+    document.getElementById('categoriesTab').addEventListener('click', () => switchTab('categories'));
+    
+    // Online table controls
+    document.getElementById('onlineSearch').addEventListener('input', (e) => {
+      onlineSearch = e.target.value;
+      onlinePage = 1;
+      renderOnlineAccountsTable();
+    });
+    
+    document.getElementById('onlineRowsPerPage').addEventListener('change', (e) => {
+      onlineRowsPerPage = parseInt(e.target.value);
+      onlinePage = 1;
+      renderOnlineAccountsTable();
+    });
+    
+    // Offline table controls
+    document.getElementById('offlineRowsPerPage').addEventListener('change', (e) => {
+      offlineRowsPerPage = parseInt(e.target.value);
+      offlinePage = 1;
+      renderOfflineAccountsTable();
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if user is logged in
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Set up logout functionality
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+        localStorage.removeItem('auth_token');
+        showNotification('Logged Out', 'You have been successfully logged out', 'info');
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 1000);
+      });
+
+      // Check MikroTik configuration and load initial data
+      checkMikrotikConfig();
+      
+      // Start auto-refresh for dashboard
+      updateInterval = setInterval(() => {
+        if (currentTab === 'dashboard' && mikrotikConfigured) {
+          loadDashboardData();
+        }
+      }, 5000);
+      
+      // Fetch user info
+      fetchUserInfo();
+    });
+
+    async function fetchUserInfo() {
+      const token = localStorage.getItem('auth_token');
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          document.getElementById('username').textContent = data.user.username || 'User';
+        } else {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login.html';
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        document.getElementById('username').textContent = 'User';
+      }
+    }
+
+    // Group management functions
+    function addGroup() {
+      showGroupModal();
+    }
+
+    function editGroup(groupId) {
+      console.log('Editing group with ID:', groupId);
+      const group = groups.find(g => g.id == groupId); // Use == for type coercion
+      console.log('Found group:', group);
+      if (group) {
+        showGroupModal(group);
+      } else {
+        showNotification('Error', 'Group not found', 'error');
+      }
+    }
+
+    async function deleteGroup(groupId) {
+      console.log('Deleting group with ID:', groupId);
+      if (!confirm('Are you sure you want to delete this group?')) return;
+      
+      try {
+        const response = await fetch(`/api/monitoring/groups?id=${groupId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification('Success', 'Group deleted successfully', 'success');
+          loadGroups();
+        } else {
+          showNotification('Error', data.error || 'Failed to delete group', 'error');
+        }
+      } catch (error) {
+        console.error('Error deleting group:', error);
+        showNotification('Error', 'Failed to delete group', 'error');
+      }
+    }
+
+    // Category management functions
+    function addCategory() {
+      showCategoryModal();
+    }
+
+    function editCategory(categoryName) {
+      const category = categories.find(c => c.category === categoryName);
+      if (category) {
+        showCategoryModal(category);
+      }
+    }
+
+    async function deleteCategory(categoryName) {
+      if (!confirm('Are you sure you want to delete this category?')) return;
+      
+      try {
+        // Remove the category from the categories array and save
+        const updatedCategories = categories.filter(c => c.category !== categoryName);
+        
+        const response = await fetch('/api/monitoring/categories', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+          },
+          body: JSON.stringify({ categories: updatedCategories })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification('Success', 'Category deleted successfully', 'success');
+          loadCategories();
+        } else {
+          showNotification('Error', data.error || 'Failed to delete category', 'error');
+        }
+      } catch (error) {
+        console.error('Error deleting category:', error);
+        showNotification('Error', 'Failed to delete category', 'error');
+      }
+    }
+
+    function addSubcategory(categoryName) {
+      showSubcategoryModal(categoryName);
+    }
+
+    function editSubcategory(categoryName, subcategoryName) {
+      const category = categories.find(c => c.category === categoryName);
+      if (category && category.subcategories) {
+        const subcategory = category.subcategories.find(s => s.subcategory === subcategoryName);
+        if (subcategory) {
+          showSubcategoryModal(categoryName, subcategory);
+        }
+      }
+    }
+
+    async function deleteSubcategory(categoryName, subcategoryName) {
+      if (!confirm('Are you sure you want to delete this subcategory?')) return;
+      
+      try {
+        // Find and update the category to remove the subcategory
+        const updatedCategories = categories.map(category => {
+          if (category.category === categoryName) {
+            return {
+              ...category,
+              subcategories: category.subcategories.filter(sub => sub.subcategory !== subcategoryName)
+            };
+          }
+          return category;
+        });
+        
+        const response = await fetch('/api/monitoring/categories', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+          },
+          body: JSON.stringify({ categories: updatedCategories })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification('Success', 'Subcategory deleted successfully', 'success');
+          loadCategories();
+        } else {
+          showNotification('Error', data.error || 'Failed to delete subcategory', 'error');
+        }
+      } catch (error) {
+        console.error('Error deleting subcategory:', error);
+        showNotification('Error', 'Failed to delete subcategory', 'error');
+      }
+    }
+
+    function assignGroups(categoryName, subcategoryName) {
+      showAssignGroupsModal(categoryName, subcategoryName);
+    }
+
+    // Modal functions
+    function showGroupModal(group = null) {
+      // Create modal HTML
+      const modalHtml = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" id="groupModal" onclick="closeGroupModal()">
+          <div class="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+              <h5 class="text-lg font-semibold text-gray-900">${group ? 'Edit Group' : 'Add New Group'}</h5>
+              <button type="button" class="text-gray-400 hover:text-gray-600 text-2xl" onclick="closeGroupModal()">&times;</button>
+            </div>
+            <div class="p-6">
+              <form id="groupForm">
+                <div class="mb-4">
+                  <label for="groupName" class="block text-sm font-medium text-gray-700 mb-2">Group Name</label>
+                  <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="groupName" value="${group ? group.name : ''}" required>
+                </div>
+                <div class="mb-4">
+                  <label for="groupDescription" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="groupDescription" rows="3">${group ? group.description || '' : ''}</textarea>
+                </div>
+                <div class="mb-4">
+                  <label for="groupMaxMembers" class="block text-sm font-medium text-gray-700 mb-2">Max Members</label>
+                  <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="groupMaxMembers" value="${group ? group.max_members || '' : ''}">
+                </div>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Members</label>
+                  <div class="grid grid-cols-5 gap-4">
+                    <div class="col-span-2">
+                      <label class="block text-sm font-medium text-gray-500 mb-2">Available Accounts</label>
+                      <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="availableAccounts" multiple size="8"></select>
+                    </div>
+                    <div class="col-span-1 flex flex-col justify-center items-center space-y-2">
+                      <button type="button" class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" onclick="addAccountsToGroup()">→</button>
+                      <button type="button" class="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors" onclick="removeAccountsFromGroup()">←</button>
+                    </div>
+                    <div class="col-span-2">
+                      <label class="block text-sm font-medium text-gray-500 mb-2">Selected Accounts</label>
+                      <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="selectedAccounts" multiple size="8"></select>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="flex justify-end space-x-2 p-4 border-t border-gray-200">
+              <button type="button" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors" onclick="closeGroupModal()">Cancel</button>
+              <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" onclick="saveGroup(${group ? `'${group.id}'` : 'null'})">${group ? 'Update' : 'Create'}</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      document.addEventListener('keydown', handleGroupModalEscape);
+      
+      // Wait for DOM to be ready, then load accounts
+      setTimeout(() => {
+        loadAccountsForGroup(group);
+      }, 100);
+    }
+
+    function closeGroupModal() {
+      const modal = document.getElementById('groupModal');
+      if (modal) {
+        modal.remove();
+        document.removeEventListener('keydown', handleGroupModalEscape);
+      }
+    }
+
+    function handleGroupModalEscape(event) {
+      if (event.key === 'Escape') {
+        closeGroupModal();
+      }
+    }
+
+    async function loadAccountsForGroup(group) {
+      try {
+        console.log('Loading accounts for group:', group);
+        // Get all PPP accounts
+        const response = await fetch('/api/ppp-accounts', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        const data = await response.json();
+        console.log('PPP Accounts API response:', data);
+        
+        if (data.success) {
+          const allAccounts = data.accounts || [];
+          console.log('All accounts:', allAccounts);
+          populateAccountSelects(allAccounts, group);
+        } else {
+          console.error('PPP Accounts API failed:', data.error);
+          // Try dashboard API as fallback
+          const dashboardResponse = await fetch('/api/monitoring/dashboard', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+          });
+          const dashboardData = await dashboardResponse.json();
+          
+          if (dashboardData.success && dashboardData.ppp_accounts) {
+            console.log('Using dashboard API for accounts');
+            const allAccounts = dashboardData.ppp_accounts || [];
+            populateAccountSelects(allAccounts, group);
+          } else {
+            showNotification('Error', 'Failed to load PPP accounts', 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading accounts:', error);
+        showNotification('Error', 'Failed to load accounts', 'error');
+      }
+    }
+    
+    function populateAccountSelects(allAccounts, group) {
+      const selectedAccountNames = group ? (group.accounts || []).map(acc => typeof acc === 'string' ? acc : acc.name) : [];
+      console.log('Selected account names:', selectedAccountNames);
+      
+      // Get accounts already used in other groups
+      const usedAccounts = new Set();
+      groups.forEach(g => {
+        if (!group || g.id !== group.id) {
+          (g.accounts || []).forEach(acc => {
+            const accountName = typeof acc === 'string' ? acc : acc.name;
+            usedAccounts.add(accountName);
+          });
+        }
+      });
+      
+      const availableSelect = document.getElementById('availableAccounts');
+      const selectedSelect = document.getElementById('selectedAccounts');
+      
+      console.log('Available select element:', availableSelect);
+      console.log('Selected select element:', selectedSelect);
+      console.log('Used accounts:', Array.from(usedAccounts));
+      
+      // Filter available accounts
+      const filteredAccounts = allAccounts
+        .filter(acc => !usedAccounts.has(acc.name) && !selectedAccountNames.includes(acc.name));
+      console.log('Filtered available accounts:', filteredAccounts);
+      
+      // Populate available accounts
+      if (availableSelect) {
+        availableSelect.innerHTML = filteredAccounts
+          .map(acc => `<option value="${acc.name}">${acc.name}</option>`)
+          .join('');
+        console.log('Populated available accounts, count:', availableSelect.options.length);
+      }
+      
+      // Populate selected accounts
+      if (selectedSelect) {
+        selectedSelect.innerHTML = selectedAccountNames
+          .map(name => `<option value="${name}">${name}</option>`)
+          .join('');
+        console.log('Populated selected accounts, count:', selectedSelect.options.length);
+      }
+    }
+
+    function addAccountsToGroup() {
+      const available = document.getElementById('availableAccounts');
+      const selected = document.getElementById('selectedAccounts');
+      
+      const selectedOptions = Array.from(available.selectedOptions);
+      selectedOptions.forEach(option => {
+        selected.appendChild(option);
+      });
+    }
+
+    function removeAccountsFromGroup() {
+      const available = document.getElementById('availableAccounts');
+      const selected = document.getElementById('selectedAccounts');
+      
+      const selectedOptions = Array.from(selected.selectedOptions);
+      selectedOptions.forEach(option => {
+        available.appendChild(option);
+      });
+    }
+
+    async function saveGroup(groupId) {
+      const name = document.getElementById('groupName').value.trim();
+      const description = document.getElementById('groupDescription').value.trim();
+      const maxMembers = document.getElementById('groupMaxMembers').value;
+      const selectedAccounts = Array.from(document.getElementById('selectedAccounts').options).map(opt => opt.value);
+      
+      if (!name) {
+        showNotification('Error', 'Group name is required', 'error');
+        return;
+      }
+      
+      const payload = {
+        name,
+        description,
+        max_members: maxMembers ? parseInt(maxMembers) : null,
+        accounts: selectedAccounts
+      };
+      
+      if (groupId) {
+        payload.id = groupId;
+      }
+      
+      try {
+        const response = await fetch('/api/monitoring/groups', {
+          method: groupId ? 'PUT' : 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification('Success', `Group ${groupId ? 'updated' : 'created'} successfully`, 'success');
+          closeGroupModal();
+          loadGroups();
+        } else {
+          if (data.error && (data.error.includes('table does not exist') || data.error.includes('incorrect schema'))) {
+            showNotification('Database Error', 'Database schema issue detected. Please repair the database in Settings > Database Management.', 'error');
+          } else {
+            showNotification('Error', data.error || `Failed to ${groupId ? 'update' : 'create'} group`, 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Error saving group:', error);
+        showNotification('Error', `Failed to ${groupId ? 'update' : 'create'} group`, 'error');
+      }
+    }
+
+    // Category modal functions
+    function showCategoryModal(category = null) {
+      const modalHtml = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" id="categoryModal" onclick="closeCategoryModal()">
+          <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+              <h5 class="text-lg font-semibold text-gray-900">${category ? 'Edit Category' : 'Add New Category'}</h5>
+              <button type="button" class="text-gray-400 hover:text-gray-600 text-2xl" onclick="closeCategoryModal()">&times;</button>
+            </div>
+            <div class="p-6">
+              <form id="categoryForm">
+                <div class="mb-4">
+                  <label for="categoryName" class="block text-sm font-medium text-gray-700 mb-2">Category Name</label>
+                  <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="categoryName" value="${category ? category.category : ''}" required>
+                </div>
+              </form>
+            </div>
+            <div class="flex justify-end space-x-2 p-4 border-t border-gray-200">
+              <button type="button" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors" onclick="closeCategoryModal()">Cancel</button>
+              <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" onclick="saveCategory(${category ? `'${category.category}'` : 'null'})">${category ? 'Update' : 'Create'}</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      document.addEventListener('keydown', handleCategoryModalEscape);
+    }
+
+    function closeCategoryModal() {
+      const modal = document.getElementById('categoryModal');
+      if (modal) modal.remove();
+      document.removeEventListener('keydown', handleCategoryModalEscape);
+    }
+
+    function handleCategoryModalEscape(event) {
+      if (event.key === 'Escape') {
+        closeCategoryModal();
+      }
+    }
+
+    async function saveCategory(existingCategoryName) {
+      const name = document.getElementById('categoryName').value.trim();
+      
+      if (!name) {
+        showNotification('Error', 'Category name is required', 'error');
+        return;
+      }
+      
+      try {
+        let updatedCategories;
+        
+        if (existingCategoryName) {
+          // Edit existing category
+          updatedCategories = categories.map(category => {
+            if (category.category === existingCategoryName) {
+              return { ...category, category: name };
+            }
+            return category;
+          });
+        } else {
+          // Add new category
+          updatedCategories = [...categories, { category: name, subcategories: [] }];
+        }
+        
+        const response = await fetch('/api/monitoring/categories', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+          },
+          body: JSON.stringify({ categories: updatedCategories })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification('Success', `Category ${existingCategoryName ? 'updated' : 'created'} successfully`, 'success');
+          closeCategoryModal();
+          loadCategories();
+        } else {
+          showNotification('Error', data.error || `Failed to ${existingCategoryName ? 'update' : 'create'} category`, 'error');
+        }
+      } catch (error) {
+        console.error('Error saving category:', error);
+        showNotification('Error', `Failed to ${existingCategoryName ? 'update' : 'create'} category`, 'error');
+      }
+    }
+
+    function showSubcategoryModal(categoryName, subcategory = null) {
+      const category = categories.find(c => c.category === categoryName);
+      const modalHtml = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" id="subcategoryModal" onclick="closeSubcategoryModal()">
+          <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+              <h5 class="text-lg font-semibold text-gray-900">${subcategory ? 'Edit Subcategory' : 'Add New Subcategory'}</h5>
+              <button type="button" class="text-gray-400 hover:text-gray-600 text-2xl" onclick="closeSubcategoryModal()">&times;</button>
+            </div>
+            <div class="p-6">
+              <form id="subcategoryForm">
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Category: ${category ? category.category : ''}</label>
+                </div>
+                <div class="mb-4">
+                  <label for="subcategoryName" class="block text-sm font-medium text-gray-700 mb-2">Subcategory Name</label>
+                  <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="subcategoryName" value="${subcategory ? subcategory.subcategory : ''}" required>
+                </div>
+              </form>
+            </div>
+            <div class="flex justify-end space-x-2 p-4 border-t border-gray-200">
+              <button type="button" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors" onclick="closeSubcategoryModal()">Cancel</button>
+              <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" onclick="saveSubcategory('${categoryName}', ${subcategory ? `'${subcategory.subcategory}'` : 'null'})">${subcategory ? 'Update' : 'Create'}</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      document.addEventListener('keydown', handleSubcategoryModalEscape);
+    }
+
+    function closeSubcategoryModal() {
+      const modal = document.getElementById('subcategoryModal');
+      if (modal) modal.remove();
+      document.removeEventListener('keydown', handleSubcategoryModalEscape);
+    }
+
+    function handleSubcategoryModalEscape(event) {
+      if (event.key === 'Escape') {
+        closeSubcategoryModal();
+      }
+    }
+
+    async function saveSubcategory(categoryName, existingSubcategoryName) {
+      const name = document.getElementById('subcategoryName').value.trim();
+      
+      if (!name) {
+        showNotification('Error', 'Subcategory name is required', 'error');
+        return;
+      }
+      
+      try {
+        let updatedCategories = categories.map(category => {
+          if (category.category === categoryName) {
+            let subcategories = category.subcategories || [];
+            
+            if (existingSubcategoryName) {
+              // Edit existing subcategory
+              subcategories = subcategories.map(sub => {
+                if (sub.subcategory === existingSubcategoryName) {
+                  return { ...sub, subcategory: name };
+                }
+                return sub;
+              });
+            } else {
+              // Add new subcategory
+              subcategories = [...subcategories, { subcategory: name, groups: [] }];
+            }
+            
+            return { ...category, subcategories };
+          }
+          return category;
+        });
+        
+        const response = await fetch('/api/monitoring/categories', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+          },
+          body: JSON.stringify({ categories: updatedCategories })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification('Success', `Subcategory ${existingSubcategoryName ? 'updated' : 'created'} successfully`, 'success');
+          closeSubcategoryModal();
+          loadCategories();
+        } else {
+          showNotification('Error', data.error || `Failed to ${existingSubcategoryName ? 'update' : 'create'} subcategory`, 'error');
+        }
+      } catch (error) {
+        console.error('Error saving subcategory:', error);
+        showNotification('Error', `Failed to ${existingSubcategoryName ? 'update' : 'create'} subcategory`, 'error');
+      }
+    }
+
+    async function showAssignGroupsModal(categoryName, subcategoryName) {
+      const category = categories.find(c => c.category === categoryName);
+      const subcategory = category ? category.subcategories.find(s => s.subcategory === subcategoryName) : null;
+      
+      const modalHtml = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" id="assignGroupsModal" onclick="closeAssignGroupsModal()">
+          <div class="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+              <h5 class="text-lg font-semibold text-gray-900">Assign Groups to Subcategory</h5>
+              <button type="button" class="text-gray-400 hover:text-gray-600 text-2xl" onclick="closeAssignGroupsModal()">&times;</button>
+            </div>
+            <div class="p-6">
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Subcategory: ${subcategory ? subcategory.subcategory : ''}</label>
+              </div>
+              <div class="grid grid-cols-5 gap-4">
+                <div class="col-span-2">
+                  <label class="block text-sm font-medium text-gray-500 mb-2">Available Groups</label>
+                  <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="availableGroups" multiple size="8"></select>
+                </div>
+                <div class="col-span-1 flex flex-col justify-center items-center space-y-2">
+                  <button type="button" class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" onclick="addGroupsToSubcategory()">→</button>
+                  <button type="button" class="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors" onclick="removeGroupsFromSubcategory()">←</button>
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-sm font-medium text-gray-500 mb-2">Assigned Groups</label>
+                  <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="assignedGroups" multiple size="8"></select>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-end space-x-2 p-4 border-t border-gray-200">
+              <button type="button" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors" onclick="closeAssignGroupsModal()">Cancel</button>
+              <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" onclick="saveGroupAssignments('${categoryName}', '${subcategoryName}')">Save</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      document.addEventListener('keydown', handleAssignGroupsModalEscape);
+      
+      // Wait a bit for DOM to be ready
+      setTimeout(async () => {
+        await loadGroupsForAssignment(subcategory);
+      }, 100);
+    }
+
+    function closeAssignGroupsModal() {
+      const modal = document.getElementById('assignGroupsModal');
+      if (modal) modal.remove();
+      document.removeEventListener('keydown', handleAssignGroupsModalEscape);
+    }
+    
+    function handleAssignGroupsModalEscape(event) {
+      if (event.key === 'Escape') {
+        closeAssignGroupsModal();
+      }
+    }
+    
+    async function loadGroupsForAssignment(subcategory) {
+      try {
+        console.log('Loading groups for assignment, subcategory:', subcategory);
+        
+        // Load all groups
+        const response = await fetch('/api/monitoring/groups', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        const data = await response.json();
+        console.log('Groups API response:', data);
+        
+        if (data.success) {
+          const allGroups = data.groups || [];
+          console.log('All groups loaded:', allGroups);
+          
+          const assignedGroupIds = Array.isArray(subcategory?.groups) ? subcategory.groups : [];
+          console.log('Assigned group IDs:', assignedGroupIds);
+          
+          // Get DOM elements
+          const availableSelect = document.getElementById('availableGroups');
+          const assignedSelect = document.getElementById('assignedGroups');
+          
+          console.log('Available select element:', availableSelect);
+          console.log('Assigned select element:', assignedSelect);
+          
+          if (!availableSelect || !assignedSelect) {
+            console.error('DOM elements not found!');
+            return;
+          }
+          
+          // Populate available groups (not assigned)
+          const availableGroups = allGroups.filter(group => !assignedGroupIds.includes(group.id));
+          console.log('Available groups after filtering:', availableGroups);
+          
+          availableSelect.innerHTML = availableGroups
+            .map(group => `<option value="${group.id}">${group.name} (${group.accounts?.length || 0} members)</option>`)
+            .join('');
+          
+          // Populate assigned groups
+          const assignedGroups = allGroups.filter(group => assignedGroupIds.includes(group.id));
+          console.log('Assigned groups after filtering:', assignedGroups);
+          
+          assignedSelect.innerHTML = assignedGroups
+            .map(group => `<option value="${group.id}">${group.name} (${group.accounts?.length || 0} members)</option>`)
+            .join('');
+          
+          console.log('Available select populated with', availableSelect.options.length, 'options');
+          console.log('Assigned select populated with', assignedSelect.options.length, 'options');
+            
+        } else {
+          console.error('Groups API failed:', data.error);
+          showNotification('Error', 'Failed to load groups: ' + (data.error || 'Unknown error'), 'error');
+        }
+      } catch (error) {
+        console.error('Error loading groups for assignment:', error);
+        showNotification('Error', 'Failed to load groups: ' + error.message, 'error');
+      }
+    }
+    
+    function addGroupsToSubcategory() {
+      const availableSelect = document.getElementById('availableGroups');
+      const assignedSelect = document.getElementById('assignedGroups');
+      
+      const selectedOptions = Array.from(availableSelect.selectedOptions);
+      selectedOptions.forEach(option => {
+        assignedSelect.appendChild(option);
+      });
+    }
+    
+    function removeGroupsFromSubcategory() {
+      const availableSelect = document.getElementById('availableGroups');
+      const assignedSelect = document.getElementById('assignedGroups');
+      
+      const selectedOptions = Array.from(assignedSelect.selectedOptions);
+      selectedOptions.forEach(option => {
+        availableSelect.appendChild(option);
+      });
+    }
+    
+    async function saveGroupAssignments(categoryName, subcategoryName) {
+      try {
+        const assignedSelect = document.getElementById('assignedGroups');
+        const assignedGroupIds = Array.from(assignedSelect.options).map(option => parseInt(option.value));
+        
+        console.log('Saving group assignments:', { categoryName, subcategoryName, assignedGroupIds });
+        
+        // Update the categories data structure
+        const updatedCategories = categories.map(category => {
+          if (category.category === categoryName) {
+            const updatedSubcategories = category.subcategories.map(sub => {
+              if (sub.subcategory === subcategoryName) {
+                return { ...sub, groups: assignedGroupIds };
+              }
+              return sub;
+            });
+            return { ...category, subcategories: updatedSubcategories };
+          }
+          return category;
+        });
+        
+        console.log('Updated categories structure:', JSON.stringify(updatedCategories, null, 2));
+        
+        const response = await fetch('/api/monitoring/categories', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+          },
+          body: JSON.stringify({ categories: updatedCategories })
+        });
+        
+        const data = await response.json();
+        console.log('Save response:', data);
+        
+        if (data.success) {
+          showNotification('Success', 'Group assignments saved successfully', 'success');
+          closeAssignGroupsModal();
+          loadCategories();
+        } else {
+          showNotification('Error', data.error || 'Failed to save group assignments', 'error');
+        }
+      } catch (error) {
+        console.error('Error saving group assignments:', error);
+        showNotification('Error', 'Failed to save group assignments', 'error');
+      }
+    }
+
+
+
+
+    // Add event listeners for groups/categories buttons
+    document.getElementById('addGroupBtn').addEventListener('click', addGroup);
+    document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
+  </script>
+</body>
+</html>

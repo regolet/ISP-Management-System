@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISP Management System - Billings</title>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'inter': ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-100 font-inter">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="w-full px-6 h-16 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center space-x-3">
+        <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
+          <i class="fas fa-signal text-2xl"></i>
+          <h1 class="text-xl font-bold">ISP Management System</h1>
+        </a>
+      </div>
+      
+      <!-- Navigation -->
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="/dashboard.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="/clients.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-users"></i>
+          <span>Clients</span>
+        </a>
+        <a href="/plans.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-project-diagram"></i>
+          <span>Plans</span>
+        </a>
+        <a href="/billings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span>Billings</span>
+        </a>
+        <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-chart-line"></i>
+          <span>Monitoring</span>
+        </a>
+        <a href="/settings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cogs"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+      
+      <!-- User Info -->
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-user-circle text-xl"></i>
+          <span id="username" class="font-medium">Loading...</span>
+        </div>
+        <button 
+          id="logoutBtn"
+          class="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+        >
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="w-full px-6 py-8">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+      <div class="mb-4 sm:mb-0">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+          <i class="fas fa-file-invoice-dollar text-blue-600 mr-3"></i>
+          Billings
+        </h2>
+        <p class="text-gray-600">Manage billing records and invoice clients</p>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button 
+          id="addBillingBtn" 
+          onclick="openAddModal()"
+          class="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+        >
+          <i class="fas fa-plus mr-2"></i>
+          Add Billing
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <!-- Search -->
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-search text-gray-400"></i>
+          </div>
+          <input 
+            type="text" 
+            id="billingSearch" 
+            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full lg:w-64" 
+            placeholder="Search billings..."
+          >
+        </div>
+        
+        <!-- Filters -->
+        <div class="flex flex-col sm:flex-row gap-3">
+          <select 
+            id="statusFilter" 
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="overdue">Overdue</option>
+          </select>
+          
+          <select 
+            id="monthFilter" 
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">All Months</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Billings List Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+          <i class="fas fa-list text-blue-600 mr-2"></i>
+          Billing Records
+        </h3>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="billingsTableBody" class="bg-white divide-y divide-gray-200">
+            <tr>
+              <td colspan="8" class="px-6 py-12 text-center">
+                <div class="flex items-center justify-center">
+                  <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mr-3"></div>
+                  <span class="text-gray-500">Loading billings...</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Billing Modal -->
+  <div id="addBillingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Add New Billing</h3>
+      </div>
+      
+      <form id="addBillingForm" class="p-6 space-y-4">
+        <div>
+          <label for="clientSelect" class="block text-sm font-medium text-gray-700 mb-1">Client</label>
+          <select 
+            id="clientSelect" 
+            name="client_id" 
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Select a client...</option>
+          </select>
+        </div>
+        
+        <div>
+          <label for="planSelect" class="block text-sm font-medium text-gray-700 mb-1">Plan</label>
+          <select 
+            id="planSelect" 
+            name="plan_id" 
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Select a plan...</option>
+          </select>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="billingMonth" class="block text-sm font-medium text-gray-700 mb-1">Month</label>
+            <input 
+              type="month" 
+              id="billingMonth" 
+              name="month" 
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+          </div>
+          <div>
+            <label for="billingYear" class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+            <input 
+              type="number" 
+              id="billingYear" 
+              name="year" 
+              required
+              min="2020"
+              max="2030"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+          </div>
+        </div>
+        
+        <div>
+          <label for="billingAmount" class="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
+          <input 
+            type="number" 
+            id="billingAmount" 
+            name="amount" 
+            required
+            min="0"
+            step="0.01"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="0.00"
+          >
+        </div>
+        
+        <div>
+          <label for="dueDate" class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+          <input 
+            type="date" 
+            id="dueDate" 
+            name="due_date" 
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+        </div>
+        
+        <div class="flex justify-end space-x-3 pt-4">
+          <button 
+            type="button" 
+            onclick="closeAddModal()"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Add Billing
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Record Payment</h3>
+      </div>
+      
+      <form id="paymentForm" class="p-6 space-y-4">
+        <input type="hidden" id="paymentBillingId" name="billing_id">
+        
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h4 class="font-medium text-gray-900 mb-2">Billing Details</h4>
+          <div id="paymentBillingDetails" class="text-sm text-gray-600 space-y-1">
+            <!-- Billing details will be populated here -->
+          </div>
+        </div>
+        
+        <div>
+          <label for="paymentAmount" class="block text-sm font-medium text-gray-700 mb-1">Payment Amount ($)</label>
+          <input 
+            type="number" 
+            id="paymentAmount" 
+            name="amount" 
+            required
+            min="0"
+            step="0.01"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+        </div>
+        
+        <div>
+          <label for="paymentMethod" class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+          <select 
+            id="paymentMethod" 
+            name="method" 
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Select method...</option>
+            <option value="cash">Cash</option>
+            <option value="bank_transfer">Bank Transfer</option>
+            <option value="card">Credit/Debit Card</option>
+            <option value="check">Check</option>
+            <option value="online">Online Payment</option>
+          </select>
+        </div>
+        
+        <div>
+          <label for="paymentNotes" class="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+          <textarea 
+            id="paymentNotes" 
+            name="notes" 
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Additional payment notes..."
+          ></textarea>
+        </div>
+        
+        <div class="flex justify-end space-x-3 pt-4">
+          <button 
+            type="button" 
+            onclick="closePaymentModal()"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Record Payment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="notificationContainer" class="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm"></div>
+
+  <script>
+    // Global variables
+    let billings = [];
+    let filteredBillings = [];
+    let clients = [];
+    let plans = [];
+    let clientsWithPlans = [];
+
+    // Show notification toast
+    function showNotification(title, message, type = 'info') {
+      const container = document.getElementById('notificationContainer');
+      
+      const toastId = 'toast-' + Math.random().toString(36).substring(2, 15);
+      
+      let bgClass = 'bg-blue-500';
+      let icon = 'info-circle';
+      
+      switch(type) {
+        case 'success':
+          icon = 'check-circle';
+          bgClass = 'bg-green-500';
+          break;
+        case 'warning':
+          icon = 'exclamation-triangle';
+          bgClass = 'bg-amber-500';
+          break;
+        case 'error':
+          icon = 'exclamation-circle';
+          bgClass = 'bg-red-500';
+          break;
+      }
+      
+      const toast = document.createElement('div');
+      toast.id = toastId;
+      toast.className = `${bgClass} text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
+      toast.innerHTML = `
+        <div class="flex items-start">
+          <i class="fas fa-${icon} mt-0.5 mr-3 flex-shrink-0"></i>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold">${title}</div>
+            <div class="text-sm opacity-90">${message}</div>
+          </div>
+          <button onclick="removeToast('${toastId}')" class="ml-3 flex-shrink-0 text-white/80 hover:text-white">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-x-full', 'opacity-0');
+      }, 10);
+      
+      setTimeout(() => {
+        removeToast(toastId);
+      }, 5000);
+    }
+    
+    function removeToast(toastId) {
+      const toast = document.getElementById(toastId);
+      if (toast) {
+        toast.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }
+    }
+
+    // Modal functions
+    function openAddModal() {
+      document.getElementById('addBillingModal').classList.remove('hidden');
+      document.getElementById('addBillingModal').classList.add('flex');
+      
+      // Set default month and year
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      document.getElementById('billingMonth').value = `${year}-${month.toString().padStart(2, '0')}`;
+      document.getElementById('billingYear').value = year;
+      
+      // Set default due date (end of current month)
+      const lastDay = new Date(year, month, 0);
+      document.getElementById('dueDate').value = lastDay.toISOString().split('T')[0];
+    }
+
+    function closeAddModal() {
+      document.getElementById('addBillingModal').classList.add('hidden');
+      document.getElementById('addBillingModal').classList.remove('flex');
+      document.getElementById('addBillingForm').reset();
+    }
+
+    function openPaymentModal(billing) {
+      document.getElementById('paymentBillingId').value = billing.id;
+      document.getElementById('paymentAmount').value = billing.amount;
+      
+      // Populate billing details
+      const detailsHtml = `
+        <div><strong>Client:</strong> ${billing.client_name}</div>
+        <div><strong>Plan:</strong> ${billing.plan_name}</div>
+        <div><strong>Period:</strong> ${billing.month}/${billing.year}</div>
+        <div><strong>Amount:</strong> ₱${billing.amount}</div>
+        <div><strong>Due Date:</strong> ${billing.due_date}</div>
+      `;
+      document.getElementById('paymentBillingDetails').innerHTML = detailsHtml;
+      
+      document.getElementById('paymentModal').classList.remove('hidden');
+      document.getElementById('paymentModal').classList.add('flex');
+    }
+
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.add('hidden');
+      document.getElementById('paymentModal').classList.remove('flex');
+      document.getElementById('paymentForm').reset();
+    }
+
+    function deleteBilling(billingId) {
+      if (!confirm('Are you sure you want to delete this billing record?')) return;
+      
+      // Implementation for delete
+      showNotification('Billing Deleted', 'Billing record has been successfully deleted', 'success');
+      loadBillings();
+    }
+
+    async function fetchCompanyInfo() {
+      const token = localStorage.getItem('auth_token');
+      try {
+        const response = await fetch('/api/company-info', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          return await response.json();
+        }
+        return null;
+      } catch (error) {
+        console.error('Error fetching company info:', error);
+        return null;
+      }
+    }
+
+    async function viewInvoice(billing) {
+      // Show loading notification
+      showNotification('Loading', 'Generating invoice...', 'info');
+      
+      // Fetch company info first
+      const companyInfo = await fetchCompanyInfo();
+      
+      // Create invoice modal
+      const invoiceModal = document.createElement('div');
+      invoiceModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+      invoiceModal.id = 'invoiceModal';
+      
+      const currentDate = new Date().toLocaleDateString();
+      const dueDate = new Date(billing.due_date).toLocaleDateString();
+      
+      // Prepare company display info
+      const companyName = companyInfo?.name || 'ISP Management System';
+      const companyAddress = companyInfo?.address || 'Your Internet Service Provider';
+      const companyPhone = companyInfo?.phone || '';
+      const companyEmail = companyInfo?.email || 'support@isp.com';
+      const companyLogo = companyInfo?.logo_url || '';
+      
+      invoiceModal.innerHTML = `
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900">Invoice #${billing.id}</h3>
+            <button onclick="closeInvoiceModal()" class="text-gray-400 hover:text-gray-600">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          
+          <div class="p-6">
+            <!-- Invoice Header -->
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">INVOICE</h1>
+                <div class="text-sm text-gray-600">
+                  <p>Invoice #: ${billing.id}</p>
+                  <p>Date: ${currentDate}</p>
+                  <p>Due Date: ${dueDate}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                ${companyLogo ? `
+                  <div class="mb-2">
+                    <img src="${companyLogo}" alt="Company Logo" class="h-12 w-auto ml-auto" onerror="this.style.display='none'">
+                  </div>
+                ` : ''}
+                <div class="text-lg font-semibold text-gray-900">${companyName}</div>
+                <div class="text-sm text-gray-600 mt-1">
+                  ${companyAddress ? `<p>${companyAddress}</p>` : ''}
+                  ${companyPhone ? `<p>Phone: ${companyPhone}</p>` : ''}
+                  ${companyEmail ? `<p>Email: ${companyEmail}</p>` : ''}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Bill To -->
+            <div class="mb-6">
+              <h3 class="text-sm font-semibold text-gray-700 mb-2">BILL TO:</h3>
+              <div class="text-sm text-gray-900">
+                <p class="font-medium">${billing.client_name || 'Unknown Client'}</p>
+              </div>
+            </div>
+            
+            <!-- Invoice Details -->
+            <div class="border border-gray-200 rounded-lg overflow-hidden mb-6">
+              <table class="w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white">
+                  <tr>
+                    <td class="px-4 py-4 text-sm text-gray-900">${billing.plan_name || 'Internet Service'}</td>
+                    <td class="px-4 py-4 text-sm text-gray-500">${billing.month}/${billing.year}</td>
+                    <td class="px-4 py-4 text-sm font-semibold text-gray-900 text-right">₱${billing.amount}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Total -->
+            <div class="flex justify-end mb-6">
+              <div class="w-64">
+                <div class="flex justify-between py-2 border-t border-gray-200">
+                  <span class="text-sm font-medium text-gray-900">Subtotal:</span>
+                  <span class="text-sm text-gray-900">₱${billing.amount}</span>
+                </div>
+                <div class="flex justify-between py-2 border-t border-gray-200">
+                  <span class="text-base font-semibold text-gray-900">Total:</span>
+                  <span class="text-base font-semibold text-gray-900">₱${billing.amount}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Status -->
+            <div class="mb-6">
+              <div class="flex items-center">
+                <span class="text-sm font-medium text-gray-700 mr-2">Status:</span>
+                ${getStatusBadge(billing.status)}
+              </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="text-center text-xs text-gray-500 border-t border-gray-200 pt-4">
+              <p>Thank you for choosing our internet service!</p>
+              <p>For questions about this invoice, please contact us at ${companyEmail}</p>
+            </div>
+          </div>
+          
+          <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+            <button 
+              onclick="printInvoice()"
+              class="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            >
+              <i class="fas fa-print mr-2"></i>
+              Print
+            </button>
+            <button 
+              onclick="closeInvoiceModal()"
+              class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              <i class="fas fa-times mr-2"></i>
+              Close
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(invoiceModal);
+    }
+
+    function closeInvoiceModal() {
+      const modal = document.getElementById('invoiceModal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    async function printInvoice() {
+      // Create a new window for printing
+      const printWindow = window.open('', '_blank');
+      const invoiceContent = document.querySelector('#invoiceModal .bg-white').innerHTML;
+      
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Invoice #${document.querySelector('#invoiceModal h3').textContent.split('#')[1]}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .border { border: 1px solid #e5e7eb; }
+            .border-gray-200 { border-color: #e5e7eb; }
+            .bg-gray-50 { background-color: #f9fafb; }
+            .text-xs { font-size: 0.75rem; }
+            .text-sm { font-size: 0.875rem; }
+            .text-base { font-size: 1rem; }
+            .text-lg { font-size: 1.125rem; }
+            .text-2xl { font-size: 1.5rem; }
+            .font-medium { font-weight: 500; }
+            .font-semibold { font-weight: 600; }
+            .font-bold { font-weight: 700; }
+            .text-gray-500 { color: #6b7280; }
+            .text-gray-600 { color: #4b5563; }
+            .text-gray-700 { color: #374151; }
+            .text-gray-900 { color: #111827; }
+            .uppercase { text-transform: uppercase; }
+            .text-right { text-align: right; }
+            .text-center { text-align: center; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+            .no-print { display: none; }
+            .rounded-lg { border-radius: 0.5rem; }
+            .overflow-hidden { overflow: hidden; }
+            .mb-2 { margin-bottom: 0.5rem; }
+            .mb-6 { margin-bottom: 1.5rem; }
+            .mt-1 { margin-top: 0.25rem; }
+            .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+            .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+            .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+            .px-4 { padding-left: 1rem; padding-right: 1rem; }
+            .pt-4 { padding-top: 1rem; }
+            .w-64 { width: 16rem; }
+            .flex { display: flex; }
+            .justify-between { justify-content: space-between; }
+            .justify-end { justify-content: flex-end; }
+            .items-start { align-items: flex-start; }
+            .items-center { align-items: center; }
+            .border-t { border-top: 1px solid #e5e7eb; }
+            .mr-2 { margin-right: 0.5rem; }
+            @media print {
+              .no-print { display: none !important; }
+              body { margin: 0; }
+            }
+          </style>
+        </head>
+        <body>
+          ${invoiceContent.replace(/<div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">[\s\S]*?<\/div>$/, '')}
+        </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }
+
+    // Status badge function
+    function getStatusBadge(status) {
+      const badges = {
+        'pending': 'bg-yellow-100 text-yellow-800',
+        'paid': 'bg-green-100 text-green-800',
+        'overdue': 'bg-red-100 text-red-800'
+      };
+      
+      return `<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${badges[status] || 'bg-gray-100 text-gray-800'}">
+        ${status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>`;
+    }
+
+    // Load and display billings
+    async function loadBillings() {
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch('/api/billings', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          billings = await response.json();
+          filteredBillings = [...billings];
+          renderBillings();
+        } else {
+          throw new Error('Failed to load billings');
+        }
+      } catch (error) {
+        console.error('Error loading billings:', error);
+        showNotification('Error', 'Failed to load billings', 'error');
+        
+        document.getElementById('billingsTableBody').innerHTML = `
+          <tr>
+            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+              Failed to load billings. Please try again.
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function renderBillings() {
+      const tbody = document.getElementById('billingsTableBody');
+      
+      if (filteredBillings.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+              No billings found.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filteredBillings.map(billing => `
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${billing.id}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${billing.client_name || 'Unknown'}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${billing.plan_name || 'No Plan'}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${billing.month}/${billing.year}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">₱${billing.amount}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${billing.due_date}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${getStatusBadge(billing.status)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+            <button 
+              onclick="viewInvoice(${JSON.stringify(billing).replace(/"/g, '&quot;')})"
+              class="text-blue-600 hover:text-blue-900 p-1"
+              title="View Invoice"
+            >
+              <i class="fas fa-file-invoice"></i>
+            </button>
+            ${billing.status === 'pending' ? `
+              <button 
+                onclick="openPaymentModal(${JSON.stringify(billing).replace(/"/g, '&quot;')})"
+                class="text-green-600 hover:text-green-900 p-1"
+                title="Record Payment"
+              >
+                <i class="fas fa-dollar-sign"></i>
+              </button>
+            ` : ''}
+            <button 
+              onclick="deleteBilling(${billing.id})"
+              class="text-red-600 hover:text-red-900 p-1"
+              title="Delete"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Search and filter functionality
+    function filterBillings() {
+      const searchTerm = document.getElementById('billingSearch').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const monthFilter = document.getElementById('monthFilter').value;
+      
+      filteredBillings = billings.filter(billing => {
+        const matchesSearch = (billing.client_name && billing.client_name.toLowerCase().includes(searchTerm)) ||
+                             (billing.plan_name && billing.plan_name.toLowerCase().includes(searchTerm));
+        const matchesStatus = !statusFilter || billing.status === statusFilter;
+        const matchesMonth = !monthFilter || `${billing.month}/${billing.year}` === monthFilter;
+        
+        return matchesSearch && matchesStatus && matchesMonth;
+      });
+      
+      renderBillings();
+    }
+
+    // Load clients and plans for dropdowns
+    async function loadClientsAndPlans() {
+      const token = localStorage.getItem('auth_token');
+      const headers = { 'Authorization': `Bearer ${token}` };
+      
+      try {
+        const [clientsWithPlansResponse, plansResponse] = await Promise.all([
+          fetch('/api/clients-with-plan', { headers }),
+          fetch('/api/plans', { headers })
+        ]);
+        
+        if (clientsWithPlansResponse.ok) {
+          clientsWithPlans = await clientsWithPlansResponse.json();
+          clients = clientsWithPlans; // For compatibility
+          
+          const clientSelect = document.getElementById('clientSelect');
+          clientSelect.innerHTML = '<option value="">Select a client...</option>' +
+            clientsWithPlans.map(client => {
+              const planInfo = client.plan_name ? ` (${client.plan_name} - ₱${client.plan_price})` : ' (No Plan)';
+              return `<option value="${client.id}" data-plan-id="${client.plan_id || ''}" data-plan-name="${client.plan_name || ''}" data-plan-price="${client.plan_price || ''}">${client.name}${planInfo}</option>`;
+            }).join('');
+          
+          // Add event listener for client selection
+          clientSelect.addEventListener('change', onClientSelectChange);
+        }
+        
+        if (plansResponse.ok) {
+          plans = await plansResponse.json();
+          const planSelect = document.getElementById('planSelect');
+          planSelect.innerHTML = '<option value="">Select a plan...</option>' +
+            plans.map(plan => `<option value="${plan.id}" data-price="${plan.price}">${plan.name} - ₱${plan.price}</option>`).join('');
+          
+          // Add event listener for plan selection
+          planSelect.addEventListener('change', onPlanSelectChange);
+        }
+      } catch (error) {
+        console.error('Error loading clients and plans:', error);
+      }
+    }
+
+    // Handle client selection change
+    function onClientSelectChange() {
+      const clientSelect = document.getElementById('clientSelect');
+      const planSelect = document.getElementById('planSelect');
+      const amountInput = document.getElementById('billingAmount');
+      
+      const selectedOption = clientSelect.options[clientSelect.selectedIndex];
+      
+      if (selectedOption.value && selectedOption.dataset.planId) {
+        // Client has a plan - auto-fill plan and amount
+        const planId = selectedOption.dataset.planId;
+        const planPrice = selectedOption.dataset.planPrice;
+        
+        // Set the plan selection
+        planSelect.value = planId;
+        
+        // Set the amount
+        amountInput.value = planPrice;
+        
+        // Show notification
+        showNotification('Auto-filled', `Plan and amount auto-filled for ${selectedOption.text.split(' (')[0]}`, 'success');
+      } else if (selectedOption.value) {
+        // Client has no plan - clear plan and amount, show warning
+        planSelect.value = '';
+        amountInput.value = '';
+        
+        showNotification('No Plan', `${selectedOption.text.split(' (')[0]} has no active plan assigned`, 'warning');
+      } else {
+        // No client selected - clear plan and amount
+        planSelect.value = '';
+        amountInput.value = '';
+      }
+    }
+
+    // Handle plan selection change
+    function onPlanSelectChange() {
+      const planSelect = document.getElementById('planSelect');
+      const amountInput = document.getElementById('billingAmount');
+      
+      const selectedOption = planSelect.options[planSelect.selectedIndex];
+      
+      if (selectedOption.value && selectedOption.dataset.price) {
+        // Update amount based on selected plan
+        amountInput.value = selectedOption.dataset.price;
+      } else {
+        // Clear amount if no plan selected
+        amountInput.value = '';
+      }
+    }
+
+    // Form submissions
+    document.getElementById('addBillingForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const billingData = Object.fromEntries(formData);
+      
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch('/api/billings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(billingData)
+        });
+        
+        if (response.ok) {
+          showNotification('Success', 'Billing added successfully', 'success');
+          closeAddModal();
+          loadBillings();
+        } else {
+          throw new Error('Failed to add billing');
+        }
+      } catch (error) {
+        console.error('Error adding billing:', error);
+        showNotification('Error', 'Failed to add billing', 'error');
+      }
+    });
+
+    document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const paymentData = Object.fromEntries(formData);
+      
+      // Add current date as payment_date
+      paymentData.payment_date = new Date().toISOString().split('T')[0];
+      
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch('/api/payments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(paymentData)
+        });
+        
+        if (response.ok) {
+          showNotification('Success', 'Payment recorded successfully', 'success');
+          closePaymentModal();
+          loadBillings();
+        } else {
+          throw new Error('Failed to record payment');
+        }
+      } catch (error) {
+        console.error('Error recording payment:', error);
+        showNotification('Error', 'Failed to record payment', 'error');
+      }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if user is logged in
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Set up logout functionality
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+        localStorage.removeItem('auth_token');
+        showNotification('Logged Out', 'You have been successfully logged out', 'info');
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 1000);
+      });
+
+      // Set up search and filters
+      document.getElementById('billingSearch').addEventListener('input', filterBillings);
+      document.getElementById('statusFilter').addEventListener('change', filterBillings);
+      document.getElementById('monthFilter').addEventListener('change', filterBillings);
+
+      // Load initial data
+      loadBillings();
+      loadClientsAndPlans();
+      
+      // Fetch user info
+      fetchUserInfo();
+    });
+
+    async function fetchUserInfo() {
+      const token = localStorage.getItem('auth_token');
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          document.getElementById('username').textContent = data.user.username || 'User';
+        } else {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login.html';
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        document.getElementById('username').textContent = 'User';
+      }
+    }
+  </script>
+</body>
+</html>

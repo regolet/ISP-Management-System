@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ISP Management System Dashboard">
+  <title>ISP Management System - Dashboard</title>
+  
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'inter': ['Inter', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'fadeIn': 'fadeIn 0.5s ease-in-out',
+            'slideUp': 'slideUp 0.3s ease-out',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-100 font-inter">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="w-full px-6 h-16 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center space-x-3">
+        <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
+          <i class="fas fa-signal text-2xl"></i>
+          <h1 class="text-xl font-bold">ISP Management System</h1>
+        </a>
+      </div>
+      
+      <!-- Navigation -->
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="/dashboard.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="/clients.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-users"></i>
+          <span>Clients</span>
+        </a>
+        <a href="/plans.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-project-diagram"></i>
+          <span>Plans</span>
+        </a>
+        <a href="/billings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span>Billings</span>
+        </a>
+        <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-chart-line"></i>
+          <span>Monitoring</span>
+        </a>
+        <a href="/settings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cogs"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+      
+      <!-- User Info -->
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-user-circle text-xl"></i>
+          <span id="username" class="font-medium">Loading...</span>
+        </div>
+        <button 
+          id="logoutBtn"
+          class="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+        >
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="w-full px-6 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+        <i class="fas fa-tachometer-alt text-blue-600 mr-3"></i>
+        Dashboard
+      </h2>
+      <p class="text-gray-600">Welcome to your ISP Management System</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Clients Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+        <div class="p-6 flex items-center">
+          <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+            <i class="fas fa-users text-2xl text-blue-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Total Clients</p>
+            <p class="text-2xl font-bold text-gray-900" id="clientCount">--</p>
+            <p class="text-sm text-gray-500">Active clients</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Plans Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+        <div class="p-6 flex items-center">
+          <div class="w-14 h-14 bg-cyan-100 rounded-xl flex items-center justify-center mr-4">
+            <i class="fas fa-project-diagram text-2xl text-cyan-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Service Plans</p>
+            <p class="text-2xl font-bold text-gray-900" id="planCount">--</p>
+            <p class="text-sm text-gray-500">Active plans</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Client Plans Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+        <div class="p-6 flex items-center">
+          <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mr-4">
+            <i class="fas fa-wifi text-2xl text-green-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Client Plans</p>
+            <p class="text-2xl font-bold text-gray-900" id="clientPlansCount">--</p>
+            <p class="text-sm text-gray-500">Active subscriptions</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Invoices Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+        <div class="p-6 flex items-center">
+          <div class="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center mr-4">
+            <i class="fas fa-file-invoice-dollar text-2xl text-amber-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Pending Invoices</p>
+            <p class="text-2xl font-bold text-gray-900" id="invoiceCount">--</p>
+            <p class="text-sm text-gray-500">Need attention</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Access Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+          <i class="fas fa-bolt text-amber-500 mr-2"></i>
+          Quick Access
+        </h3>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <a 
+            href="/clients.html" 
+            class="flex items-center justify-center px-4 py-3 border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 font-medium"
+          >
+            <i class="fas fa-user-plus mr-2"></i>
+            Add Client
+          </a>
+          <a 
+            href="/plans.html" 
+            class="flex items-center justify-center px-4 py-3 border border-cyan-200 text-cyan-700 rounded-lg hover:bg-cyan-50 hover:border-cyan-300 transition-all duration-200 font-medium"
+          >
+            <i class="fas fa-plus-circle mr-2"></i>
+            Create Plan
+          </a>
+          <a 
+            href="/billings.html" 
+            class="flex items-center justify-center px-4 py-3 border border-green-200 text-green-700 rounded-lg hover:bg-green-50 hover:border-green-300 transition-all duration-200 font-medium"
+          >
+            <i class="fas fa-file-invoice mr-2"></i>
+            New Invoice
+          </a>
+          <a 
+            href="/settings.html" 
+            class="flex items-center justify-center px-4 py-3 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 font-medium"
+          >
+            <i class="fas fa-cog mr-2"></i>
+            System Settings
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="notificationContainer" class="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm"></div>
+
+  <script>
+    // Show notification toast
+    function showNotification(title, message, type = 'info') {
+      const container = document.getElementById('notificationContainer');
+      
+      // Create random ID for this toast
+      const toastId = 'toast-' + Math.random().toString(36).substring(2, 15);
+      
+      // Set colors based on type
+      let bgClass = 'bg-blue-500';
+      let icon = 'info-circle';
+      
+      switch(type) {
+        case 'success':
+          icon = 'check-circle';
+          bgClass = 'bg-green-500';
+          break;
+        case 'warning':
+          icon = 'exclamation-triangle';
+          bgClass = 'bg-amber-500';
+          break;
+        case 'error':
+          icon = 'exclamation-circle';
+          bgClass = 'bg-red-500';
+          break;
+      }
+      
+      // Create toast element
+      const toast = document.createElement('div');
+      toast.id = toastId;
+      toast.className = `${bgClass} text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
+      toast.innerHTML = `
+        <div class="flex items-start">
+          <i class="fas fa-${icon} mt-0.5 mr-3 flex-shrink-0"></i>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold">${title}</div>
+            <div class="text-sm opacity-90">${message}</div>
+          </div>
+          <button onclick="removeToast('${toastId}')" class="ml-3 flex-shrink-0 text-white/80 hover:text-white">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      
+      // Trigger animation
+      setTimeout(() => {
+        toast.classList.remove('translate-x-full', 'opacity-0');
+      }, 10);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        removeToast(toastId);
+      }, 5000);
+    }
+    
+    function removeToast(toastId) {
+      const toast = document.getElementById(toastId);
+      if (toast) {
+        toast.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }
+    }
+    
+    // Set loading state for dashboard cards
+    function setLoadingState(elementId, isLoading) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      if (isLoading) {
+        element.innerHTML = '<div class="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>';
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if user is logged in
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Set up logout functionality
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+        localStorage.removeItem('auth_token');
+        showNotification('Logged Out', 'You have been successfully logged out', 'info');
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 1000);
+      });
+
+      // Set loading states for all counters
+      setLoadingState('clientCount', true);
+      setLoadingState('planCount', true);
+      setLoadingState('clientPlansCount', true);
+      setLoadingState('invoiceCount', true);
+      
+      // Fetch user info
+      fetchUserInfo();
+      
+      // Fetch dashboard data
+      fetchDashboardData();
+    });
+
+    async function fetchUserInfo() {
+      const token = localStorage.getItem('auth_token');
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          document.getElementById('username').textContent = data.user.username || 'User';
+        } else {
+          // If unauthorized, redirect to login
+          localStorage.removeItem('auth_token');
+          showNotification('Session Expired', 'Your session has expired. Please log in again.', 'warning');
+          setTimeout(() => {
+            window.location.href = '/login.html';
+          }, 2000);
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        document.getElementById('username').textContent = 'User';
+      }
+    }
+
+    async function fetchDashboardData() {
+      const token = localStorage.getItem('auth_token');
+      const headers = {
+        'Authorization': `Bearer ${token}`
+      };
+
+      try {
+        // Fetch all data in parallel
+        const [clientsResponse, plansResponse, clientPlansResponse, billingsResponse] = await Promise.all([
+          fetch('/api/clients', { headers }),
+          fetch('/api/plans', { headers }),
+          fetch('/api/client-plans-count', { headers }),
+          fetch('/api/billings', { headers })
+        ]);
+        
+        // Process clients count
+        if (clientsResponse.ok) {
+          const clients = await clientsResponse.json();
+          document.getElementById('clientCount').textContent = clients.length;
+          
+          // Add animation class
+          document.getElementById('clientCount').parentElement.parentElement.classList.add('animate-fadeIn');
+        } else {
+          document.getElementById('clientCount').textContent = '0';
+        }
+
+        // Process plans count
+        if (plansResponse.ok) {
+          const plans = await plansResponse.json();
+          document.getElementById('planCount').textContent = plans.length;
+          document.getElementById('planCount').parentElement.parentElement.classList.add('animate-fadeIn');
+        } else {
+          document.getElementById('planCount').textContent = '0';
+        }
+
+        // Process client plans count
+        if (clientPlansResponse.ok) {
+          const clientPlansData = await clientPlansResponse.json();
+          document.getElementById('clientPlansCount').textContent = clientPlansData.count || '0';
+          document.getElementById('clientPlansCount').parentElement.parentElement.classList.add('animate-fadeIn');
+        } else {
+          document.getElementById('clientPlansCount').textContent = '0';
+        }
+
+        // Process invoices count (pending billings)
+        if (billingsResponse.ok) {
+          const billings = await billingsResponse.json();
+          const pendingCount = billings.filter(b => b.status === 'pending').length;
+          document.getElementById('invoiceCount').textContent = pendingCount;
+          document.getElementById('invoiceCount').parentElement.parentElement.classList.add('animate-fadeIn');
+          
+          // Show notification if there are pending invoices
+          if (pendingCount > 0) {
+            setTimeout(() => {
+              showNotification(
+                'Pending Invoices', 
+                `You have ${pendingCount} invoice${pendingCount === 1 ? '' : 's'} waiting for payment.`,
+                'info'
+              );
+            }, 1500);
+          }
+        } else {
+          document.getElementById('invoiceCount').textContent = '0';
+        }
+        
+        // Show success notification
+        showNotification('Dashboard Updated', 'Latest data has been loaded successfully', 'success');
+        
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        showNotification('Data Load Error', 'Could not load some dashboard data. Please try refreshing.', 'error');
+        
+        // Set error states
+        document.getElementById('clientCount').textContent = '-';
+        document.getElementById('planCount').textContent = '-';
+        document.getElementById('clientPlansCount').textContent = '-';
+        document.getElementById('invoiceCount').textContent = '-';
+      }
+    }
+  </script>
+</body>
+</html>

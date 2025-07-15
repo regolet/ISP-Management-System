@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm start)",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm run build-css-prod:*)",
+      "Bash(./node_modules/.bin/tailwindcss:*)",
+      "Bash(ls:*)",
+      "Bash(taskkill:*)",
+      "Bash(pkill:*)",
+      "Bash(cmd /c:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(grep:*)",
+      "Bash(start.bat)",
+      "Bash(timeout:*)",
+      "Bash(start http://localhost:3000/monitoring.html)",
+      "Bash(tasklist:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}

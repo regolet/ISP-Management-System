@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="2; url=/login.html">
+    <title>ISP Management System</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              'inter': ['Inter', 'system-ui', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-100 to-blue-600 font-inter flex items-center justify-center">
+    <div class="text-center">
+        <!-- Logo -->
+        <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-white flex items-center justify-center shadow-xl">
+            <i class="fas fa-network-wired text-4xl text-blue-600"></i>
+        </div>
+        
+        <!-- Title -->
+        <h1 class="text-white text-3xl font-bold mb-4 drop-shadow-md">ISP Management System</h1>
+        
+        <!-- Loading indicator -->
+        <div class="flex items-center justify-center mb-4">
+            <div class="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+            <p class="text-white text-lg">Redirecting to login...</p>
+        </div>
+        
+        <!-- Manual redirect link -->
+        <p class="text-white/80 text-sm">
+            If you are not redirected automatically, 
+            <a href="/login.html" class="text-white font-medium hover:underline">click here</a>
+        </p>
+    </div>
+    
+    <script>
+        // Fallback redirect in case meta refresh doesn't work
+        setTimeout(() => {
+            window.location.href = '/login.html';
+        }, 2000);
+    </script>
+</body>
+</html> 

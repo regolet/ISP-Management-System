@@ -1,72 +1,173 @@
-# ISP Management System
+# ISP Management System - React + Neon PostgreSQL
 
-A comprehensive system for managing Internet Service Provider operations, including client management, subscriptions, billing, and network infrastructure.
+A modern React-based ISP Management System with Neon PostgreSQL database.
 
-## Features
+## 🚀 Features
 
-- Subscription Management
-- Billing and Payments
-- Network Infrastructure (OLT and LCP devices)
-- User Management with Role-based Access Control
+- **React 18** with TypeScript
+- **Neon PostgreSQL** database
+- **Modern UI** with responsive design
+- **Netlify Dev** for local development
+- **Authentication** with JWT tokens
+- **Real-time** notifications
 
-## SQLite Database Setup
+## 🏗️ Architecture
 
-This application uses SQLite as its database, making it portable and easy to set up without requiring a separate database server.
+### Frontend
+- **React 18** with TypeScript
+- **Vite** for fast development
+- **React Router** for navigation
+- **Context API** for state management
+- **Axios** for API calls
+- **Modern CSS** with responsive design
 
-### MySQL to SQLite Compatibility
+### Backend (Future)
+- **PostgreSQL** via Neon
+- **RESTful API** endpoints
+- **JWT Authentication**
+- **Real-time** features
 
-The application was originally designed for MySQL but has been adapted to work with SQLite. The following compatibility features have been implemented:
+## 🗄️ Database
 
-- Automatic conversion of MySQL-specific SQL syntax to SQLite
-- Support for date functions (YEAR, MONTH, DAY) using SQLite's strftime
-- Table structure adaptations for SQLite compatibility
-
-### Database Location
-
-The SQLite database file is stored at:
+### Neon PostgreSQL
+The application is configured to use Neon PostgreSQL:
 ```
-/database/isp-management.sqlite
+postgresql://neondb_owner:npg_4ZPlK1gJEbeo@ep-dark-brook-ae1ictl5-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 ```
 
-### Automatic Initialization
+## 🚀 Quick Start
 
-The database is automatically initialized when the application starts. The schema is defined in:
-```
-/database/sqlite_schema.sql
-```
+### Prerequisites
+- Node.js 18+
+- npm or yarn
 
-### Resetting the Database
+### Installation
 
-If you need to reset the database to its initial state, you can run:
-```
-php reset_database.php
-```
-This will recreate all tables and reset the data.
-
-### Default Admin User
-
-A default admin user is created during initialization:
-- Username: admin
-- Password: password
-- Email: admin@example.com
-
-## Installation
-
-1. Clone the repository
-2. Make sure PHP 7.4+ is installed with PDO SQLite extension
-3. Navigate to the project directory
-4. Start a PHP server:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/regolet/ISP-Management-System.git
+   cd ISP-Management-System
    ```
-   php -S localhost:8000
+
+2. **Install dependencies**
+   ```bash
+   npm install
    ```
-5. Access the application at http://localhost:8000
 
-## Requirements
+3. **Start development server**
+   ```bash
+   npm run dev
+   ```
 
-- PHP 7.4 or higher
-- PDO SQLite extension
-- Modern web browser
+4. **Access the application**
+   - Open: http://localhost:3000
+   - Login: admin / password
 
-## License
+## 🔧 Development
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Available Scripts
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run netlify:dev  # Start with Netlify Dev
+```
+
+### Netlify Dev
+For production-like local development:
+```bash
+npm run netlify:dev
+```
+
+## 📁 Project Structure
+
+```
+ISP-Management-System/
+├── src/                    # React application
+│   ├── components/         # React components
+│   ├── contexts/          # React contexts
+│   └── main.tsx          # Entry point
+├── public/                # Static assets
+├── dist/                  # Built application
+├── netlify.toml          # Netlify configuration
+├── package.json           # Dependencies
+└── README.md             # This file
+```
+
+## 🌐 Deployment
+
+### Netlify (Recommended)
+1. Connect to Netlify
+2. Build command: `npm run build`
+3. Publish directory: `dist`
+
+### Environment Variables
+- `REACT_APP_API_URL` - Backend API URL
+- `NODE_ENV` - Environment (development/production)
+
+## 🔒 Authentication
+
+### Default Login
+- **Username**: `admin`
+- **Password**: `password`
+
+### Features
+- JWT token authentication
+- Session management
+- Protected routes
+- Login notifications
+
+## 🎨 UI Features
+
+- **Responsive design** for all devices
+- **Modern UI** with smooth animations
+- **Loading states** and error handling
+- **Success/Error notifications**
+- **Accessibility** compliant
+
+## 📊 Planned Features
+
+- **Client Management**: Add, edit, delete clients
+- **Subscription Management**: Manage client subscriptions
+- **Billing & Invoices**: Generate and track invoices
+- **Payment Processing**: Track payments
+- **User Management**: Role-based access control
+- **Dashboard**: Overview of system metrics
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+1. **Port conflicts**
+   ```bash
+   # Use different port
+   npm run dev -- --port 3001
+   ```
+
+2. **Build errors**
+   ```bash
+   # Clear cache and reinstall
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+
+3. **Database connection**
+   - Check Neon PostgreSQL connection string
+   - Verify environment variables
+   - Test database connectivity
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+---
+
+**Note**: This is a modernized React application. The backend API will be implemented separately.
