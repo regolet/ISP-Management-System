@@ -80,3 +80,61 @@ Key tables managed by the backend:
 - CORS enabled for frontend communication
 - Static files served from `public/` directory
 - 404 redirects to login page for non-API routes
+
+## Recent Major Changes (Session: 2025-01-15)
+
+### System Migration Completed
+- **Backend**: Fully migrated from PHP to Node.js/Express with PostgreSQL
+- **Frontend**: Converted from PHP to modern HTML/CSS/JS with Tailwind CSS
+- **Database**: Migrated from SQLite to Neon PostgreSQL cloud database
+
+### Monitoring System Integration
+- **Complete monitoring system**: Added `public/monitoring.html` with MikroTik integration
+- **Groups management**: Create, edit, delete groups with PPPoE account assignments
+- **Categories management**: Hierarchical categories with subcategories and group assignments
+- **Real-time monitoring**: Network bandwidth tracking, online/offline status
+- **MikroTik API**: RouterOS integration for PPPoE accounts, profiles, and active connections
+
+### Database Schema Additions
+- `monitoring_groups` - JSONB table for group management
+- `monitoring_categories` - Categories with group_ids, category_index, subcategory_index
+- Proper JSONB handling for arrays in PostgreSQL
+
+### UI/UX Improvements
+- **Full-width layout**: All pages now use `w-full px-6` instead of `max-w-7xl mx-auto px-4`
+- **Currency localization**: Changed from USD ($) to Philippine Peso (₱) across all pages
+- **Import functionality**: Fixed MikroTik import modals in clients and plans
+- **Select all checkboxes**: Added to PPP profiles import with indeterminate state support
+
+### Critical Fixes Applied
+- **API response format**: Fixed `mikrotikAccounts.map is not a function` error
+- **JSON handling**: Proper JSON.stringify/parse for JSONB columns
+- **Array safety**: Added Array.isArray() checks to prevent runtime errors
+- **Modal functionality**: Complete import/export workflows for MikroTik data
+
+### Database Management Features
+- **Health checks**: `/api/health` endpoint for database connectivity
+- **Manual controls**: Database initialize, repair, and reset functions in Settings
+- **Error handling**: Comprehensive error messages and retry mechanisms
+
+### Working Features Status
+✅ Authentication system (admin/admin123)
+✅ Client management with MikroTik import
+✅ Plans management with PPP profile import  
+✅ Billing and payment tracking
+✅ Network monitoring with groups/categories
+✅ MikroTik RouterOS API integration
+✅ Real-time bandwidth monitoring
+✅ Full CRUD operations across all modules
+
+### Known Working Import Flows
+1. **Clients Import**: PPPoE accounts → Client records with proper email formatting
+2. **Plans Import**: PPP profiles → Plans with rate limit parsing and pricing
+3. **Groups**: Manual creation with account assignments and online/offline tracking
+4. **Categories**: Hierarchical organization with member/max member tracking
+
+### Technology Stack
+- **Backend**: Node.js 18+, Express.js, PostgreSQL (Neon), JWT auth, bcrypt
+- **Frontend**: HTML5, Tailwind CSS, Vanilla JavaScript, Font Awesome icons
+- **Integration**: RouterOS API, Real-time data fetching, JSONB storage
+- **Deployment**: Netlify-ready with `netlify.toml` configuration
