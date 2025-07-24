@@ -55,6 +55,18 @@
           <i class="fas fa-file-invoice-dollar"></i>
           <span>Billings</span>
         </a>
+        <a href="/payments.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-credit-card"></i>
+          <span>Payments</span>
+        </a>
+        <a href="/inventory.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-boxes"></i>
+          <span>Inventory</span>
+        </a>
+        <a href="/tickets.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Tickets</span>
+        </a>
         <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
           <i class="fas fa-chart-line"></i>
           <span>Monitoring</span>
@@ -137,18 +149,28 @@
         <table class="w-full">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate Limit</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPlans('id')">
+                ID <i id="sort-id" class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPlans('name')">
+                Name <i id="sort-name" class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPlans('rate_limit')">
+                Rate Limit <i id="sort-rate_limit" class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPlans('price')">
+                Price <i id="sort-price" class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPlans('status')">
+                Status <i id="sort-status" class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody id="plansTableBody" class="bg-white divide-y divide-gray-200">
             <tr>
-              <td colspan="7" class="px-6 py-12 text-center">
+              <td colspan="7" class="px-4 py-8 text-center">
                 <div class="flex items-center justify-center">
                   <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mr-3"></div>
                   <span class="text-gray-500">Loading plans...</span>
@@ -397,6 +419,8 @@
     // Global variables
     let plans = [];
     let filteredPlans = [];
+    let sortField = 'id';
+    let sortDirection = 'asc';
 
     // Show notification toast
     function showNotification(title, message, type = 'info') {
@@ -722,12 +746,30 @@
       return 0;
     }
 
-    function deletePlan(planId) {
+    async function deletePlan(planId) {
       if (!confirm('Are you sure you want to delete this plan?')) return;
       
-      // Implementation for delete
-      showNotification('Plan Deleted', 'Plan has been successfully deleted', 'success');
-      loadPlans();
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch(`/api/plans/${planId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          showNotification('Success', 'Plan deleted successfully', 'success');
+          loadPlans();
+        } else {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to delete plan');
+        }
+      } catch (error) {
+        console.error('Error deleting plan:', error);
+        showNotification('Error', error.message, 'error');
+      }
     }
 
     // Load and display plans
@@ -744,7 +786,7 @@
         if (response.ok) {
           plans = await response.json();
           filteredPlans = [...plans];
-          renderPlans();
+          sortPlans(sortField); // Apply initial sort
         } else {
           throw new Error('Failed to load plans');
         }
@@ -754,7 +796,7 @@
         
         document.getElementById('plansTableBody').innerHTML = `
           <tr>
-            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+            <td colspan="7" class="px-4 py-8 text-center text-gray-500">
               Failed to load plans. Please try again.
             </td>
           </tr>
@@ -768,7 +810,7 @@
       if (filteredPlans.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+            <td colspan="7" class="px-4 py-8 text-center text-gray-500">
               No plans found.
             </td>
           </tr>
@@ -778,10 +820,10 @@
 
       tbody.innerHTML = filteredPlans.map(plan => `
         <tr class="hover:bg-gray-50">
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${plan.id}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${plan.name}</td>
-          <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">${plan.description || '-'}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${plan.id}</td>
+          <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${plan.name}</td>
+          <td class="px-4 py-2 text-sm text-gray-500 max-w-xs truncate">${plan.description || '-'}</td>
+          <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
             <div class="font-medium">
               ${plan.speed || 'unlimited'}
             </div>
@@ -792,15 +834,15 @@
               </div>
             ` : ''}
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+          <td class="px-4 py-2 whitespace-nowrap text-sm font-semibold text-gray-900">
             ₱${plan.price || '0.00'}
           </td>
-          <td class="px-6 py-4 whitespace-nowrap">
+          <td class="px-4 py-2 whitespace-nowrap">
             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
               Active
             </span>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+          <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium space-x-2">
             <button 
               onclick="openEditModal(${plan.id})"
               class="text-blue-600 hover:text-blue-900 p-1"
@@ -821,6 +863,53 @@
     }
 
     // Search functionality
+    // Sort functionality
+    function sortPlans(field) {
+      if (sortField === field) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortField = field;
+        sortDirection = 'asc';
+      }
+      
+      filteredPlans.sort((a, b) => {
+        let aVal = a[field];
+        let bVal = b[field];
+        
+        // Handle specific field types
+        if (field === 'price') {
+          aVal = parseFloat(aVal || 0);
+          bVal = parseFloat(bVal || 0);
+        } else if (field === 'id') {
+          aVal = parseInt(aVal || 0);
+          bVal = parseInt(bVal || 0);
+        } else {
+          aVal = (aVal || '').toString().toLowerCase();
+          bVal = (bVal || '').toString().toLowerCase();
+        }
+        
+        if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+      
+      updateSortIcons();
+      renderPlans();
+    }
+    
+    function updateSortIcons() {
+      // Reset all sort icons
+      document.querySelectorAll('[id^="sort-"]').forEach(icon => {
+        icon.className = 'fas fa-sort ml-1';
+      });
+      
+      // Update the active sort icon
+      const activeIcon = document.getElementById(`sort-${sortField}`);
+      if (activeIcon) {
+        activeIcon.className = `fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'} ml-1`;
+      }
+    }
+
     function filterPlans() {
       const searchTerm = document.getElementById('planSearch').value.toLowerCase();
       
@@ -829,7 +918,12 @@
         (plan.description && plan.description.toLowerCase().includes(searchTerm))
       );
       
-      renderPlans();
+      // Re-apply sorting after filtering
+      if (sortField) {
+        sortPlans(sortField);
+      } else {
+        renderPlans();
+      }
     }
 
     // Form submissions

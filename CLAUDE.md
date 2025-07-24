@@ -138,3 +138,6 @@ Key tables managed by the backend:
 - **Frontend**: HTML5, Tailwind CSS, Vanilla JavaScript, Font Awesome icons
 - **Integration**: RouterOS API, Real-time data fetching, JSONB storage
 - **Deployment**: Netlify-ready with `netlify.toml` configuration
+
+## Development Tips and Tricks
+- Use npx kill-port to kill any ports and run the server

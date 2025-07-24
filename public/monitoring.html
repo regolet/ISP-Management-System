@@ -58,6 +58,18 @@
           <i class="fas fa-file-invoice-dollar"></i>
           <span>Billings</span>
         </a>
+        <a href="/payments.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-credit-card"></i>
+          <span>Payments</span>
+        </a>
+        <a href="/inventory.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-boxes"></i>
+          <span>Inventory</span>
+        </a>
+        <a href="/tickets.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Tickets</span>
+        </a>
         <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
           <i class="fas fa-chart-line"></i>
           <span>Monitoring</span>
@@ -164,7 +176,7 @@
             <div class="bg-red-50 rounded-lg p-4">
               <div class="flex items-center">
                 <div class="p-2 bg-red-100 rounded-lg">
-                  <i class="fas fa-wifi-slash text-red-600"></i>
+                  <i class="fas fa-times-circle text-red-600"></i>
                 </div>
                 <div class="ml-3">
                   <p class="text-sm font-medium text-red-600">Offline</p>
@@ -251,38 +263,38 @@
               <table class="w-full">
                 <thead class="bg-gray-50">
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('name')">
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('name')">
                       <div class="flex items-center space-x-1">
                         <span>Name</span>
                         <span id="sort-name"></span>
                       </div>
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('profile')">
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('profile')">
                       <div class="flex items-center space-x-1">
                         <span>Profile</span>
                         <span id="sort-profile"></span>
                       </div>
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('uploadSpeed')">
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('uploadSpeed')">
                       <div class="flex items-center space-x-1">
                         <span>Upload</span>
                         <span id="sort-uploadSpeed"></span>
                       </div>
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('downloadSpeed')">
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('downloadSpeed')">
                       <div class="flex items-center space-x-1">
                         <span>Download</span>
                         <span id="sort-downloadSpeed"></span>
                       </div>
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('address')">
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('address')">
                       <div class="flex items-center space-x-1">
                         <span>Address</span>
                         <span id="sort-address"></span>
                       </div>
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('uptime')">
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="handleOnlineSort('uptime')">
                       <div class="flex items-center space-x-1">
                         <span>Uptime</span>
                         <span id="sort-uptime"></span>
@@ -292,7 +304,7 @@
                 </thead>
                 <tbody id="onlineAccountsTableBody" class="bg-white divide-y divide-gray-200">
                   <tr>
-                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="7" class="px-4 py-8 text-center text-gray-500">
                       No online accounts found
                     </td>
                   </tr>
@@ -321,14 +333,14 @@
               <table class="w-full">
                 <thead class="bg-gray-50">
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Downtime</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Downtime</th>
                   </tr>
                 </thead>
                 <tbody id="offlineAccountsTableBody" class="bg-white divide-y divide-gray-200">
                   <tr>
-                    <td colspan="3" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="3" class="px-4 py-8 text-center text-gray-500">
                       No offline accounts found
                     </td>
                   </tr>
@@ -542,8 +554,8 @@
           document.getElementById('lastUpdated').textContent = '-';
           
           // Show message in tables
-          document.getElementById('onlineAccountsTableBody').innerHTML = `<tr><td colspan="7" class="text-center py-8">${message}</td></tr>`;
-          document.getElementById('offlineAccountsTableBody').innerHTML = `<tr><td colspan="4" class="text-center py-8">${message}</td></tr>`;
+          document.getElementById('onlineAccountsTableBody').innerHTML = `<tr><td colspan="7" class="text-center py-6">${message}</td></tr>`;
+          document.getElementById('offlineAccountsTableBody').innerHTML = `<tr><td colspan="3" class="text-center py-6">${message}</td></tr>`;
           break;
         case 'groups':
           document.getElementById('groupsGrid').innerHTML = message;
@@ -831,7 +843,7 @@
       });
       
       if (onlineAccounts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-gray-500">No online accounts found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">No online accounts found</td></tr>';
         document.getElementById('onlinePagination').innerHTML = '';
         return;
       }
@@ -880,21 +892,21 @@
       
       // Render table
       if (paginatedAccounts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-gray-500">No accounts found matching your search</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">No accounts found matching your search</td></tr>';
       } else {
         tbody.innerHTML = paginatedAccounts.map(account => `
           <tr class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${account.name}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${account.profile || '-'}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${account.name}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${account.profile || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap">
               <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                 Online
               </span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${account.uploadSpeed} Mbps</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${account.downloadSpeed} Mbps</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${account.address || '-'}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${account.uptime || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${account.uploadSpeed} Mbps</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${account.downloadSpeed} Mbps</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${account.address || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${account.uptime || '-'}</td>
           </tr>
         `).join('');
       }
@@ -985,7 +997,7 @@
       const tbody = document.getElementById('offlineAccountsTableBody');
       
       if (offlineAccounts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-12 text-center text-gray-500">No offline accounts found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-8 text-center text-gray-500">No offline accounts found</td></tr>';
         document.getElementById('offlinePagination').innerHTML = '';
         return;
       }
@@ -998,15 +1010,15 @@
       
       tbody.innerHTML = paginatedAccounts.map(account => `
         <tr class="hover:bg-gray-50">
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${account.name}</td>
-          <td class="px-6 py-4 whitespace-nowrap">
+          <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${account.name}</td>
+          <td class="px-4 py-2 whitespace-nowrap">
             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
               account.disabled === 'true' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800'
             }">
               ${account.disabled === 'true' ? 'Disabled' : 'Offline'}
             </span>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${account['last-logged-out'] || '-'}</td>
+          <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${account['last-logged-out'] || '-'}</td>
         </tr>
       `).join('');
       

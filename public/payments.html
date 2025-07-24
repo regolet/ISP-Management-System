@@ -56,8 +56,16 @@
           <span>Billings</span>
         </a>
         <a href="/payments.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
-          <i class="fas fa-dollar-sign"></i>
+          <i class="fas fa-credit-card"></i>
           <span>Payments</span>
+        </a>
+        <a href="/inventory.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-boxes"></i>
+          <span>Inventory</span>
+        </a>
+        <a href="/tickets.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Tickets</span>
         </a>
         <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
           <i class="fas fa-chart-line"></i>
@@ -129,15 +137,31 @@
         <table class="w-full">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment ID</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Billing ID</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Date</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('id')">
+                Payment ID <i id="sort-id" class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('billing_id')">
+                Billing ID <i id="sort-billing_id" class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('client_name')">
+                Client Name <i id="sort-client_name" class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('plan_name')">
+                Plan Name <i id="sort-plan_name" class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('amount')">
+                Amount <i id="sort-amount" class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('payment_date')">
+                Payment Date <i id="sort-payment_date" class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('method')">
+                Method <i id="sort-method" class="fas fa-sort ml-1"></i>
+              </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('created_at')">
+                Created At <i id="sort-created_at" class="fas fa-sort ml-1"></i>
+              </th>
             </tr>
           </thead>
           <tbody id="paymentsTableBody" class="bg-white divide-y divide-gray-200">
@@ -161,6 +185,8 @@
     // Global variables
     let payments = [];
     let filteredPayments = [];
+    let sortField = 'created_at';
+    let sortDirection = 'desc';
 
     // Show notification toast
     function showNotification(title, message, type = 'info') {
@@ -254,20 +280,101 @@
       const token = localStorage.getItem('auth_token');
       
       try {
-        const response = await fetch('/api/payments', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        // Fetch payments, clients, plans, and billings in parallel
+        const [paymentsResponse, clientsResponse, plansResponse, billingsResponse] = await Promise.all([
+          fetch('/api/payments', { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch('/api/clients', { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch('/api/plans', { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch('/api/billings', { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
+        
+        if (!paymentsResponse.ok || !clientsResponse.ok || !plansResponse.ok || !billingsResponse.ok) {
+          throw new Error('Failed to load data');
+        }
+        
+        const [paymentsData, clientsData, plansData, billingsData] = await Promise.all([
+          paymentsResponse.json(),
+          clientsResponse.json(),
+          plansResponse.json(),
+          billingsResponse.json()
+        ]);
+        
+        // Create lookup maps for clients, plans, and billings
+        const clientsMap = {};
+        const plansMap = {};
+        const billingsMap = {};
+        
+        // Handle paginated clients response
+        const clients = clientsData.clients || clientsData || [];
+        clients.forEach(client => {
+          clientsMap[client.id] = client.name;
+          clientsMap[client.id.toString()] = client.name; // Handle string IDs
         });
         
-        if (response.ok) {
-          payments = await response.json();
-          filteredPayments = [...payments];
-          renderPayments();
-          showNotification('Success', 'Payment records loaded successfully', 'success');
-        } else {
-          throw new Error('Failed to load payments');
-        }
+        // Handle plans response (should be array)
+        const plans = Array.isArray(plansData) ? plansData : [];
+        plans.forEach(plan => {
+          plansMap[plan.id] = plan.name;
+          plansMap[plan.id.toString()] = plan.name; // Handle string IDs
+        });
+        
+        // Handle billings response (should be array)
+        const billings = Array.isArray(billingsData) ? billingsData : [];
+        billings.forEach(billing => {
+          billingsMap[billing.id] = {
+            client_id: billing.client_id,
+            plan_id: billing.plan_id,
+            client_name: clientsMap[billing.client_id],
+            plan_name: plansMap[billing.plan_id]
+          };
+        });
+        
+        // Enrich payments with client and plan names
+        const paymentsArray = Array.isArray(paymentsData) ? paymentsData : [];
+        
+        // Debug logging
+        console.log('Payments data sample:', paymentsArray.length > 0 ? paymentsArray[0] : 'No payments');
+        console.log('Clients map sample:', Object.keys(clientsMap).slice(0, 3), Object.values(clientsMap).slice(0, 3));
+        console.log('Plans map sample:', Object.keys(plansMap).slice(0, 3), Object.values(plansMap).slice(0, 3));
+        
+        payments = paymentsArray.map(payment => {
+          let client_name = 'Unknown Client';
+          let plan_name = 'Unknown Plan';
+          
+          // The /api/payments endpoint returns client_id and plan_id from the billings table
+          // Use these to lookup the actual names
+          if (payment.client_id) {
+            client_name = clientsMap[payment.client_id] || 
+                         clientsMap[payment.client_id.toString()] || 
+                         clientsMap[parseInt(payment.client_id)] || 
+                         `Client #${payment.client_id}`;
+          }
+          
+          if (payment.plan_id) {
+            plan_name = plansMap[payment.plan_id] || 
+                       plansMap[payment.plan_id.toString()] || 
+                       plansMap[parseInt(payment.plan_id)] || 
+                       `Plan #${payment.plan_id}`;
+          }
+          
+          // Debug for first payment
+          if (paymentsArray.indexOf(payment) === 0) {
+            console.log('First payment:', payment);
+            console.log('Mapped client:', client_name);
+            console.log('Mapped plan:', plan_name);
+          }
+          
+          return {
+            ...payment,
+            client_name: client_name,
+            plan_name: plan_name
+          };
+        });
+        
+        filteredPayments = [...payments];
+        sortPayments(sortField); // Apply initial sort
+        showNotification('Success', 'Payment records loaded successfully', 'success');
+        
       } catch (error) {
         console.error('Error loading payments:', error);
         showNotification('Error', 'Failed to load payment records', 'error');
@@ -300,8 +407,8 @@
         <tr class="hover:bg-gray-50">
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${payment.id}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${payment.billing_id}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${payment.client_name || payment.client_id || '-'}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.plan_name || payment.plan_id || '-'}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${payment.client_name || 'Unknown Client'}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.plan_name || 'Unknown Plan'}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">₱${parseFloat(payment.amount || 0).toFixed(2)}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.payment_date || '-'}</td>
           <td class="px-6 py-4 whitespace-nowrap">${getMethodBadge(payment.method || payment.payment_method)}</td>
@@ -311,13 +418,63 @@
       `).join('');
     }
 
+    // Sort functionality
+    function sortPayments(field) {
+      if (sortField === field) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortField = field;
+        sortDirection = 'asc';
+      }
+      
+      filteredPayments.sort((a, b) => {
+        let aVal = a[field];
+        let bVal = b[field];
+        
+        // Handle specific field types
+        if (field === 'amount') {
+          aVal = parseFloat(aVal || 0);
+          bVal = parseFloat(bVal || 0);
+        } else if (field === 'payment_date' || field === 'created_at') {
+          aVal = new Date(aVal || 0);
+          bVal = new Date(bVal || 0);
+        } else if (field === 'id' || field === 'billing_id') {
+          aVal = parseInt(aVal || 0);
+          bVal = parseInt(bVal || 0);
+        } else {
+          aVal = (aVal || '').toString().toLowerCase();
+          bVal = (bVal || '').toString().toLowerCase();
+        }
+        
+        if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+      
+      updateSortIcons();
+      renderPayments();
+    }
+    
+    function updateSortIcons() {
+      // Reset all sort icons
+      document.querySelectorAll('[id^="sort-"]').forEach(icon => {
+        icon.className = 'fas fa-sort ml-1';
+      });
+      
+      // Update the active sort icon
+      const activeIcon = document.getElementById(`sort-${sortField}`);
+      if (activeIcon) {
+        activeIcon.className = `fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'} ml-1`;
+      }
+    }
+
     // Search functionality
     function filterPayments() {
       const searchTerm = document.getElementById('paymentSearch').value.toLowerCase();
       
       filteredPayments = payments.filter(payment => {
-        const clientName = (payment.client_name || payment.client_id || '').toLowerCase();
-        const planName = (payment.plan_name || payment.plan_id || '').toLowerCase();
+        const clientName = (payment.client_name || '').toLowerCase();
+        const planName = (payment.plan_name || '').toLowerCase();
         const method = (payment.method || payment.payment_method || '').toLowerCase();
         const notes = (payment.notes || '').toLowerCase();
         const amount = payment.amount ? payment.amount.toString() : '';
@@ -331,7 +488,12 @@
                (payment.billing_id && payment.billing_id.toString().includes(searchTerm));
       });
       
-      renderPayments();
+      // Re-apply sorting after filtering
+      if (sortField) {
+        sortPayments(sortField);
+      } else {
+        renderPayments();
+      }
     }
 
     // Initialize

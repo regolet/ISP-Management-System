@@ -52,6 +52,7 @@ app.get('/api/health', async (req, res) => {
 app.post('/api/init-database', async (req, res) => {
   try {
     await initializeDatabaseTables();
+    await createTicketingTables();
     
     // Insert sample data
     const client = await pool.connect();
@@ -64,6 +65,76 @@ app.post('/api/init-database', async (req, res) => {
     res.status(500).json({ success: false, message: 'Database initialization failed', error: error.message });
   }
 });
+
+// Create ticketing system tables
+async function createTicketingTables() {
+  const client = await pool.connect();
+  
+  try {
+    // Create tickets table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS tickets (
+        id SERIAL PRIMARY KEY,
+        ticket_number VARCHAR(20) UNIQUE NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        client_id INTEGER REFERENCES clients(id) ON DELETE SET NULL,
+        priority VARCHAR(20) DEFAULT 'medium', -- 'low', 'medium', 'high', 'urgent'
+        category VARCHAR(50) DEFAULT 'general', -- 'technical', 'billing', 'general', 'installation', 'maintenance'
+        status VARCHAR(20) DEFAULT 'open', -- 'open', 'in_progress', 'resolved', 'closed', 'pending'
+        assigned_to INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        resolution TEXT,
+        resolved_at TIMESTAMP,
+        due_date TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create ticket comments table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS ticket_comments (
+        id SERIAL PRIMARY KEY,
+        ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        comment TEXT NOT NULL,
+        is_internal BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create ticket attachments table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS ticket_attachments (
+        id SERIAL PRIMARY KEY,
+        ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
+        filename VARCHAR(255) NOT NULL,
+        original_name VARCHAR(255) NOT NULL,
+        file_size INTEGER,
+        mime_type VARCHAR(100),
+        uploaded_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create ticket history table for tracking status changes
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS ticket_history (
+        id SERIAL PRIMARY KEY,
+        ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        action VARCHAR(50) NOT NULL, -- 'created', 'status_changed', 'assigned', 'commented', 'resolved'
+        old_value TEXT,
+        new_value TEXT,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+  } finally {
+    client.release();
+  }
+}
 
 async function insertSampleData(client) {
   // Remove sample plans insertion
@@ -151,14 +222,32 @@ async function initializeDatabaseTables() {
       CREATE TABLE IF NOT EXISTS clients (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
-        email VARCHAR(100),
-        phone VARCHAR(20),
         address TEXT,
+        installation_date DATE,
+        due_date DATE,
+        payment_status VARCHAR(20) DEFAULT 'unpaid',
         status VARCHAR(20) DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    
+    // Add new columns to existing clients table if they don't exist
+    await client.query(`
+      ALTER TABLE clients 
+      ADD COLUMN IF NOT EXISTS installation_date DATE,
+      ADD COLUMN IF NOT EXISTS due_date DATE,
+      ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'unpaid'
+    `);
+    
+    // Remove email and phone columns if they exist
+    await client.query(`
+      ALTER TABLE clients 
+      DROP COLUMN IF EXISTS email,
+      DROP COLUMN IF EXISTS phone
+    `).catch(() => {
+      // Columns may not exist, ignore error
+    });
 
     // Create plans table
     await client.query(`
@@ -298,6 +387,82 @@ async function initializeDatabaseTables() {
       // Column already renamed or doesn't exist
     });
 
+    // Create inventory categories table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS inventory_categories (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create suppliers table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS suppliers (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        contact_person VARCHAR(100),
+        email VARCHAR(100),
+        phone VARCHAR(20),
+        address TEXT,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create inventory items table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS inventory_items (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        category_id INTEGER REFERENCES inventory_categories(id) ON DELETE SET NULL,
+        supplier_id INTEGER REFERENCES suppliers(id) ON DELETE SET NULL,
+        sku VARCHAR(50) UNIQUE,
+        unit_price DECIMAL(10,2) DEFAULT 0.00,
+        quantity_in_stock INTEGER DEFAULT 0,
+        minimum_stock_level INTEGER DEFAULT 0,
+        status VARCHAR(20) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create inventory assignments table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS inventory_assignments (
+        id SERIAL PRIMARY KEY,
+        item_id INTEGER REFERENCES inventory_items(id) ON DELETE CASCADE,
+        client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
+        quantity INTEGER NOT NULL,
+        assigned_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        installation_address TEXT,
+        notes TEXT,
+        status VARCHAR(20) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create stock movements table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS stock_movements (
+        id SERIAL PRIMARY KEY,
+        item_id INTEGER REFERENCES inventory_items(id) ON DELETE CASCADE,
+        movement_type VARCHAR(20) NOT NULL, -- 'in', 'out', 'adjustment'
+        quantity INTEGER NOT NULL,
+        reason VARCHAR(100), -- 'purchase', 'assignment', 'return', 'adjustment', 'damaged'
+        reference_id INTEGER, -- Reference to client_id for assignments
+        unit_cost DECIMAL(10,2),
+        notes TEXT,
+        movement_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Create default admin user if not exists
     const hashedPassword = await bcrypt.hash('admin123', 10);
     await client.query(`
@@ -406,10 +571,88 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 // API routes for data
 app.get('/api/clients', authenticateToken, async (req, res) => {
   try {
+    const { 
+      page = 1, 
+      limit = 20, 
+      sortBy = 'created_at', 
+      sortOrder = 'desc',
+      search = '',
+      paymentStatus = '',
+      status = ''
+    } = req.query;
+    
+    const offset = (page - 1) * limit;
     const client = await pool.connect();
-    const result = await client.query('SELECT * FROM clients ORDER BY created_at DESC');
+    
+    // Build WHERE clause for filtering
+    let whereConditions = [];
+    let queryParams = [];
+    let paramCount = 0;
+    
+    if (search) {
+      paramCount++;
+      whereConditions.push(`c.name ILIKE $${paramCount}`);
+      queryParams.push(`%${search}%`);
+    }
+    
+    if (paymentStatus) {
+      paramCount++;
+      whereConditions.push(`c.payment_status = $${paramCount}`);
+      queryParams.push(paymentStatus);
+    }
+    
+    if (status) {
+      paramCount++;
+      whereConditions.push(`c.status = $${paramCount}`);
+      queryParams.push(status);
+    }
+    
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    
+    // Valid sort columns
+    const validSortColumns = ['id', 'name', 'address', 'installation_date', 'due_date', 'payment_status', 'status', 'created_at'];
+    const sortColumn = validSortColumns.includes(sortBy) ? sortBy : 'created_at';
+    const sortDirection = sortOrder.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+    
+    // Get total count for pagination
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM clients c
+      LEFT JOIN client_plans cp ON c.id = cp.client_id
+      LEFT JOIN plans p ON cp.plan_id = p.id
+      ${whereClause}
+    `;
+    const countResult = await client.query(countQuery, queryParams);
+    const totalCount = parseInt(countResult.rows[0].total);
+    
+    // Get paginated results
+    const dataQuery = `
+      SELECT 
+        c.*,
+        p.name as plan_name
+      FROM clients c
+      LEFT JOIN client_plans cp ON c.id = cp.client_id
+      LEFT JOIN plans p ON cp.plan_id = p.id
+      ${whereClause}
+      ORDER BY c.${sortColumn} ${sortDirection}
+      LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
+    `;
+    
+    queryParams.push(limit, offset);
+    const result = await client.query(dataQuery, queryParams);
+    
     client.release();
-    res.json(result.rows);
+    
+    res.json({ 
+      success: true, 
+      clients: result.rows,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalCount / limit),
+        totalCount: totalCount,
+        limit: parseInt(limit)
+      }
+    });
   } catch (error) {
     console.error('Get clients error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -419,14 +662,14 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
 // Create new client
 app.post('/api/clients', authenticateToken, async (req, res) => {
   try {
-    const { name, email, phone, address, status = 'active' } = req.body;
+    const { name, address, installation_date, due_date, payment_status = 'unpaid', status = 'active' } = req.body;
     if (!name) {
       return res.status(400).json({ error: 'Name is required' });
     }
     const client = await pool.connect();
     const result = await client.query(
-      'INSERT INTO clients (name, email, phone, address, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [name, email, phone, address, status]
+      'INSERT INTO clients (name, address, installation_date, due_date, payment_status, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [name, address, installation_date || null, due_date || null, payment_status, status]
     );
     client.release();
     res.json({ success: true, client: result.rows[0] });
@@ -440,11 +683,11 @@ app.post('/api/clients', authenticateToken, async (req, res) => {
 app.put('/api/clients/:id', authenticateToken, async (req, res) => {
   try {
     const clientId = req.params.id;
-    const { name, email, phone, address, status } = req.body;
+    const { name, address, installation_date, due_date, payment_status, status } = req.body;
     const client = await pool.connect();
     const result = await client.query(
-      'UPDATE clients SET name = $1, email = $2, phone = $3, address = $4, status = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING *',
-      [name, email, phone, address, status, clientId]
+      'UPDATE clients SET name = $1, address = $2, installation_date = $3, due_date = $4, payment_status = $5, status = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING *',
+      [name, address, installation_date || null, due_date || null, payment_status, status, clientId]
     );
     client.release();
     if (result.rowCount === 0) {
@@ -1135,7 +1378,7 @@ app.get('/api/clients-with-plan', authenticateToken, async (req, res) => {
     const client = await pool.connect();
     const result = await client.query(`
       SELECT 
-        c.id, c.name, c.email, c.phone, c.address, c.status, c.created_at, c.updated_at,
+        c.id, c.name, c.address, c.installation_date, c.due_date, c.payment_status, c.status, c.created_at, c.updated_at,
         cp.plan_id, p.name AS plan_name, p.price AS plan_price
       FROM clients c
       LEFT JOIN client_plans cp ON c.id = cp.client_id AND cp.status = 'active'
@@ -1203,6 +1446,342 @@ app.put('/api/client-plans/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// INVENTORY API ENDPOINTS
+// Get all inventory categories
+app.get('/api/inventory/categories', authenticateToken, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query('SELECT * FROM inventory_categories ORDER BY name');
+    client.release();
+    res.json({ success: true, categories: result.rows });
+  } catch (error) {
+    console.error('Get categories error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Add inventory category
+app.post('/api/inventory/categories', authenticateToken, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const client = await pool.connect();
+    const result = await client.query(
+      'INSERT INTO inventory_categories (name, description) VALUES ($1, $2) RETURNING *',
+      [name, description]
+    );
+    client.release();
+    res.json({ success: true, category: result.rows[0] });
+  } catch (error) {
+    console.error('Add category error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Update inventory category 
+app.put('/api/inventory/categories/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description } = req.body;
+    const client = await pool.connect();
+    const result = await client.query(
+      'UPDATE inventory_categories SET name = $1, description = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *',
+      [name, description, id]
+    );
+    client.release();
+    res.json({ success: true, category: result.rows[0] });
+  } catch (error) {
+    console.error('Update category error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Delete inventory category
+app.delete('/api/inventory/categories/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const client = await pool.connect();
+    await client.query('DELETE FROM inventory_categories WHERE id = $1', [id]);
+    client.release();
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete category error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Get all suppliers
+app.get('/api/inventory/suppliers', authenticateToken, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query('SELECT * FROM suppliers ORDER BY name');
+    client.release();
+    res.json({ success: true, suppliers: result.rows });
+  } catch (error) {
+    console.error('Get suppliers error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Add supplier
+app.post('/api/inventory/suppliers', authenticateToken, async (req, res) => {
+  try {
+    const { name, contact_person, email, phone, address, notes } = req.body;
+    const client = await pool.connect();
+    const result = await client.query(
+      'INSERT INTO suppliers (name, contact_person, email, phone, address, notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [name, contact_person, email, phone, address, notes]
+    );
+    client.release();
+    res.json({ success: true, supplier: result.rows[0] });
+  } catch (error) {
+    console.error('Add supplier error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Update supplier
+app.put('/api/inventory/suppliers/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, contact_person, email, phone, address, notes } = req.body;
+    const client = await pool.connect();
+    const result = await client.query(
+      'UPDATE suppliers SET name = $1, contact_person = $2, email = $3, phone = $4, address = $5, notes = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING *',
+      [name, contact_person, email, phone, address, notes, id]
+    );
+    client.release();
+    res.json({ success: true, supplier: result.rows[0] });
+  } catch (error) {
+    console.error('Update supplier error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Delete supplier
+app.delete('/api/inventory/suppliers/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const client = await pool.connect();
+    await client.query('DELETE FROM suppliers WHERE id = $1', [id]);
+    client.release();
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete supplier error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Get all inventory items with joins
+app.get('/api/inventory/items', authenticateToken, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(`
+      SELECT 
+        i.*,
+        c.name as category_name,
+        s.name as supplier_name
+      FROM inventory_items i
+      LEFT JOIN inventory_categories c ON i.category_id = c.id
+      LEFT JOIN suppliers s ON i.supplier_id = s.id
+      ORDER BY i.name
+    `);
+    client.release();
+    res.json({ success: true, items: result.rows });
+  } catch (error) {
+    console.error('Get items error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Add inventory item
+app.post('/api/inventory/items', authenticateToken, async (req, res) => {
+  try {
+    const { name, description, category_id, supplier_id, sku, unit_price, quantity_in_stock, minimum_stock_level } = req.body;
+    const client = await pool.connect();
+    
+    const result = await client.query(
+      'INSERT INTO inventory_items (name, description, category_id, supplier_id, sku, unit_price, quantity_in_stock, minimum_stock_level) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [name, description, category_id || null, supplier_id || null, sku, unit_price, quantity_in_stock, minimum_stock_level]
+    );
+    
+    // Record initial stock movement if quantity > 0
+    if (quantity_in_stock > 0) {
+      await client.query(
+        'INSERT INTO stock_movements (item_id, movement_type, quantity, reason, unit_cost) VALUES ($1, $2, $3, $4, $5)',
+        [result.rows[0].id, 'in', quantity_in_stock, 'initial_stock', unit_price]
+      );
+    }
+    
+    client.release();
+    res.json({ success: true, item: result.rows[0] });
+  } catch (error) {
+    console.error('Add item error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Update inventory item
+app.put('/api/inventory/items/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, category_id, supplier_id, sku, unit_price, minimum_stock_level, status } = req.body;
+    const client = await pool.connect();
+    
+    const result = await client.query(
+      'UPDATE inventory_items SET name = $1, description = $2, category_id = $3, supplier_id = $4, sku = $5, unit_price = $6, minimum_stock_level = $7, status = $8, updated_at = CURRENT_TIMESTAMP WHERE id = $9 RETURNING *',
+      [name, description, category_id || null, supplier_id || null, sku, unit_price, minimum_stock_level, status, id]
+    );
+    
+    client.release();
+    res.json({ success: true, item: result.rows[0] });
+  } catch (error) {
+    console.error('Update item error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Delete inventory item
+app.delete('/api/inventory/items/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const client = await pool.connect();
+    await client.query('DELETE FROM inventory_items WHERE id = $1', [id]);
+    client.release();
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete item error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Adjust inventory stock
+app.post('/api/inventory/items/:id/adjust-stock', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { quantity, reason, notes } = req.body;
+    const client = await pool.connect();
+    
+    // Get current stock
+    const itemResult = await client.query('SELECT quantity_in_stock FROM inventory_items WHERE id = $1', [id]);
+    if (itemResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ success: false, error: 'Item not found' });
+    }
+    
+    const currentStock = itemResult.rows[0].quantity_in_stock;
+    const newStock = currentStock + quantity;
+    
+    if (newStock < 0) {
+      client.release();
+      return res.status(400).json({ success: false, error: 'Insufficient stock' });
+    }
+    
+    // Update stock
+    await client.query('UPDATE inventory_items SET quantity_in_stock = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [newStock, id]);
+    
+    // Record stock movement
+    await client.query(
+      'INSERT INTO stock_movements (item_id, movement_type, quantity, reason, notes) VALUES ($1, $2, $3, $4, $5)',
+      [id, quantity > 0 ? 'in' : 'out', Math.abs(quantity), reason, notes]
+    );
+    
+    client.release();
+    res.json({ success: true, new_stock: newStock });
+  } catch (error) {
+    console.error('Adjust stock error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Get inventory assignments
+app.get('/api/inventory/assignments', authenticateToken, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(`
+      SELECT 
+        a.*,
+        i.name as item_name,
+        i.sku as item_sku,
+        c.name as client_name
+      FROM inventory_assignments a
+      JOIN inventory_items i ON a.item_id = i.id
+      JOIN clients c ON a.client_id = c.id
+      ORDER BY a.assigned_date DESC
+    `);
+    client.release();
+    res.json({ success: true, assignments: result.rows });
+  } catch (error) {
+    console.error('Get assignments error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Assign equipment to client
+app.post('/api/inventory/assignments', authenticateToken, async (req, res) => {
+  try {
+    const { item_id, client_id, quantity, installation_address, notes } = req.body;
+    const client = await pool.connect();
+    
+    // Check available stock
+    const itemResult = await client.query('SELECT quantity_in_stock, name FROM inventory_items WHERE id = $1', [item_id]);
+    if (itemResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ success: false, error: 'Item not found' });
+    }
+    
+    const currentStock = itemResult.rows[0].quantity_in_stock;
+    if (currentStock < quantity) {
+      client.release();
+      return res.status(400).json({ success: false, error: 'Insufficient stock available' });
+    }
+    
+    // Create assignment
+    const assignmentResult = await client.query(
+      'INSERT INTO inventory_assignments (item_id, client_id, quantity, installation_address, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [item_id, client_id, quantity, installation_address, notes]
+    );
+    
+    // Update stock
+    await client.query('UPDATE inventory_items SET quantity_in_stock = quantity_in_stock - $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [quantity, item_id]);
+    
+    // Record stock movement
+    await client.query(
+      'INSERT INTO stock_movements (item_id, movement_type, quantity, reason, reference_id, notes) VALUES ($1, $2, $3, $4, $5, $6)',
+      [item_id, 'out', quantity, 'assignment', client_id, notes]
+    );
+    
+    client.release();
+    res.json({ success: true, assignment: assignmentResult.rows[0] });
+  } catch (error) {
+    console.error('Create assignment error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Get stock movements
+app.get('/api/inventory/movements', authenticateToken, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(`
+      SELECT 
+        m.*,
+        i.name as item_name,
+        i.sku as item_sku,
+        c.name as client_name
+      FROM stock_movements m
+      JOIN inventory_items i ON m.item_id = i.id
+      LEFT JOIN clients c ON m.reference_id = c.id AND m.reason = 'assignment'
+      ORDER BY m.movement_date DESC
+      LIMIT 500
+    `);
+    client.release();
+    res.json({ success: true, movements: result.rows });
+  } catch (error) {
+    console.error('Get movements error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
 // MONITORING API ENDPOINTS
 
 // Get monitoring dashboard data (using existing MikroTik settings)
@@ -1239,6 +1818,18 @@ app.get('/api/monitoring/dashboard', authenticateToken, async (req, res) => {
       
       connection.close();
       
+      // Create a map of account profiles for quick lookup
+      const accountProfileMap = {};
+      pppAccounts.forEach(acc => {
+        accountProfileMap[acc.name] = acc.profile;
+      });
+      
+      // Merge profile information into active accounts
+      const pppActiveWithProfiles = pppActive.map(activeAcc => ({
+        ...activeAcc,
+        profile: accountProfileMap[activeAcc.name] || '-'
+      }));
+      
       // Calculate statistics
       const stats = {
         total_accounts: pppAccounts.length,
@@ -1253,7 +1844,7 @@ app.get('/api/monitoring/dashboard', authenticateToken, async (req, res) => {
         success: true,
         aggregate_stats: stats,
         ppp_accounts: pppAccounts,
-        ppp_active: pppActive,
+        ppp_active: pppActiveWithProfiles,
         pppoe_interfaces: pppoeInterfaces
       });
       
@@ -1752,6 +2343,389 @@ app.put('/api/monitoring/categories/:categoryId/subcategories/:subcategoryId/gro
 // Redirect root to login page
 app.get('/', (req, res) => {
   res.redirect('/login.html');
+});
+
+// ===== TICKETING SYSTEM API ENDPOINTS =====
+
+// Helper function to generate ticket number
+function generateTicketNumber() {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 5);
+  return `TKT-${timestamp}-${random}`.toUpperCase();
+}
+
+// Get all tickets with filtering and pagination
+app.get('/api/tickets', authenticateToken, async (req, res) => {
+  try {
+    const { 
+      page = 1, 
+      limit = 25, 
+      sort = 'created_at', 
+      order = 'desc',
+      status,
+      priority,
+      category,
+      assigned_to,
+      client_id,
+      search
+    } = req.query;
+
+    const offset = (page - 1) * limit;
+    const sortColumn = ['id', 'ticket_number', 'title', 'priority', 'category', 'status', 'created_at', 'updated_at'].includes(sort) ? sort : 'created_at';
+    const sortDirection = order.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+
+    let whereClause = 'WHERE 1=1';
+    let queryParams = [];
+    let paramCount = 0;
+
+    if (status) {
+      paramCount++;
+      whereClause += ` AND t.status = $${paramCount}`;
+      queryParams.push(status);
+    }
+
+    if (priority) {
+      paramCount++;
+      whereClause += ` AND t.priority = $${paramCount}`;
+      queryParams.push(priority);
+    }
+
+    if (category) {
+      paramCount++;
+      whereClause += ` AND t.category = $${paramCount}`;
+      queryParams.push(category);
+    }
+
+    if (assigned_to) {
+      paramCount++;
+      whereClause += ` AND t.assigned_to = $${paramCount}`;
+      queryParams.push(assigned_to);
+    }
+
+    if (client_id) {
+      paramCount++;
+      whereClause += ` AND t.client_id = $${paramCount}`;
+      queryParams.push(client_id);
+    }
+
+    if (search) {
+      paramCount++;
+      whereClause += ` AND (t.title ILIKE $${paramCount} OR t.description ILIKE $${paramCount} OR t.ticket_number ILIKE $${paramCount})`;
+      queryParams.push(`%${search}%`);
+    }
+
+    const client = await pool.connect();
+
+    // Get total count
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM tickets t
+      LEFT JOIN clients c ON t.client_id = c.id
+      LEFT JOIN users u_assigned ON t.assigned_to = u_assigned.id
+      LEFT JOIN users u_created ON t.created_by = u_created.id
+      ${whereClause}
+    `;
+    const countResult = await client.query(countQuery, queryParams);
+    const total = parseInt(countResult.rows[0].total);
+
+    // Get paginated data
+    const dataQuery = `
+      SELECT 
+        t.*,
+        c.name as client_name,
+        u_assigned.username as assigned_to_name,
+        u_created.username as created_by_name
+      FROM tickets t
+      LEFT JOIN clients c ON t.client_id = c.id
+      LEFT JOIN users u_assigned ON t.assigned_to = u_assigned.id
+      LEFT JOIN users u_created ON t.created_by = u_created.id
+      ${whereClause}
+      ORDER BY t.${sortColumn} ${sortDirection}
+      LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
+    `;
+
+    queryParams.push(limit, offset);
+    const result = await client.query(dataQuery, queryParams);
+
+    client.release();
+
+    res.json({ 
+      success: true, 
+      tickets: result.rows,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Get tickets error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get ticket statistics (must come before /:id route)
+app.get('/api/tickets/stats', authenticateToken, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    
+    const stats = await client.query(`
+      SELECT 
+        COUNT(*) as total_tickets,
+        COUNT(CASE WHEN status = 'open' THEN 1 END) as open_tickets,
+        COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_tickets,
+        COUNT(CASE WHEN status = 'resolved' THEN 1 END) as resolved_tickets,
+        COUNT(CASE WHEN status = 'closed' THEN 1 END) as closed_tickets,
+        COUNT(CASE WHEN priority = 'urgent' THEN 1 END) as urgent_tickets,
+        COUNT(CASE WHEN priority = 'high' THEN 1 END) as high_priority_tickets
+      FROM tickets
+    `);
+    
+    client.release();
+    res.json({ success: true, stats: stats.rows[0] });
+  } catch (error) {
+    console.error('Get ticket stats error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get single ticket by ID
+app.get('/api/tickets/:id', authenticateToken, async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const client = await pool.connect();
+    
+    const result = await client.query(`
+      SELECT 
+        t.*,
+        c.name as client_name,
+        u_assigned.username as assigned_to_name,
+        u_created.username as created_by_name
+      FROM tickets t
+      LEFT JOIN clients c ON t.client_id = c.id
+      LEFT JOIN users u_assigned ON t.assigned_to = u_assigned.id
+      LEFT JOIN users u_created ON t.created_by = u_created.id
+      WHERE t.id = $1
+    `, [ticketId]);
+    
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+    
+    res.json({ success: true, ticket: result.rows[0] });
+  } catch (error) {
+    console.error('Get ticket error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Create new ticket
+app.post('/api/tickets', authenticateToken, async (req, res) => {
+  try {
+    const { 
+      title, 
+      description, 
+      client_id, 
+      priority = 'medium', 
+      category = 'general',
+      assigned_to,
+      due_date
+    } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ error: 'Title is required' });
+    }
+
+    const ticketNumber = generateTicketNumber();
+    const client = await pool.connect();
+
+    const result = await client.query(
+      `INSERT INTO tickets (ticket_number, title, description, client_id, priority, category, assigned_to, created_by, due_date) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [ticketNumber, title, description, client_id || null, priority, category, assigned_to || null, req.user.userId, due_date || null]
+    );
+
+    // Add to history
+    await client.query(
+      'INSERT INTO ticket_history (ticket_id, user_id, action, description) VALUES ($1, $2, $3, $4)',
+      [result.rows[0].id, req.user.userId, 'created', `Ticket created: ${title}`]
+    );
+
+    client.release();
+    res.json({ success: true, ticket: result.rows[0] });
+  } catch (error) {
+    console.error('Create ticket error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update ticket
+app.put('/api/tickets/:id', authenticateToken, async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const { 
+      title, 
+      description, 
+      client_id, 
+      priority, 
+      category, 
+      status,
+      assigned_to,
+      due_date,
+      resolution
+    } = req.body;
+
+    const client = await pool.connect();
+
+    // Get current ticket for history tracking
+    const currentTicket = await client.query('SELECT * FROM tickets WHERE id = $1', [ticketId]);
+    if (currentTicket.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    const current = currentTicket.rows[0];
+    const resolved_at = status === 'resolved' && current.status !== 'resolved' ? new Date() : current.resolved_at;
+
+    const result = await client.query(
+      `UPDATE tickets SET 
+        title = COALESCE($1, title),
+        description = COALESCE($2, description),
+        client_id = COALESCE($3, client_id),
+        priority = COALESCE($4, priority),
+        category = COALESCE($5, category),
+        status = COALESCE($6, status),
+        assigned_to = COALESCE($7, assigned_to),
+        due_date = COALESCE($8, due_date),
+        resolution = COALESCE($9, resolution),
+        resolved_at = $10,
+        updated_at = CURRENT_TIMESTAMP
+       WHERE id = $11 RETURNING *`,
+      [title, description, client_id, priority, category, status, assigned_to, due_date, resolution, resolved_at, ticketId]
+    );
+
+    // Track changes in history
+    const changes = [];
+    if (status && status !== current.status) changes.push(`Status changed from ${current.status} to ${status}`);
+    if (priority && priority !== current.priority) changes.push(`Priority changed from ${current.priority} to ${priority}`);
+    if (assigned_to && assigned_to !== current.assigned_to) changes.push(`Assignment changed`);
+
+    if (changes.length > 0) {
+      await client.query(
+        'INSERT INTO ticket_history (ticket_id, user_id, action, description) VALUES ($1, $2, $3, $4)',
+        [ticketId, req.user.userId, 'updated', changes.join('; ')]
+      );
+    }
+
+    client.release();
+    res.json({ success: true, ticket: result.rows[0] });
+  } catch (error) {
+    console.error('Update ticket error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Delete ticket
+app.delete('/api/tickets/:id', authenticateToken, async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const client = await pool.connect();
+    
+    const result = await client.query('DELETE FROM tickets WHERE id = $1 RETURNING *', [ticketId]);
+    
+    if (result.rowCount === 0) {
+      client.release();
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+    
+    client.release();
+    res.json({ success: true, deleted: result.rows[0] });
+  } catch (error) {
+    console.error('Delete ticket error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get ticket comments
+app.get('/api/tickets/:id/comments', authenticateToken, async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const client = await pool.connect();
+    
+    const result = await client.query(`
+      SELECT 
+        tc.*,
+        u.username as user_name
+      FROM ticket_comments tc
+      LEFT JOIN users u ON tc.user_id = u.id
+      WHERE tc.ticket_id = $1
+      ORDER BY tc.created_at ASC
+    `, [ticketId]);
+    
+    client.release();
+    res.json({ success: true, comments: result.rows });
+  } catch (error) {
+    console.error('Get ticket comments error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Add comment to ticket
+app.post('/api/tickets/:id/comments', authenticateToken, async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const { comment, is_internal = false } = req.body;
+
+    if (!comment) {
+      return res.status(400).json({ error: 'Comment is required' });
+    }
+
+    const client = await pool.connect();
+
+    const result = await client.query(
+      'INSERT INTO ticket_comments (ticket_id, user_id, comment, is_internal) VALUES ($1, $2, $3, $4) RETURNING *',
+      [ticketId, req.user.userId, comment, is_internal]
+    );
+
+    // Add to history
+    await client.query(
+      'INSERT INTO ticket_history (ticket_id, user_id, action, description) VALUES ($1, $2, $3, $4)',
+      [ticketId, req.user.userId, 'commented', is_internal ? 'Added internal comment' : 'Added comment']
+    );
+
+    client.release();
+    res.json({ success: true, comment: result.rows[0] });
+  } catch (error) {
+    console.error('Add comment error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get ticket history
+app.get('/api/tickets/:id/history', authenticateToken, async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const client = await pool.connect();
+    
+    const result = await client.query(`
+      SELECT 
+        th.*,
+        u.username as user_name
+      FROM ticket_history th
+      LEFT JOIN users u ON th.user_id = u.id
+      WHERE th.ticket_id = $1
+      ORDER BY th.created_at DESC
+    `, [ticketId]);
+    
+    client.release();
+    res.json({ success: true, history: result.rows });
+  } catch (error) {
+    console.error('Get ticket history error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Handle 404 for any non-API routes that don't match static files

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ISP Management System - Inventory Management">
+  <title>ISP Management System - Inventory</title>
+  
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'inter': ['Inter', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'fadeIn': 'fadeIn 0.5s ease-in-out',
+            'slideUp': 'slideUp 0.3s ease-out',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-100 font-inter">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="w-full px-6 h-16 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center space-x-3">
+        <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
+          <i class="fas fa-boxes text-2xl"></i>
+          <h1 class="text-xl font-bold">ISP Management System</h1>
+        </a>
+      </div>
+      
+      <!-- Navigation -->
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="/dashboard.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="/clients.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-users"></i>
+          <span>Clients</span>
+        </a>
+        <a href="/plans.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-project-diagram"></i>
+          <span>Plans</span>
+        </a>
+        <a href="/billings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span>Billings</span>
+        </a>
+        <a href="/payments.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-credit-card"></i>
+          <span>Payments</span>
+        </a>
+        <a href="/inventory.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
+          <i class="fas fa-boxes"></i>
+          <span>Inventory</span>
+        </a>
+        <a href="/tickets.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Tickets</span>
+        </a>
+        <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-chart-line"></i>
+          <span>Monitoring</span>
+        </a>
+        <a href="/settings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cogs"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+      
+      <!-- User Menu -->
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-user-circle text-xl"></i>
+          <span id="username" class="font-medium">Loading...</span>
+        </div>
+        <button 
+          id="logoutBtn"
+          class="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+        >
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="w-full px-6 py-8">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+      <div class="mb-4 sm:mb-0">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+          <i class="fas fa-boxes text-blue-600 mr-3"></i>
+          Inventory Management
+        </h2>
+        <p class="text-gray-600">Manage equipment, stock levels, and assignments</p>
+      </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <nav class="flex space-x-8">
+          <button id="equipmentTab" onclick="switchTab('equipment')" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white text-blue-600 shadow-sm font-medium">
+            <i class="fas fa-microchip"></i>
+            <span>Equipment</span>
+          </button>
+          <button id="assignmentsTab" onclick="switchTab('assignments')" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-600 hover:text-gray-900 font-medium">
+            <i class="fas fa-user-tag"></i>
+            <span>Assignments</span>
+          </button>
+          <button id="movementsTab" onclick="switchTab('movements')" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-600 hover:text-gray-900 font-medium">
+            <i class="fas fa-exchange-alt"></i>
+            <span>Stock Movements</span>
+          </button>
+          <button id="categoriesTab" onclick="switchTab('categories')" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-600 hover:text-gray-900 font-medium">
+            <i class="fas fa-tags"></i>
+            <span>Categories</span>
+          </button>
+          <button id="suppliersTab" onclick="switchTab('suppliers')" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-600 hover:text-gray-900 font-medium">
+            <i class="fas fa-truck"></i>
+            <span>Suppliers</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Equipment Tab Content -->
+    <div id="equipmentContent" class="tab-content">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center mb-4 sm:mb-0">
+            <i class="fas fa-microchip text-blue-600 mr-2"></i>
+            Equipment Inventory
+          </h3>
+          <div class="flex items-center space-x-3">
+            <input type="text" id="equipmentSearch" placeholder="Search equipment..." class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <button id="addEquipmentBtn" onclick="openAddEquipmentModal()" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+              <i class="fas fa-plus"></i>
+              <span>Add Equipment</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min Level</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="equipmentTableBody" class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td colspan="9" class="px-4 py-8 text-center">
+                  <div class="flex items-center justify-center">
+                    <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mr-3"></div>
+                    <span class="text-gray-500">Loading equipment...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assignments Tab Content -->
+    <div id="assignmentsContent" class="tab-content hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center mb-4 sm:mb-0">
+            <i class="fas fa-user-tag text-blue-600 mr-2"></i>
+            Equipment Assignments
+          </h3>
+          <button id="addAssignmentBtn" onclick="openAddAssignmentModal()" class="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+            <i class="fas fa-plus"></i>
+            <span>Assign Equipment</span>
+          </button>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipment</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned Date</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Installation Address</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="assignmentsTableBody" class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td colspan="8" class="px-4 py-8 text-center">
+                  <div class="flex items-center justify-center">
+                    <div class="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin mr-3"></div>
+                    <span class="text-gray-500">Loading assignments...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Movements Tab Content -->
+    <div id="movementsContent" class="tab-content hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-exchange-alt text-blue-600 mr-2"></i>
+            Stock Movement History
+          </h3>
+          <p class="text-sm text-gray-500 mt-1">Track all inventory transactions and changes</p>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipment</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+              </tr>
+            </thead>
+            <tbody id="movementsTableBody" class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td colspan="8" class="px-4 py-8 text-center">
+                  <div class="flex items-center justify-center">
+                    <div class="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mr-3"></div>
+                    <span class="text-gray-500">Loading movements...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories Tab Content -->
+    <div id="categoriesContent" class="tab-content hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center mb-4 sm:mb-0">
+            <i class="fas fa-tags text-blue-600 mr-2"></i>
+            Equipment Categories
+          </h3>
+          <button id="addCategoryBtn" onclick="openAddCategoryModal()" class="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium">
+            <i class="fas fa-plus"></i>
+            <span>Add Category</span>
+          </button>
+        </div>
+        
+        <div class="p-6">
+          <div id="categoriesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Categories will be loaded here -->
+            <div class="text-center py-12">
+              <div class="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+              <span class="text-gray-500">Loading categories...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suppliers Tab Content -->
+    <div id="suppliersContent" class="tab-content hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center mb-4 sm:mb-0">
+            <i class="fas fa-truck text-blue-600 mr-2"></i>
+            Suppliers
+          </h3>
+          <button id="addSupplierBtn" onclick="openAddSupplierModal()" class="flex items-center space-x-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium">
+            <i class="fas fa-plus"></i>
+            <span>Add Supplier</span>
+          </button>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Person</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="suppliersTableBody" class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td colspan="6" class="px-4 py-8 text-center">
+                  <div class="flex items-center justify-center">
+                    <div class="w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin mr-3"></div>
+                    <span class="text-gray-500">Loading suppliers...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Notification Container -->
+  <div id="notificationContainer" class="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm"></div>
+
+  <!-- Modals will be added here via JavaScript -->
+
+  <script>
+    // Global variables
+    let currentTab = 'equipment';
+    let equipment = [];
+    let assignments = [];
+    let movements = [];
+    let categories = [];
+    let suppliers = [];
+    let clients = [];
+
+    // Show notification toast
+    function showNotification(title, message, type = 'info') {
+      const container = document.getElementById('notificationContainer');
+      
+      const toastId = 'toast-' + Math.random().toString(36).substring(2, 15);
+      
+      let bgClass = 'bg-blue-500';
+      let icon = 'info-circle';
+      
+      switch(type) {
+        case 'success':
+          icon = 'check-circle';
+          bgClass = 'bg-green-500';
+          break;
+        case 'warning':
+          icon = 'exclamation-triangle';
+          bgClass = 'bg-amber-500';
+          break;
+        case 'error':
+          icon = 'exclamation-circle';
+          bgClass = 'bg-red-500';
+          break;
+      }
+      
+      const toast = document.createElement('div');
+      toast.id = toastId;
+      toast.className = `${bgClass} text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
+      toast.innerHTML = `
+        <div class="flex items-start">
+          <i class="fas fa-${icon} mt-0.5 mr-3 flex-shrink-0"></i>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold">${title}</div>
+            <div class="text-sm opacity-90">${message}</div>
+          </div>
+          <button onclick="removeToast('${toastId}')" class="ml-3 flex-shrink-0 text-white/80 hover:text-white">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-x-full', 'opacity-0');
+      }, 10);
+      
+      setTimeout(() => {
+        removeToast(toastId);
+      }, 5000);
+    }
+    
+    function removeToast(toastId) {
+      const toast = document.getElementById(toastId);
+      if (toast) {
+        toast.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }
+    }
+
+    // Tab switching
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('[id$="Tab"]').forEach(tab => {
+        tab.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+        tab.classList.add('text-gray-600', 'hover:text-gray-900');
+      });
+      
+      document.getElementById(tabName + 'Tab').classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+      document.getElementById(tabName + 'Tab').classList.remove('text-gray-600', 'hover:text-gray-900');
+      
+      // Update content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      
+      document.getElementById(tabName + 'Content').classList.remove('hidden');
+      currentTab = tabName;
+      
+      // Load data for the active tab
+      loadTabData(tabName);
+    }
+
+    // Load data for active tab
+    async function loadTabData(tabName) {
+      switch(tabName) {
+        case 'equipment':
+          await loadEquipment();
+          break;
+        case 'assignments':
+          await loadAssignments();
+          break;
+        case 'movements':
+          await loadMovements();
+          break;
+        case 'categories':
+          await loadCategories();
+          break;
+        case 'suppliers':
+          await loadSuppliers();
+          break;
+      }
+    }
+
+    // Load equipment
+    async function loadEquipment() {
+      try {
+        const response = await fetch('/api/inventory/items', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          equipment = data.items || [];
+          renderEquipmentTable();
+        } else {
+          showNotification('Error', data.error || 'Failed to load equipment', 'error');
+        }
+      } catch (error) {
+        console.error('Load equipment error:', error);
+        showNotification('Error', 'Failed to load equipment', 'error');
+      }
+    }
+
+    // Render equipment table
+    function renderEquipmentTable() {
+      const tbody = document.getElementById('equipmentTableBody');
+      
+      if (equipment.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">No equipment found</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = equipment.map(item => {
+        const isLowStock = item.quantity_in_stock <= item.minimum_stock_level;
+        const stockClass = isLowStock ? 'text-red-600 font-semibold' : 'text-gray-900';
+        const statusClass = item.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+        
+        return `
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${item.name}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.sku || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.category_name || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.supplier_name || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm ${stockClass}">
+              ${item.quantity_in_stock}
+              ${isLowStock ? '<i class="fas fa-exclamation-triangle text-red-500 ml-1" title="Low Stock"></i>' : ''}
+            </td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.minimum_stock_level}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">₱${parseFloat(item.unit_price).toFixed(2)}</td>
+            <td class="px-4 py-2 whitespace-nowrap">
+              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">
+                ${item.status}
+              </span>
+            </td>
+            <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium space-x-2">
+              <button onclick="adjustStock(${item.id})" class="text-blue-600 hover:text-blue-900 p-1" title="Adjust Stock">
+                <i class="fas fa-plus-minus"></i>
+              </button>
+              <button onclick="editEquipment(${item.id})" class="text-green-600 hover:text-green-900 p-1" title="Edit">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="deleteEquipment(${item.id})" class="text-red-600 hover:text-red-900 p-1" title="Delete">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Placeholder functions for modals and actions
+    function openAddEquipmentModal() {
+      showNotification('Info', 'Add equipment modal will be implemented', 'info');
+    }
+
+    function openAddAssignmentModal() {
+      showNotification('Info', 'Add assignment modal will be implemented', 'info');
+    }
+
+    function openAddCategoryModal() {
+      showNotification('Info', 'Add category modal will be implemented', 'info');
+    }
+
+    function openAddSupplierModal() {
+      showNotification('Info', 'Add supplier modal will be implemented', 'info');
+    }
+
+    function adjustStock(itemId) {
+      showNotification('Info', 'Stock adjustment modal will be implemented', 'info');
+    }
+
+    function editEquipment(itemId) {
+      showNotification('Info', 'Edit equipment modal will be implemented', 'info');
+    }
+
+    function deleteEquipment(itemId) {
+      if (confirm('Are you sure you want to delete this equipment?')) {
+        showNotification('Info', 'Delete functionality will be implemented', 'info');
+      }
+    }
+
+    // Load other data (placeholder functions)
+    async function loadAssignments() {
+      // Implementation will be added
+      const tbody = document.getElementById('assignmentsTableBody');
+      tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">Assignments loading...</td></tr>';
+    }
+
+    async function loadMovements() {
+      // Implementation will be added  
+      const tbody = document.getElementById('movementsTableBody');
+      tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">Movements loading...</td></tr>';
+    }
+
+    async function loadCategories() {
+      // Implementation will be added
+      const grid = document.getElementById('categoriesGrid');
+      grid.innerHTML = '<div class="text-center py-12"><span class="text-gray-500">Categories loading...</span></div>';
+    }
+
+    async function loadSuppliers() {
+      // Implementation will be added
+      const tbody = document.getElementById('suppliersTableBody');
+      tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Suppliers loading...</td></tr>';
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if user is logged in
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Set up logout functionality
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+        localStorage.removeItem('auth_token');
+        showNotification('Logged Out', 'You have been successfully logged out', 'info');
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 1000);
+      });
+
+      // Load user info
+      fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('username').textContent = data.user.username;
+        }
+      })
+      .catch(error => {
+        console.error('Get user info error:', error);
+      });
+
+      // Load initial data
+      loadTabData(currentTab);
+    });
+  </script>
+</body>
+</html>
