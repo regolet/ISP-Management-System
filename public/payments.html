@@ -120,16 +120,25 @@
           <i class="fas fa-receipt text-green-600 mr-2"></i>
           Payment History
         </h3>
-        <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <i class="fas fa-search text-gray-400"></i>
-          </div>
-          <input 
-            type="text" 
-            id="paymentSearch" 
-            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64" 
-            placeholder="Search payments..."
+        <div class="flex items-center space-x-4">
+          <button 
+            onclick="openAddPaymentModal()" 
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
           >
+            <i class="fas fa-plus mr-2"></i>
+            Add Payment
+          </button>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input 
+              type="text" 
+              id="paymentSearch" 
+              class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64" 
+              placeholder="Search payments..."
+            >
+          </div>
         </div>
       </div>
       
@@ -140,17 +149,17 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('id')">
                 Payment ID <i id="sort-id" class="fas fa-sort ml-1"></i>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('billing_id')">
-                Billing ID <i id="sort-billing_id" class="fas fa-sort ml-1"></i>
-              </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('client_name')">
                 Client Name <i id="sort-client_name" class="fas fa-sort ml-1"></i>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('plan_name')">
-                Plan Name <i id="sort-plan_name" class="fas fa-sort ml-1"></i>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('prev_balance')">
+                Previous Balance <i id="sort-prev_balance" class="fas fa-sort ml-1"></i>
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('amount')">
-                Amount <i id="sort-amount" class="fas fa-sort ml-1"></i>
+                Payments <i id="sort-amount" class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('new_balance')">
+                New Balance <i id="sort-new_balance" class="fas fa-sort ml-1"></i>
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('payment_date')">
                 Payment Date <i id="sort-payment_date" class="fas fa-sort ml-1"></i>
@@ -162,11 +171,12 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortPayments('created_at')">
                 Created At <i id="sort-created_at" class="fas fa-sort ml-1"></i>
               </th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody id="paymentsTableBody" class="bg-white divide-y divide-gray-200">
             <tr>
-              <td colspan="9" class="px-6 py-12 text-center">
+              <td colspan="10" class="px-6 py-12 text-center">
                 <div class="flex items-center justify-center">
                   <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mr-3"></div>
                   <span class="text-gray-500">Loading payments...</span>
@@ -179,14 +189,135 @@
     </div>
   </main>
 
+  <!-- Add Payment Modal -->
+  <div id="addPaymentModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 items-center justify-center">
+    <div class="relative mx-auto mt-20 max-w-md w-full bg-white rounded-lg shadow-xl transform transition-all">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Record Payment</h3>
+      </div>
+      
+      <form id="addPaymentForm" class="p-6 space-y-4">
+        <div>
+          <label for="paymentClientId" class="block text-sm font-medium text-gray-700 mb-1">Client <span class="text-red-500">*</span></label>
+          <select 
+            id="paymentClientId" 
+            name="client_id" 
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            required
+          >
+            <option value="">Select Client</option>
+          </select>
+        </div>
+
+        <div id="clientInfoDiv" class="hidden bg-gray-50 p-4 rounded-lg">
+          <h4 class="font-medium text-gray-900 mb-2">Client Information</h4>
+          <div id="clientInfo" class="text-sm text-gray-600 space-y-1">
+            <!-- Client details will be populated here -->
+          </div>
+        </div>
+        
+        <div>
+          <label for="paymentAmount" class="block text-sm font-medium text-gray-700 mb-1">Payment Amount (₱) <span class="text-red-500">*</span></label>
+          <input 
+            type="number" 
+            id="paymentAmount" 
+            name="amount" 
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+            placeholder="0.00" 
+            step="0.01" 
+            min="0.01" 
+            required
+          >
+        </div>
+        
+        <div>
+          <label for="paymentDate" class="block text-sm font-medium text-gray-700 mb-1">Payment Date <span class="text-red-500">*</span></label>
+          <input 
+            type="date" 
+            id="paymentDate" 
+            name="payment_date" 
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+            required
+          >
+        </div>
+        
+        <div>
+          <label for="paymentMethod" class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+          <select 
+            id="paymentMethod" 
+            name="method" 
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          >
+            <option value="cash">Cash</option>
+            <option value="bank_transfer">Bank Transfer</option>
+            <option value="gcash">GCash</option>
+            <option value="paymaya">PayMaya</option>
+            <option value="check">Check</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div>
+          <label for="paymentNotes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+          <textarea 
+            id="paymentNotes" 
+            name="notes" 
+            rows="3" 
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+            placeholder="Optional notes..."
+          ></textarea>
+        </div>
+        
+        <div class="flex justify-end space-x-3">
+          <button 
+            type="button" 
+            onclick="closeAddPaymentModal()" 
+            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            id="submitPaymentBtn"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            <span id="submitPaymentText">Record Payment</span>
+            <div id="submitPaymentSpinner" class="hidden inline-flex items-center">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Processing...
+            </div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div id="notificationContainer" class="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm"></div>
   <script>
     // Global variables
     let payments = [];
     let filteredPayments = [];
-    let sortField = 'created_at';
+    let sortField = 'payment_date';
     let sortDirection = 'desc';
+
+    // Format date function
+    function formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const month = months[date.getMonth()];
+      const day = String(date.getDate()).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      return `${month}-${day}-${year} ${hours}:${minutes}:${seconds}`;
+    }
 
     // Show notification toast
     function showNotification(title, message, type = 'info') {
@@ -395,7 +526,7 @@
       if (filteredPayments.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+            <td colspan="10" class="px-6 py-12 text-center text-gray-500">
               No payment records found.
             </td>
           </tr>
@@ -406,14 +537,23 @@
       tbody.innerHTML = filteredPayments.map(payment => `
         <tr class="hover:bg-gray-50">
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${payment.id}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${payment.billing_id}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${payment.client_name || 'Unknown Client'}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.plan_name || 'Unknown Plan'}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm ${parseFloat(payment.prev_balance || 0) > 0 ? 'text-red-600' : parseFloat(payment.prev_balance || 0) < 0 ? 'text-green-600' : 'text-gray-500'}">₱${parseFloat(payment.prev_balance || 0).toFixed(2)}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">₱${parseFloat(payment.amount || 0).toFixed(2)}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.payment_date || '-'}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${parseFloat(payment.new_balance || 0) > 0 ? 'text-red-600' : parseFloat(payment.new_balance || 0) < 0 ? 'text-green-600' : 'text-gray-900'}">₱${parseFloat(payment.new_balance || 0).toFixed(2)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(payment.payment_date)}</td>
           <td class="px-6 py-4 whitespace-nowrap">${getMethodBadge(payment.method || payment.payment_method)}</td>
           <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">${payment.notes || '-'}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.created_at ? new Date(payment.created_at).toLocaleString() : '-'}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(payment.created_at)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+            <button 
+              onclick="deletePayment(${payment.id})"
+              class="text-red-600 hover:text-red-900 p-1"
+              title="Delete Payment"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
         </tr>
       `).join('');
     }
@@ -474,18 +614,15 @@
       
       filteredPayments = payments.filter(payment => {
         const clientName = (payment.client_name || '').toLowerCase();
-        const planName = (payment.plan_name || '').toLowerCase();
         const method = (payment.method || payment.payment_method || '').toLowerCase();
         const notes = (payment.notes || '').toLowerCase();
         const amount = payment.amount ? payment.amount.toString() : '';
         
         return clientName.includes(searchTerm) ||
-               planName.includes(searchTerm) ||
                method.includes(searchTerm) ||
                notes.includes(searchTerm) ||
                amount.includes(searchTerm) ||
-               payment.id.toString().includes(searchTerm) ||
-               (payment.billing_id && payment.billing_id.toString().includes(searchTerm));
+               payment.id.toString().includes(searchTerm);
       });
       
       // Re-apply sorting after filtering
@@ -493,6 +630,124 @@
         sortPayments(sortField);
       } else {
         renderPayments();
+      }
+    }
+
+    // Modal functions
+    function openAddPaymentModal() {
+      loadClients();
+      document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('addPaymentModal').classList.remove('hidden');
+      document.getElementById('addPaymentModal').classList.add('flex');
+    }
+
+    function closeAddPaymentModal() {
+      document.getElementById('addPaymentModal').classList.add('hidden');
+      document.getElementById('addPaymentModal').classList.remove('flex');
+      document.getElementById('addPaymentForm').reset();
+      document.getElementById('clientInfoDiv').classList.add('hidden');
+      
+      // Reset loading state
+      const submitBtn = document.getElementById('submitPaymentBtn');
+      const submitText = document.getElementById('submitPaymentText');
+      const submitSpinner = document.getElementById('submitPaymentSpinner');
+      
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitSpinner.classList.add('hidden');
+      }
+    }
+
+    // Load clients for dropdown
+    async function loadClients() {
+      const token = localStorage.getItem('auth_token');
+      try {
+        const response = await fetch('/api/clients', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const select = document.getElementById('paymentClientId');
+          
+          // Clear existing options except the first
+          select.innerHTML = '<option value="">Select Client</option>';
+          
+          // Add client options
+          data.clients.forEach(client => {
+            const option = document.createElement('option');
+            option.value = client.id;
+            option.textContent = client.name;
+            option.dataset.balance = client.balance || 0;
+            option.dataset.paymentStatus = client.payment_status || 'unpaid';
+            select.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading clients:', error);
+      }
+    }
+
+    // Handle client selection
+    function handleClientSelection(event) {
+      const selected = event.target.selectedOptions[0];
+      const clientInfoDiv = document.getElementById('clientInfoDiv');
+      const clientInfo = document.getElementById('clientInfo');
+      
+      if (selected && selected.value) {
+        const balance = parseFloat(selected.dataset.balance || 0);
+        const paymentStatus = selected.dataset.paymentStatus;
+        
+        // Auto-fill payment amount with current balance if client owes money (positive balance)
+        const paymentAmountField = document.getElementById('paymentAmount');
+        if (balance > 0) {
+          paymentAmountField.value = balance.toFixed(2);
+        } else {
+          paymentAmountField.value = '';
+        }
+        
+        clientInfo.innerHTML = `
+          <div><strong>Client:</strong> ${selected.textContent}</div>
+          <div><strong>Current Balance:</strong> <span class="${balance > 0 ? 'text-red-600' : balance < 0 ? 'text-green-600' : 'text-gray-600'}">₱${balance.toFixed(2)}</span></div>
+          <div><strong>Payment Status:</strong> <span class="px-2 py-1 text-xs rounded-full ${paymentStatus === 'paid' ? 'bg-green-100 text-green-800' : paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">${paymentStatus}</span></div>
+        `;
+        clientInfoDiv.classList.remove('hidden');
+      } else {
+        clientInfoDiv.classList.add('hidden');
+        // Clear payment amount when no client is selected
+        document.getElementById('paymentAmount').value = '';
+      }
+    }
+
+    // Delete payment function
+    async function deletePayment(paymentId) {
+      if (!confirm('Are you sure you want to delete this payment record? This action cannot be undone.')) {
+        return;
+      }
+      
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch(`/api/payments/${paymentId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          showNotification('Success', 'Payment record deleted successfully', 'success');
+          loadPayments(); // Reload the payments list
+        } else {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to delete payment record');
+        }
+      } catch (error) {
+        console.error('Error deleting payment:', error);
+        showNotification('Error', error.message || 'Failed to delete payment record', 'error');
       }
     }
 
@@ -516,6 +771,63 @@
 
       // Set up search
       document.getElementById('paymentSearch').addEventListener('input', filterPayments);
+
+      // Client selection handler
+      document.getElementById('paymentClientId').addEventListener('change', handleClientSelection);
+
+      // Payment form submission
+      document.getElementById('addPaymentForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Set loading state
+        const submitBtn = document.getElementById('submitPaymentBtn');
+        const submitText = document.getElementById('submitPaymentText');
+        const submitSpinner = document.getElementById('submitPaymentSpinner');
+        
+        submitBtn.disabled = true;
+        submitText.classList.add('hidden');
+        submitSpinner.classList.remove('hidden');
+        
+        const formData = new FormData(e.target);
+        const paymentData = Object.fromEntries(formData);
+        
+        const token = localStorage.getItem('auth_token');
+        
+        try {
+          const response = await fetch('/api/payments', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(paymentData)
+          });
+          
+          if (response.ok) {
+            showNotification('Success', 'Payment recorded successfully', 'success');
+            closeAddPaymentModal();
+            loadPayments(); // Reload the payments list
+          } else {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to record payment');
+          }
+        } catch (error) {
+          console.error('Error recording payment:', error);
+          showNotification('Error', error.message || 'Failed to record payment', 'error');
+        } finally {
+          // Reset loading state
+          submitBtn.disabled = false;
+          submitText.classList.remove('hidden');
+          submitSpinner.classList.add('hidden');
+        }
+      });
+
+      // Close modal on outside click
+      document.getElementById('addPaymentModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeAddPaymentModal();
+        }
+      });
 
       // Load initial data
       loadPayments();

@@ -12,6 +12,30 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Helper function to handle date formatting for PostgreSQL
+function formatDateForDB(dateString) {
+  if (!dateString) return null;
+  // Return the date string as-is to avoid timezone conversion
+  return dateString;
+}
+
+// Helper function to format dates in responses
+function formatClientDates(client) {
+  if (!client) return client;
+  
+  if (client.installation_date && typeof client.installation_date === 'string') {
+    if (client.installation_date.includes('T')) {
+      client.installation_date = client.installation_date.split('T')[0];
+    }
+  }
+  if (client.due_date && typeof client.due_date === 'string') {
+    if (client.due_date.includes('T')) {
+      client.due_date = client.due_date.split('T')[0];
+    }
+  }
+  return client;
+}
+
 // Serve static files from the public directory
 const path = require('path');
 app.use(express.static(path.join(__dirname, '../public')));
@@ -237,17 +261,11 @@ async function initializeDatabaseTables() {
       ALTER TABLE clients 
       ADD COLUMN IF NOT EXISTS installation_date DATE,
       ADD COLUMN IF NOT EXISTS due_date DATE,
-      ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'unpaid'
+      ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'unpaid',
+      ADD COLUMN IF NOT EXISTS email VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS phone VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS balance DECIMAL(10,2) DEFAULT 0.00
     `);
-    
-    // Remove email and phone columns if they exist
-    await client.query(`
-      ALTER TABLE clients 
-      DROP COLUMN IF EXISTS email,
-      DROP COLUMN IF EXISTS phone
-    `).catch(() => {
-      // Columns may not exist, ignore error
-    });
 
     // Create plans table
     await client.query(`
@@ -274,12 +292,19 @@ async function initializeDatabaseTables() {
         start_date DATE NOT NULL DEFAULT CURRENT_DATE,
         end_date DATE,
         status VARCHAR(20) DEFAULT 'active',
-        anchor_day INTEGER DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(client_id, plan_id)
       )
     `);
+
+    // Remove anchor_day column from client_plans if it exists
+    try {
+      await client.query('ALTER TABLE client_plans DROP COLUMN IF EXISTS anchor_day');
+    } catch (error) {
+      // Column may not exist, ignore error
+      console.log('anchor_day column removal:', error.message);
+    }
 
     // Create billings table
     await client.query(`
@@ -291,16 +316,29 @@ async function initializeDatabaseTables() {
         billing_date DATE NOT NULL DEFAULT CURRENT_DATE,
         due_date DATE NOT NULL,
         status VARCHAR(20) DEFAULT 'pending',
+        balance DECIMAL(10,2) DEFAULT 0.00,
+        paid_amount DECIMAL(10,2) DEFAULT 0.00,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
+    // Add new columns to existing billings table if they don't exist
+    try {
+      await client.query(`
+        ALTER TABLE billings 
+        ADD COLUMN IF NOT EXISTS balance DECIMAL(10,2) DEFAULT 0.00,
+        ADD COLUMN IF NOT EXISTS paid_amount DECIMAL(10,2) DEFAULT 0.00
+      `);
+    } catch (error) {
+      console.log('Billings table columns already exist or error adding them:', error.message);
+    }
+
     // Create payments table
     await client.query(`
       CREATE TABLE IF NOT EXISTS payments (
         id SERIAL PRIMARY KEY,
-        billing_id INTEGER REFERENCES billings(id) ON DELETE CASCADE,
+        client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
         amount DECIMAL(10,2) NOT NULL,
         payment_date DATE NOT NULL DEFAULT CURRENT_DATE,
         method VARCHAR(50) DEFAULT 'cash',
@@ -309,6 +347,24 @@ async function initializeDatabaseTables() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Add client_id column to existing payments table if it doesn't exist
+    try {
+      await client.query(`
+        ALTER TABLE payments 
+        ADD COLUMN IF NOT EXISTS client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE
+      `);
+    } catch (error) {
+      console.log('Payments table client_id column already exists or error adding it:', error.message);
+    }
+
+    // Remove billing_id constraint and column from payments table if it exists
+    try {
+      await client.query('ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_billing_id_fkey');
+      await client.query('ALTER TABLE payments DROP COLUMN IF EXISTS billing_id');
+    } catch (error) {
+      console.log('Payments table billing_id removal:', error.message);
+    }
 
     // Create MikroTik settings table
     await client.query(`
@@ -628,10 +684,22 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
     // Get paginated results
     const dataQuery = `
       SELECT 
-        c.*,
+        c.id,
+        c.name,
+        c.email,
+        c.phone,
+        c.address,
+        c.status,
+        c.payment_status,
+        c.balance,
+        c.created_at,
+        c.updated_at,
+        TO_CHAR(c.installation_date, 'YYYY-MM-DD') as installation_date,
+        TO_CHAR(c.due_date, 'YYYY-MM-DD') as due_date,
+        cp.plan_id,
         p.name as plan_name
       FROM clients c
-      LEFT JOIN client_plans cp ON c.id = cp.client_id
+      LEFT JOIN client_plans cp ON c.id = cp.client_id AND cp.status = 'active'
       LEFT JOIN plans p ON cp.plan_id = p.id
       ${whereClause}
       ORDER BY c.${sortColumn} ${sortDirection}
@@ -659,20 +727,21 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
   }
 });
 
+
 // Create new client
 app.post('/api/clients', authenticateToken, async (req, res) => {
   try {
-    const { name, address, installation_date, due_date, payment_status = 'unpaid', status = 'active' } = req.body;
+    const { name, email, phone, address, installation_date, due_date, payment_status = 'unpaid', status = 'active', balance = 0 } = req.body;
     if (!name) {
       return res.status(400).json({ error: 'Name is required' });
     }
     const client = await pool.connect();
     const result = await client.query(
-      'INSERT INTO clients (name, address, installation_date, due_date, payment_status, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [name, address, installation_date || null, due_date || null, payment_status, status]
+      'INSERT INTO clients (name, email, phone, address, installation_date, due_date, payment_status, status, balance) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+      [name, email || null, phone || null, address, formatDateForDB(installation_date), formatDateForDB(due_date), payment_status, status, balance]
     );
     client.release();
-    res.json({ success: true, client: result.rows[0] });
+    res.json({ success: true, client: formatClientDates(result.rows[0]) });
   } catch (error) {
     console.error('Create client error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -683,17 +752,17 @@ app.post('/api/clients', authenticateToken, async (req, res) => {
 app.put('/api/clients/:id', authenticateToken, async (req, res) => {
   try {
     const clientId = req.params.id;
-    const { name, address, installation_date, due_date, payment_status, status } = req.body;
+    const { name, email, phone, address, installation_date, due_date, payment_status, status, balance } = req.body;
     const client = await pool.connect();
     const result = await client.query(
-      'UPDATE clients SET name = $1, address = $2, installation_date = $3, due_date = $4, payment_status = $5, status = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING *',
-      [name, address, installation_date || null, due_date || null, payment_status, status, clientId]
+      'UPDATE clients SET name = $1, email = $2, phone = $3, address = $4, installation_date = $5, due_date = $6, payment_status = $7, status = $8, balance = $9, updated_at = CURRENT_TIMESTAMP WHERE id = $10 RETURNING *',
+      [name, email || null, phone || null, address, formatDateForDB(installation_date), formatDateForDB(due_date), payment_status, status, balance || 0, clientId]
     );
     client.release();
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Client not found' });
     }
-    res.json({ success: true, updated: result.rows[0] });
+    res.json({ success: true, updated: formatClientDates(result.rows[0]) });
   } catch (error) {
     console.error('Update client error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -892,7 +961,7 @@ app.get('/api/client-plans/:clientId', authenticateToken, async (req, res) => {
 
 app.post('/api/client-plans', authenticateToken, async (req, res) => {
   try {
-    const { client_id, plan_id, status = 'active', anchor_day } = req.body;
+    const { client_id, plan_id, status = 'active' } = req.body;
     
     if (!client_id || !plan_id) {
       return res.status(400).json({ error: 'Client ID and Plan ID are required' });
@@ -911,14 +980,9 @@ app.post('/api/client-plans', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'This plan is already assigned to this client' });
     }
     
-    // Use provided anchor_day or default to today
-    let anchorDayToSet = anchor_day;
-    if (!anchorDayToSet) {
-      anchorDayToSet = new Date().getDate();
-    }
     const result = await client.query(
-      'INSERT INTO client_plans (client_id, plan_id, status, anchor_day) VALUES ($1, $2, $3, $4) RETURNING *',
-      [client_id, plan_id, status, anchorDayToSet]
+      'INSERT INTO client_plans (client_id, plan_id, status) VALUES ($1, $2, $3) RETURNING *',
+      [client_id, plan_id, status]
     );
     
     client.release();
@@ -982,13 +1046,47 @@ app.get('/api/billings', authenticateToken, async (req, res) => {
     const result = await client.query(`
       SELECT 
         b.id, 
+        b.client_id,
         b.amount, 
         b.due_date, 
-        b.status, 
+        b.balance as prev_balance,
+        (COALESCE(b.balance, 0) - COALESCE((
+          SELECT SUM(p.amount) 
+          FROM payments p 
+          WHERE p.client_id = b.client_id 
+            AND p.created_at >= (
+              SELECT COALESCE(MAX(prev_b.created_at), '1900-01-01'::timestamp)
+              FROM billings prev_b 
+              WHERE prev_b.client_id = b.client_id 
+                AND prev_b.created_at < b.created_at
+            )
+            AND p.created_at <= b.created_at
+        ), 0) + b.amount) as total_amount_due,
         b.created_at, 
         b.updated_at,
         c.name AS client_name,
-        p.name AS plan_name
+        p.name AS plan_name,
+        c.balance as client_balance,
+        b.status,
+        -- Calculate billing period (1 month before due date)
+        TO_CHAR(b.due_date - INTERVAL '1 month' + INTERVAL '1 day', 'Mon DD, YYYY') as period_start,
+        TO_CHAR(b.due_date, 'Mon DD, YYYY') as period_end,
+        TO_CHAR(b.due_date - INTERVAL '1 month' + INTERVAL '1 day', 'Mon/DD/YYYY') || ' - ' || TO_CHAR(b.due_date, 'Mon/DD/YYYY') as period,
+        EXTRACT(MONTH FROM b.due_date) as month,
+        EXTRACT(YEAR FROM b.due_date) as year,
+        -- Calculate previous payments (payments made between last billing and this billing)
+        COALESCE((
+          SELECT SUM(p.amount) 
+          FROM payments p 
+          WHERE p.client_id = b.client_id 
+            AND p.created_at >= (
+              SELECT COALESCE(MAX(prev_b.created_at), '1900-01-01'::timestamp)
+              FROM billings prev_b 
+              WHERE prev_b.client_id = b.client_id 
+                AND prev_b.created_at < b.created_at
+            )
+            AND p.created_at <= b.created_at
+        ), 0) as prev_payments
       FROM billings b
       LEFT JOIN clients c ON b.client_id = c.id
       LEFT JOIN plans p ON b.plan_id = p.id
@@ -1003,17 +1101,78 @@ app.get('/api/billings', authenticateToken, async (req, res) => {
 });
 app.post('/api/billings', authenticateToken, async (req, res) => {
   try {
-    const { client_id, plan_id, amount, due_date, status = 'pending' } = req.body;
-    if (!client_id || !plan_id || !amount || !due_date) {
-      return res.status(400).json({ error: 'All fields are required' });
+    let { client_id, plan_id, amount, due_date, status = 'pending' } = req.body;
+    if (!client_id || !plan_id || !amount) {
+      return res.status(400).json({ error: 'Client ID, Plan ID, and Amount are required' });
     }
     const client = await pool.connect();
-    const result = await client.query(
-      'INSERT INTO billings (client_id, plan_id, amount, due_date, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [client_id, plan_id, amount, due_date, status]
+    
+    // Get client's due date
+    const clientResult = await client.query(
+      'SELECT TO_CHAR(due_date, \'YYYY-MM-DD\') as due_date FROM clients WHERE id = $1',
+      [client_id]
     );
+    
+    if (clientResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ error: 'Client not found' });
+    }
+    
+    const clientData = clientResult.rows[0];
+    
+    // Get the total amount due from the most recent billing for this client using correct calculation
+    const lastBillingResult = await client.query(`
+      SELECT 
+        (COALESCE(b.balance, 0) - COALESCE((
+          SELECT SUM(p.amount) 
+          FROM payments p 
+          WHERE p.client_id = b.client_id 
+            AND p.created_at >= (
+              SELECT COALESCE(MAX(prev_b.created_at), '1900-01-01'::timestamp)
+              FROM billings prev_b 
+              WHERE prev_b.client_id = b.client_id 
+                AND prev_b.created_at < b.created_at
+            )
+            AND p.created_at <= b.created_at
+        ), 0) + b.amount) as total_amount_due
+      FROM billings b 
+      WHERE b.client_id = $1 
+      ORDER BY b.created_at DESC 
+      LIMIT 1
+    `, [client_id]);
+    
+    // Previous balance is the total amount due from the last billing (0 if no previous billing)
+    const previousBalance = lastBillingResult.rows.length > 0 ? 
+      parseFloat(lastBillingResult.rows[0].total_amount_due) : 0;
+    
+    // If due_date is not provided, use client's due date or current date
+    if (!due_date) {
+      if (clientData.due_date) {
+        due_date = clientData.due_date;
+      } else {
+        due_date = new Date().toISOString().split('T')[0];
+      }
+    }
+    
+    // Create billing with previous balance from last billing's total amount due
+    const result = await client.query(
+      'INSERT INTO billings (client_id, plan_id, amount, due_date, status, balance) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [client_id, plan_id, amount, due_date, status, previousBalance]
+    );
+    
+    // Recalculate client balance and update due date in one operation
+    const balanceInfo = await recalculateClientBalance(client_id, client, due_date);
+    
+    // Auto-pay unpaid billings if client has sufficient credit
+    await autoPayUnpaidBillings(client_id, client);
+    
     client.release();
-    res.json({ success: true, billing: result.rows[0] });
+    res.json({ 
+      success: true, 
+      billing: result.rows[0],
+      client_balance: balanceInfo.calculatedBalance,
+      client_payment_status: balanceInfo.clientPaymentStatus
+    });
   } catch (error) {
     console.error('Create billing error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -1064,26 +1223,215 @@ app.put('/api/billings/:id', authenticateToken, async (req, res) => {
       'UPDATE billings SET client_id = $1, plan_id = $2, amount = $3, due_date = $4, status = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING *',
       [client_id, plan_id, amount, due_date, status, billingId]
     );
-    client.release();
+    
     if (result.rowCount === 0) {
+      client.release();
       return res.status(404).json({ error: 'Billing not found' });
     }
-    res.json({ success: true, billing: result.rows[0] });
+    
+    // Update client's due date to match the updated billing due date
+    if (due_date && client_id) {
+      await client.query(
+        'UPDATE clients SET due_date = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+        [client_id, due_date]
+      );
+    }
+    
+    // Recalculate client balance after billing update (in case amount changed)
+    const balanceInfo = await recalculateClientBalance(client_id, client);
+    
+    client.release();
+    res.json({ 
+      success: true, 
+      billing: result.rows[0],
+      client_balance: balanceInfo.calculatedBalance,
+      client_payment_status: balanceInfo.clientPaymentStatus
+    });
   } catch (error) {
     console.error('Update billing error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+// Helper function to recalculate client balance
+async function recalculateClientBalance(client_id, dbClient, due_date = null) {
+  // Calculate total owed from all billings (only sum the billing amounts, not previous balances)
+  const billingsResult = await dbClient.query(
+    'SELECT COALESCE(SUM(amount), 0) as total_owed FROM billings WHERE client_id = $1',
+    [client_id]
+  );
+  
+  // Calculate total paid from all payments
+  const paymentsResult = await dbClient.query(
+    'SELECT COALESCE(SUM(amount), 0) as total_paid FROM payments WHERE client_id = $1',
+    [client_id]
+  );
+  
+  const totalOwed = parseFloat(billingsResult.rows[0].total_owed);
+  const totalPaid = parseFloat(paymentsResult.rows[0].total_paid);
+  const calculatedBalance = totalOwed - totalPaid;
+  
+  // Update client balance and payment status (and due_date if provided)
+  const clientPaymentStatus = calculatedBalance > 0 ? (calculatedBalance < totalOwed ? 'partial' : 'unpaid') : 'paid';
+  
+  if (due_date) {
+    await dbClient.query(
+      'UPDATE clients SET balance = $1, payment_status = $2, due_date = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4',
+      [calculatedBalance, clientPaymentStatus, due_date, client_id]
+    );
+  } else {
+    await dbClient.query(
+      'UPDATE clients SET balance = $1, payment_status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
+      [calculatedBalance, clientPaymentStatus, client_id]
+    );
+  }
+  
+  return {
+    totalOwed,
+    totalPaid,
+    calculatedBalance,
+    clientPaymentStatus
+  };
+}
+
+// Helper function to automatically pay unpaid billings when client has sufficient credit
+async function autoPayUnpaidBillings(client_id, dbClient) {
+  try {
+    // Get client's current balance
+    const clientResult = await dbClient.query(
+      'SELECT balance FROM clients WHERE id = $1',
+      [client_id]
+    );
+    
+    if (clientResult.rows.length === 0) return;
+    
+    const clientBalance = parseFloat(clientResult.rows[0].balance);
+    
+    // Only auto-pay if client has negative balance (credit) or zero balance
+    if (clientBalance > 0) {
+      return; // Client has debt, don't auto-pay
+    }
+    
+    let availableCredit;
+    
+    if (clientBalance < 0) {
+      // Client has credit (negative balance)
+      availableCredit = Math.abs(clientBalance);
+    } else {
+      // Client has exactly 0 balance - use simple chronological payment distribution
+      const totalPaymentsResult = await dbClient.query(
+        'SELECT COALESCE(SUM(amount), 0) as total_payments FROM payments WHERE client_id = $1',
+        [client_id]
+      );
+      const totalPayments = parseFloat(totalPaymentsResult.rows[0].total_payments);
+      
+      const unpaidBillingsResult = await dbClient.query(`
+        SELECT id, amount, created_at
+        FROM billings 
+        WHERE client_id = $1 AND status != 'paid'
+        ORDER BY created_at ASC
+      `, [client_id]);
+      
+      // Distribute total payments chronologically across unpaid billings
+      let remainingPayments = totalPayments;
+      const billingsToUpdate = [];
+      
+      console.log(`Zero balance auto-pay: totalPayments=${totalPayments}, unpaidBillings=${unpaidBillingsResult.rows.length}`);
+      
+      for (const billing of unpaidBillingsResult.rows) {
+        const billingAmount = parseFloat(billing.amount);
+        console.log(`Checking billing ${billing.id}: amount=${billingAmount}, remainingPayments=${remainingPayments}`);
+        
+        if (remainingPayments >= billingAmount) {
+          billingsToUpdate.push(billing.id);
+          remainingPayments -= billingAmount;
+          console.log(`Auto-paying billing ${billing.id} with zero balance logic`);
+        } else {
+          break; // Not enough payments to cover this billing
+        }
+      }
+      
+      if (billingsToUpdate.length > 0) {
+        await dbClient.query(
+          'UPDATE billings SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = ANY($2)',
+          ['paid', billingsToUpdate]
+        );
+        await recalculateClientBalance(client_id, dbClient);
+        console.log(`Zero balance auto-payment completed: ${billingsToUpdate.length} billings marked as paid`);
+      }
+      return; // Exit early for zero balance case
+    }
+    
+    // Get unpaid billings ordered by creation date (oldest first) for credit-based payment
+    const unpaidBillingsResult = await dbClient.query(`
+      SELECT id, amount, created_at
+      FROM billings 
+      WHERE client_id = $1 AND status != 'paid'
+      ORDER BY created_at ASC
+    `, [client_id]);
+    
+    // Pay billings chronologically with available credit
+    let remainingCredit = availableCredit;
+    const billingsToUpdate = [];
+    
+    for (const billing of unpaidBillingsResult.rows) {
+      const billingAmount = parseFloat(billing.amount);
+      
+      if (remainingCredit >= billingAmount) {
+        // This billing can be fully paid with available credit
+        billingsToUpdate.push(billing.id);
+        remainingCredit -= billingAmount;
+      } else {
+        // Not enough credit left to cover this billing
+        break; // Stop here as subsequent billings also cannot be paid
+      }
+    }
+    
+    // Update billing statuses to 'paid'
+    if (billingsToUpdate.length > 0) {
+      await dbClient.query(
+        'UPDATE billings SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = ANY($2)',
+        ['paid', billingsToUpdate]
+      );
+      
+      // Recalculate client balance after auto-payment
+      await recalculateClientBalance(client_id, dbClient);
+    }
+    
+  } catch (error) {
+    console.error('Error in autoPayUnpaidBillings:', error);
+    // Don't throw error to avoid breaking the main payment/billing operation
+  }
+}
+
+
 app.delete('/api/billings/:id', authenticateToken, async (req, res) => {
   try {
     const billingId = req.params.id;
     const client = await pool.connect();
-    const result = await client.query('DELETE FROM billings WHERE id = $1 RETURNING *', [billingId]);
-    client.release();
-    if (result.rowCount === 0) {
+    
+    // Get billing info before deletion
+    const billingResult = await client.query('SELECT * FROM billings WHERE id = $1', [billingId]);
+    if (billingResult.rows.length === 0) {
+      client.release();
       return res.status(404).json({ error: 'Billing not found' });
     }
-    res.json({ success: true, deleted: result.rows[0] });
+    
+    const deletedBilling = billingResult.rows[0];
+    const client_id = deletedBilling.client_id;
+    
+    // Delete the billing
+    await client.query('DELETE FROM billings WHERE id = $1', [billingId]);
+    
+    // Recalculate client balance after deletion
+    const balanceInfo = await recalculateClientBalance(client_id, client);
+    
+    client.release();
+    res.json({ 
+      success: true, 
+      deleted: deletedBilling,
+      client_balance: balanceInfo.calculatedBalance,
+      client_payment_status: balanceInfo.clientPaymentStatus
+    });
   } catch (error) {
     console.error('Delete billing error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -1095,10 +1443,31 @@ app.get('/api/payments', authenticateToken, async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(`
-      SELECT p.*, b.client_id, b.plan_id, b.amount AS billing_amount, b.due_date, b.status
+      SELECT 
+        p.*,
+        c.name as client_name,
+        c.balance as current_client_balance,
+        -- Calculate balance progression: current balance + sum of all payments made after this one
+        (
+          c.balance + COALESCE(
+            (SELECT SUM(later_p.amount) 
+             FROM payments later_p 
+             WHERE later_p.client_id = p.client_id 
+               AND later_p.created_at > p.created_at), 0
+          )
+        ) as new_balance,
+        -- Previous balance: new balance + this payment amount
+        (
+          c.balance + COALESCE(
+            (SELECT SUM(later_p.amount) 
+             FROM payments later_p 
+             WHERE later_p.client_id = p.client_id 
+               AND later_p.created_at > p.created_at), 0
+          ) + p.amount
+        ) as prev_balance
       FROM payments p
-      LEFT JOIN billings b ON p.billing_id = b.id
-      ORDER BY p.created_at DESC
+      LEFT JOIN clients c ON p.client_id = c.id
+      ORDER BY p.payment_date DESC, p.created_at DESC
     `);
     client.release();
     res.json(result.rows);
@@ -1109,19 +1478,25 @@ app.get('/api/payments', authenticateToken, async (req, res) => {
 });
 
 // Helper to get next due date on the same day of month, or last day if not possible
-function getNextDueDate(currentDueDate, anchorDay) {
+function getNextDueDate(currentDueDate) {
   const date = new Date(currentDueDate);
+  const originalDay = date.getDate();
+  
+  // Move to next month
   let year = date.getFullYear();
   let month = date.getMonth() + 1; // next month (0-based, so +1)
   if (month > 11) {
     month = 0;
     year += 1;
   }
-  // Get the last day of the intended month
+  
+  // Get the last day of the next month
   const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-  // Use anchorDay if it exists in the month, otherwise use last day
-  const day = Math.min(anchorDay, lastDayOfMonth);
+  
+  // Use original day if it exists in the month, otherwise use last day
+  const day = Math.min(originalDay, lastDayOfMonth);
   const nextDueDate = new Date(year, month, day);
+  
   // Format as YYYY-MM-DD
   const yyyy = nextDueDate.getFullYear();
   const mm = String(nextDueDate.getMonth() + 1).padStart(2, '0');
@@ -1131,42 +1506,126 @@ function getNextDueDate(currentDueDate, anchorDay) {
 
 app.post('/api/payments', authenticateToken, async (req, res) => {
   try {
-    const { billing_id, amount, payment_date, method, notes } = req.body;
-    const client = await pool.connect();
-    // Insert payment
-    const paymentResult = await client.query(
-      'INSERT INTO payments (billing_id, amount, payment_date, method, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [billing_id, amount, payment_date, method, notes]
-    );
-    // Get the billing info
-    const billingResult = await client.query('SELECT * FROM billings WHERE id = $1', [billing_id]);
-    const billing = billingResult.rows[0];
-    // Mark billing as paid (do not change due date)
-    await client.query(
-      `UPDATE billings SET status = 'paid', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
-      [billing_id]
-    );
-    // Get anchor_day from client_plans
-    const clientPlanResult = await client.query(
-      'SELECT anchor_day FROM client_plans WHERE client_id = $1 AND plan_id = $2',
-      [billing.client_id, billing.plan_id]
-    );
-    let anchorDay = 1;
-    if (clientPlanResult.rows.length > 0 && clientPlanResult.rows[0].anchor_day) {
-      anchorDay = clientPlanResult.rows[0].anchor_day;
-    } else {
-      anchorDay = new Date(billing.due_date).getDate();
+    const { client_id, amount, payment_date, method, notes } = req.body;
+    const paymentAmount = parseFloat(amount);
+    
+    if (!client_id || paymentAmount <= 0) {
+      return res.status(400).json({ error: 'Client ID and valid payment amount are required' });
     }
-    // Always create new billing for next month, using helper for due date
-    const nextDueDateStr = getNextDueDate(billing.due_date, anchorDay);
-    await client.query(
-      'INSERT INTO billings (client_id, plan_id, amount, due_date, status) VALUES ($1, $2, $3, $4, $5)',
-      [billing.client_id, billing.plan_id, billing.amount, nextDueDateStr, 'pending']
+    
+    const client = await pool.connect();
+    
+    // Verify client exists
+    const clientCheck = await client.query('SELECT id FROM clients WHERE id = $1', [client_id]);
+    if (clientCheck.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ error: 'Client not found' });
+    }
+    
+    // Insert payment - simple account payment
+    const paymentResult = await client.query(
+      'INSERT INTO payments (client_id, amount, payment_date, method, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [client_id, paymentAmount, payment_date, method, notes]
     );
+    
+    // Calculate client's current balance dynamically
+    const billingsResult = await client.query(
+      'SELECT COALESCE(SUM(amount), 0) as total_owed FROM billings WHERE client_id = $1',
+      [client_id]
+    );
+    
+    const paymentsResult = await client.query(
+      'SELECT COALESCE(SUM(amount), 0) as total_paid FROM payments WHERE client_id = $1',
+      [client_id]
+    );
+    
+    const totalOwed = parseFloat(billingsResult.rows[0].total_owed);
+    const totalPaid = parseFloat(paymentsResult.rows[0].total_paid);
+    const calculatedBalance = totalOwed - totalPaid;
+    
+    // Update client balance and payment status
+    const clientPaymentStatus = calculatedBalance > 0 ? 'partial' : 'paid';
+    await client.query(
+      'UPDATE clients SET balance = $1, payment_status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
+      [calculatedBalance, clientPaymentStatus, client_id]
+    );
+    
+    // Auto-pay unpaid billings if client has sufficient credit
+    await autoPayUnpaidBillings(client_id, client);
+    
+    // Add balance info to the payment record for display
+    const paymentWithBalances = {
+      ...paymentResult.rows[0],
+      prev_balance: totalOwed - totalPaid + paymentAmount, // Balance before this payment
+      new_balance: calculatedBalance // Balance after this payment
+    };
+    
     client.release();
-    res.json({ success: true, payment: paymentResult.rows[0] });
+    res.json({ 
+      success: true, 
+      payment: paymentWithBalances,
+      client_balance: calculatedBalance,
+      client_payment_status: clientPaymentStatus,
+      total_owed: totalOwed,
+      total_paid: totalPaid
+    });
   } catch (error) {
     console.error('Create payment error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Delete payment
+app.delete('/api/payments/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const client = await pool.connect();
+    
+    // First, get the payment details before deleting
+    const paymentResult = await client.query('SELECT * FROM payments WHERE id = $1', [id]);
+    if (paymentResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+    
+    const payment = paymentResult.rows[0];
+    const client_id = payment.client_id;
+    
+    // Delete the payment
+    await client.query('DELETE FROM payments WHERE id = $1', [id]);
+    
+    // Recalculate client's current balance after deletion
+    const billingsResult = await client.query(
+      'SELECT COALESCE(SUM(amount), 0) as total_owed FROM billings WHERE client_id = $1',
+      [client_id]
+    );
+    
+    const paymentsResult = await client.query(
+      'SELECT COALESCE(SUM(amount), 0) as total_paid FROM payments WHERE client_id = $1',
+      [client_id]
+    );
+    
+    const totalOwed = parseFloat(billingsResult.rows[0].total_owed);
+    const totalPaid = parseFloat(paymentsResult.rows[0].total_paid);
+    const calculatedBalance = totalOwed - totalPaid;
+    
+    // Update client balance and payment status
+    const clientPaymentStatus = calculatedBalance > 0 ? 'partial' : 'paid';
+    await client.query(
+      'UPDATE clients SET balance = $1, payment_status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
+      [calculatedBalance, clientPaymentStatus, client_id]
+    );
+    
+    client.release();
+    res.json({ 
+      success: true, 
+      message: 'Payment deleted successfully',
+      deleted_payment: payment,
+      client_balance: calculatedBalance,
+      client_payment_status: clientPaymentStatus
+    });
+  } catch (error) {
+    console.error('Delete payment error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1425,26 +1884,6 @@ app.post('/api/company-info', authenticateToken, async (req, res) => {
   }
 });
 
-// Update anchor_day for a client_plan
-app.put('/api/client-plans/:id', authenticateToken, async (req, res) => {
-  try {
-    const { anchor_day } = req.body;
-    const { id } = req.params;
-    if (anchor_day === undefined) {
-      return res.status(400).json({ error: 'anchor_day is required' });
-    }
-    const client = await pool.connect();
-    await client.query(
-      'UPDATE client_plans SET anchor_day = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-      [anchor_day, id]
-    );
-    client.release();
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Update client_plan anchor_day error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
 
 // INVENTORY API ENDPOINTS
 // Get all inventory categories
