@@ -1,5 +1,0 @@
-
-> isp-management-system@1.0.0 start
-> node server/app.js 2
-
-Server running on port 3000
