@@ -587,6 +587,7 @@
                     </th>
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Name</th>
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profile</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comment</th>
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   </tr>
                 </thead>
@@ -1740,8 +1741,11 @@
           showImportState('accounts');
         } else {
           const errorData = await response.json();
-          document.getElementById('importErrorMessage').textContent = 
-            errorData.error || 'Failed to fetch MikroTik accounts';
+          let errorMessage = errorData.error || 'Failed to fetch MikroTik accounts';
+          if (errorData.details) {
+            errorMessage += '\nDetails: ' + errorData.details;
+          }
+          document.getElementById('importErrorMessage').textContent = errorMessage;
           showImportState('error');
         }
       } catch (error) {
@@ -1763,7 +1767,7 @@
       if (mikrotikAccounts.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+            <td colspan="5" class="px-4 py-8 text-center text-gray-500">
               No PPPoE accounts found on MikroTik router.
             </td>
           </tr>
@@ -1784,6 +1788,7 @@
           </td>
           <td class="px-4 py-2 text-sm font-medium text-gray-900">${account.name || account.user || 'Unknown'}</td>
           <td class="px-4 py-2 text-sm text-gray-500">${account.profile || '-'}</td>
+          <td class="px-4 py-2 text-sm text-gray-500 max-w-48 truncate" title="${account.comment || '-'}">${account.comment || '-'}</td>
           <td class="px-4 py-2">
             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
               account.disabled === 'false' || !account.disabled ? 
@@ -1869,12 +1874,25 @@
         
         if (response.ok) {
           const result = await response.json();
-          showNotification('Success', result.message, 'success');
+          
+          // Show detailed import results
+          let message = result.message || `Successfully imported ${result.imported || 0} clients`;
+          if (result.errorDetails && result.errorDetails.length > 0) {
+            message += '\n\nErrors encountered:\n' + result.errorDetails.join('\n');
+          }
+          
+          const notificationType = result.errors > 0 ? 'warning' : 'success';
+          showNotification('Import Results', message, notificationType);
+          
           closeImportModal();
           loadClients(); // Refresh client list
         } else {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to import clients');
+          let errorMessage = errorData.error || 'Failed to import clients';
+          if (errorData.details) {
+            errorMessage += '\nDetails: ' + errorData.details;
+          }
+          throw new Error(errorMessage);
         }
       } catch (error) {
         console.error('Error importing clients:', error);

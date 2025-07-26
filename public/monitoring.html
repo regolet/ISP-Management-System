@@ -437,6 +437,7 @@
     let offlineAccounts = [];
     let groups = [];
     let categories = [];
+    let categoriesData = { categories: [] }; // Raw categories data from API
     let currentOnlineAccounts = [];
     let updateInterval = null;
     let mikrotikConfigured = false;
@@ -1105,7 +1106,17 @@
         const data = await response.json();
         
         if (data.success) {
-          groups = data.groups || [];
+          // Transform backend data structure to frontend expected structure
+          // Handle both new format (group_name, group_data) and legacy format (direct fields)
+          groups = (data.groups || []).map(group => ({
+            id: group.id,
+            name: group.group_name || group.name || `Group ${group.id}`, // Handle legacy data
+            description: group.group_data?.description || group.description || '',
+            accounts: group.group_data?.accounts || group.accounts || [], // Handle legacy data
+            max_members: group.group_data?.max_members || group.max_members || null,
+            created_at: group.created_at,
+            updated_at: group.updated_at
+          }));
           
           // Update with current online status
           updateGroupsOnlineStatus();
@@ -1317,15 +1328,63 @@
           })
         ]);
         
-        const categoriesData = await categoriesResponse.json();
+        const categoriesResponse_data = await categoriesResponse.json();
         const groupsData = await groupsResponse.json();
         
+        // Update global categoriesData
+        categoriesData = categoriesResponse_data;
+        
         if (categoriesData.success) {
-          categories = categoriesData.categories || [];
+          // Transform flat database structure to hierarchical structure
+          const flatCategories = categoriesData.categories || [];
+          
+          // Group by category_name and build hierarchical structure
+          const categoryMap = new Map();
+          
+          flatCategories.forEach(item => {
+            const categoryName = item.category_name;
+            // Use subcategory_name if available, otherwise fall back to auto-generated name
+            const subcategoryName = item.subcategory_name || `${categoryName} - ${item.subcategory_index + 1}`;
+            
+            if (!categoryMap.has(categoryName)) {
+              categoryMap.set(categoryName, {
+                category: categoryName,
+                subcategories: []
+              });
+            }
+            
+            const category = categoryMap.get(categoryName);
+            category.subcategories.push({
+              subcategory: subcategoryName,
+              groups: item.group_ids || [],
+              dbRecord: item // Include the full database record for API operations
+            });
+          });
+          
+          // Sort subcategories by index
+          categoryMap.forEach(category => {
+            category.subcategories.sort((a, b) => {
+              const aIndex = parseInt(a.subcategory.split(' - ')[1]);
+              const bIndex = parseInt(b.subcategory.split(' - ')[1]);
+              return aIndex - bIndex;
+            });
+          });
+          
+          categories = Array.from(categoryMap.values());
           
           // Update groups data for name lookups
           if (groupsData.success) {
-            groups = groupsData.groups || [];
+            // Transform backend data structure to frontend expected structure
+            // Handle both new format (group_name, group_data) and legacy format (direct fields)
+            groups = (groupsData.groups || []).map(group => ({
+              id: group.id,
+              name: group.group_name || group.name || `Group ${group.id}`, // Handle legacy data
+              description: group.group_data?.description || group.description || '',
+              accounts: group.group_data?.accounts || group.accounts || [], // Handle legacy data
+              max_members: group.group_data?.max_members || group.max_members || null,
+              created_at: group.created_at,
+              updated_at: group.updated_at
+            }));
           }
           
           renderCategories();
@@ -1603,9 +1662,9 @@
       const button = event ? event.currentTarget : null;
       if (button) setButtonLoading(button, true);
       
-      const category = categories.find(c => c.category === categoryName);
+      const category = categoriesData.categories.find(c => c.category_name === categoryName);
       if (category) {
-        showCategoryModal(category);
+        showCategoryModal({ category: categoryName, ...category });
       }
       
       if (button) setButtonLoading(button, false);
@@ -1618,16 +1677,21 @@
       if (button) setButtonLoading(button, true);
       
       try {
-        // Remove the category from the categories array and save
-        const updatedCategories = categories.filter(c => c.category !== categoryName);
+        // Find the category to get its ID
+        const category = categoriesData.categories.find(cat => cat.category_name === categoryName);
+        if (!category) {
+          showNotification('Error', 'Category not found', 'error');
+          if (button) setButtonLoading(button, false);
+          return;
+        }
         
         const response = await fetch('/api/monitoring/categories', {
-          method: 'POST',
+          method: 'DELETE',
           headers: { 
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
           },
-          body: JSON.stringify({ categories: updatedCategories })
+          body: JSON.stringify({ id: category.id })
         });
         
         const data = await response.json();
@@ -1659,6 +1723,7 @@
       const button = event ? event.currentTarget : null;
       if (button) setButtonLoading(button, true);
       
+      // Find the subcategory in the flat database structure
       const category = categories.find(c => c.category === categoryName);
       if (category && category.subcategories) {
         const subcategory = category.subcategories.find(s => s.subcategory === subcategoryName);
@@ -1677,24 +1742,23 @@
       if (button) setButtonLoading(button, true);
       
       try {
-        // Find and update the category to remove the subcategory
-        const updatedCategories = categories.map(category => {
-          if (category.category === categoryName) {
-            return {
-              ...category,
-              subcategories: category.subcategories.filter(sub => sub.subcategory !== subcategoryName)
-            };
-          }
-          return category;
-        });
+        // Find the subcategory to get its database ID
+        const category = categories.find(c => c.category === categoryName);
+        const subcategory = category?.subcategories?.find(s => s.subcategory === subcategoryName);
+        
+        if (!subcategory || !subcategory.dbRecord) {
+          showNotification('Error', 'Subcategory not found', 'error');
+          if (button) setButtonLoading(button, false);
+          return;
+        }
         
         const response = await fetch('/api/monitoring/categories', {
-          method: 'POST',
+          method: 'DELETE',
           headers: { 
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
           },
-          body: JSON.stringify({ categories: updatedCategories })
+          body: JSON.stringify({ id: subcategory.dbRecord.id })
         });
         
         const data = await response.json();
@@ -1913,10 +1977,12 @@
       }
       
       const payload = {
-        name,
-        description,
-        max_members: maxMembers ? parseInt(maxMembers) : null,
-        accounts: selectedAccounts
+        group_name: name,
+        group_data: {
+          description,
+          max_members: maxMembers ? parseInt(maxMembers) : null,
+          accounts: selectedAccounts
+        }
       };
       
       if (groupId) {
@@ -2008,29 +2074,48 @@
       }
       
       try {
-        let updatedCategories;
+        let response;
         
         if (existingCategoryName) {
-          // Edit existing category
-          updatedCategories = categories.map(category => {
-            if (category.category === existingCategoryName) {
-              return { ...category, category: name };
-            }
-            return category;
+          // Find the existing category to get its ID and current data
+          const existingCategory = categoriesData.categories.find(cat => cat.category_name === existingCategoryName);
+          if (!existingCategory) {
+            showNotification('Error', 'Category not found', 'error');
+            if (button) setButtonLoading(button, false);
+            return;
+          }
+          
+          // Update existing category
+          response = await fetch('/api/monitoring/categories', {
+            method: 'PUT',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+            },
+            body: JSON.stringify({
+              id: existingCategory.id,
+              category_name: name,
+              group_ids: existingCategory.group_ids || [],
+              category_index: existingCategory.category_index || 0,
+              subcategory_index: existingCategory.subcategory_index || 0
+            })
           });
         } else {
-          // Add new category
-          updatedCategories = [...categories, { category: name, subcategories: [] }];
+          // Create new category
+          response = await fetch('/api/monitoring/categories', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+            },
+            body: JSON.stringify({
+              category_name: name,
+              group_ids: [],
+              category_index: 0,
+              subcategory_index: 0
+            })
+          });
         }
-        
-        const response = await fetch('/api/monitoring/categories', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
-          },
-          body: JSON.stringify({ categories: updatedCategories })
-        });
         
         const data = await response.json();
         
@@ -2061,11 +2146,16 @@
             <div class="p-6">
               <form id="subcategoryForm">
                 <div class="mb-4">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Category: ${category ? category.category : ''}</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Parent Category</label>
+                  <p class="text-sm text-gray-600">${category ? category.category : categoryName}</p>
                 </div>
                 <div class="mb-4">
                   <label for="subcategoryName" class="block text-sm font-medium text-gray-700 mb-2">Subcategory Name</label>
-                  <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="subcategoryName" value="${subcategory ? subcategory.subcategory : ''}" required>
+                  <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="subcategoryName" value="${subcategory ? (subcategory.dbRecord?.subcategory_name || subcategory.subcategory) : ''}" required placeholder="Enter subcategory name">
+                </div>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Groups Assignment</label>
+                  <p class="text-sm text-gray-500">Group assignments can be managed in the Groups tab by dragging groups to this subcategory.</p>
                 </div>
               </form>
             </div>
@@ -2106,36 +2196,68 @@
       }
       
       try {
-        let updatedCategories = categories.map(category => {
-          if (category.category === categoryName) {
-            let subcategories = category.subcategories || [];
-            
-            if (existingSubcategoryName) {
-              // Edit existing subcategory
-              subcategories = subcategories.map(sub => {
-                if (sub.subcategory === existingSubcategoryName) {
-                  return { ...sub, subcategory: name };
-                }
-                return sub;
-              });
-            } else {
-              // Add new subcategory
-              subcategories = [...subcategories, { subcategory: name, groups: [] }];
-            }
-            
-            return { ...category, subcategories };
-          }
-          return category;
-        });
+        let response;
         
-        const response = await fetch('/api/monitoring/categories', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
-          },
-          body: JSON.stringify({ categories: updatedCategories })
-        });
+        if (existingSubcategoryName) {
+          // Find the existing subcategory in the database structure
+          const category = categories.find(c => c.category === categoryName);
+          const subcategory = category?.subcategories?.find(s => s.subcategory === existingSubcategoryName);
+          
+          if (!subcategory || !subcategory.dbRecord) {
+            showNotification('Error', 'Subcategory not found', 'error');
+            if (button) setButtonLoading(button, false);
+            return;
+          }
+          
+          // Update existing subcategory name using the subcategory route
+          const parentCategoryId = categoriesData.categories.find(cat => 
+            cat.category_index === subcategory.dbRecord.category_index && 
+            cat.subcategory_index === 0
+          )?.id;
+          
+          if (!parentCategoryId) {
+            showNotification('Error', 'Parent category not found for subcategory update', 'error');
+            if (button) setButtonLoading(button, false);
+            return;
+          }
+          
+          response = await fetch(`/api/monitoring/categories/${parentCategoryId}/subcategories/${subcategory.dbRecord.id}`, {
+            method: 'PUT',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+            },
+            body: JSON.stringify({
+              subcategory_name: name,
+              group_ids: subcategory.dbRecord.group_ids || []
+            })
+          });
+        } else {
+          // Create new subcategory - find parent category data
+          const parentCategory = categoriesData.categories.find(cat => cat.category_name === categoryName);
+          if (!parentCategory) {
+            showNotification('Error', 'Parent category not found', 'error');
+            if (button) setButtonLoading(button, false);
+            return;
+          }
+          
+          // Get next subcategory index
+          const maxSubcategoryIndex = categoriesData.categories
+            .filter(cat => cat.category_index === parentCategory.category_index)
+            .reduce((max, cat) => Math.max(max, cat.subcategory_index || 0), 0);
+          
+          response = await fetch(`/api/monitoring/categories/${parentCategory.id}/subcategories`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+            },
+            body: JSON.stringify({
+              subcategory_name: name,
+              group_ids: []
+            })
+          });
+        }
         
         const data = await response.json();
         
@@ -2226,7 +2348,17 @@
         console.log('Groups API response:', data);
         
         if (data.success) {
-          const allGroups = data.groups || [];
+          // Transform backend data structure to frontend expected structure
+          // Handle both new format (group_name, group_data) and legacy format (direct fields)
+          const allGroups = (data.groups || []).map(group => ({
+            id: group.id,
+            name: group.group_name || group.name || `Group ${group.id}`, // Handle legacy data
+            description: group.group_data?.description || group.description || '',
+            accounts: group.group_data?.accounts || group.accounts || [], // Handle legacy data
+            max_members: group.group_data?.max_members || group.max_members || null,  
+            created_at: group.created_at,
+            updated_at: group.updated_at
+          }));
           console.log('All groups loaded:', allGroups);
           
           // Get all assigned group IDs across ALL subcategories

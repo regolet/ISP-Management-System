@@ -32,10 +32,12 @@ npm run netlify:dev         # If configured in package.json
 ## Architecture Overview
 
 ### Backend (Node.js/Express)
-- **Main server**: `server/index.js` - Express server with PostgreSQL integration
+- **Main server**: `server/app.js` - Modular Express server with PostgreSQL integration
+- **Legacy server**: `server/index.js` - Original monolithic server (preserved as backup)
 - **Database**: Neon PostgreSQL cloud database with parameterized queries
 - **Authentication**: JWT tokens with bcrypt password hashing
 - **API Base**: `/api/*` endpoints requiring authentication (except `/api/health` and `/api/init-database`)
+- **Architecture**: Modular structure with separate route files for maintainability
 
 ### Frontend (Static HTML/CSS/JS)
 - **Entry point**: `public/index.html` - redirects to login

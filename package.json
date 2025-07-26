@@ -2,10 +2,11 @@
   "name": "isp-management-system",
   "version": "1.0.0",
   "description": "ISP Management System with Neon PostgreSQL database and Express backend.",
-  "main": "server/index.js",
+  "main": "server/app.js",
   "scripts": {
-    "start": "node server/index.js",
-    "dev": "node server/index.js",
+    "start": "node server/app.js",
+    "dev": "node server/app.js",
+    "start-backup": "node server/backup/index.js.backup",
     "build-css": "tailwindcss -i ./src/styles.css -o ./public/assets/css/styles.css --watch",
     "build-css-prod": "tailwindcss -i ./src/styles.css -o ./public/assets/css/styles.css --minify",
     "test": "echo \"Error: no test specified\" && exit 1"

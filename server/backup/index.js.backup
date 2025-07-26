@@ -72,74 +72,63 @@ app.get('/api/health', async (req, res) => {
 });
 
 
-// Create ticketing system tables
-async function createTicketingTables() {
-  const client = await pool.connect();
-  
-  try {
-    // Create tickets table
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS tickets (
-        id SERIAL PRIMARY KEY,
-        ticket_number VARCHAR(20) UNIQUE NOT NULL,
-        title VARCHAR(255) NOT NULL,
-        description TEXT,
-        client_id INTEGER REFERENCES clients(id) ON DELETE SET NULL,
-        priority VARCHAR(20) DEFAULT 'medium', -- 'low', 'medium', 'high', 'urgent'
-        category VARCHAR(50) DEFAULT 'general', -- 'technical', 'billing', 'general', 'installation', 'maintenance'
-        status VARCHAR(20) DEFAULT 'open', -- 'open', 'in_progress', 'resolved', 'closed', 'pending'
-        assigned_to INTEGER REFERENCES users(id) ON DELETE SET NULL,
-        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
-        resolution TEXT,
-        resolved_at TIMESTAMP,
-        due_date TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+// Create ticketing system tables (accepts client to use existing connection)
+async function createTicketingTables(client) {
+  // Create all ticketing tables in a single query
+  await client.query(`
+    -- Tickets table
+    CREATE TABLE IF NOT EXISTS tickets (
+      id SERIAL PRIMARY KEY,
+      ticket_number VARCHAR(20) UNIQUE NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      client_id INTEGER REFERENCES clients(id) ON DELETE SET NULL,
+      priority VARCHAR(20) DEFAULT 'medium',
+      category VARCHAR(50) DEFAULT 'general',
+      status VARCHAR(20) DEFAULT 'open',
+      assigned_to INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      resolution TEXT,
+      resolved_at TIMESTAMP,
+      due_date TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
 
-    // Create ticket comments table
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS ticket_comments (
-        id SERIAL PRIMARY KEY,
-        ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
-        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-        comment TEXT NOT NULL,
-        is_internal BOOLEAN DEFAULT false,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+    -- Ticket comments table
+    CREATE TABLE IF NOT EXISTS ticket_comments (
+      id SERIAL PRIMARY KEY,
+      ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
+      user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      comment TEXT NOT NULL,
+      is_internal BOOLEAN DEFAULT false,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
 
-    // Create ticket attachments table
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS ticket_attachments (
-        id SERIAL PRIMARY KEY,
-        ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
-        filename VARCHAR(255) NOT NULL,
-        original_name VARCHAR(255) NOT NULL,
-        file_size INTEGER,
-        mime_type VARCHAR(100),
-        uploaded_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+    -- Ticket attachments table
+    CREATE TABLE IF NOT EXISTS ticket_attachments (
+      id SERIAL PRIMARY KEY,
+      ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
+      filename VARCHAR(255) NOT NULL,
+      original_name VARCHAR(255) NOT NULL,
+      file_size INTEGER,
+      mime_type VARCHAR(100),
+      uploaded_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
 
-    // Create ticket history table for tracking status changes
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS ticket_history (
-        id SERIAL PRIMARY KEY,
-        ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
-        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-        action VARCHAR(50) NOT NULL, -- 'created', 'status_changed', 'assigned', 'commented', 'resolved'
-        old_value TEXT,
-        new_value TEXT,
-        description TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-  } finally {
-    client.release();
-  }
+    -- Ticket history table
+    CREATE TABLE IF NOT EXISTS ticket_history (
+      id SERIAL PRIMARY KEY,
+      ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
+      user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      action VARCHAR(50) NOT NULL,
+      old_value TEXT,
+      new_value TEXT,
+      description TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
 }
 
 async function insertSampleData(client) {
@@ -204,13 +193,17 @@ async function insertSampleData(client) {
 
 }
 
-// Extract database initialization logic into reusable function
+// Optimized database initialization logic
 async function initializeDatabaseTables() {
   const client = await pool.connect();
   
   try {
-    // Create users table
+    // Begin transaction for atomic operation
+    await client.query('BEGIN');
+    
+    // Create all tables in a single query
     await client.query(`
+      -- Users table
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(50) UNIQUE NOT NULL,
@@ -219,37 +212,25 @@ async function initializeDatabaseTables() {
         role VARCHAR(20) DEFAULT 'user',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      );
 
-    // Create clients table
-    await client.query(`
+      -- Clients table with all columns
       CREATE TABLE IF NOT EXISTS clients (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
+        email VARCHAR(100),
+        phone VARCHAR(50),
         address TEXT,
         installation_date DATE,
         due_date DATE,
         payment_status VARCHAR(20) DEFAULT 'unpaid',
         status VARCHAR(20) DEFAULT 'active',
+        balance DECIMAL(10,2) DEFAULT 0.00,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    
-    // Add new columns to existing clients table if they don't exist
-    await client.query(`
-      ALTER TABLE clients 
-      ADD COLUMN IF NOT EXISTS installation_date DATE,
-      ADD COLUMN IF NOT EXISTS due_date DATE,
-      ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'unpaid',
-      ADD COLUMN IF NOT EXISTS email VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS phone VARCHAR(50),
-      ADD COLUMN IF NOT EXISTS balance DECIMAL(10,2) DEFAULT 0.00
-    `);
+      );
 
-    // Create plans table
-    await client.query(`
+      -- Plans table
       CREATE TABLE IF NOT EXISTS plans (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
@@ -261,11 +242,9 @@ async function initializeDatabaseTables() {
         status VARCHAR(20) DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      );
 
-    // Create client_plans table (replacing subscriptions)
-    await client.query(`
+      -- Client plans table
       CREATE TABLE IF NOT EXISTS client_plans (
         id SERIAL PRIMARY KEY,
         client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
@@ -276,18 +255,9 @@ async function initializeDatabaseTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(client_id, plan_id)
-      )
-    `);
+      );
 
-    // Remove anchor_day column from client_plans if it exists
-    try {
-      await client.query('ALTER TABLE client_plans DROP COLUMN IF EXISTS anchor_day');
-    } catch (error) {
-      // Column may not exist, ignore error
-    }
-
-    // Create billings table
-    await client.query(`
+      -- Billings table
       CREATE TABLE IF NOT EXISTS billings (
         id SERIAL PRIMARY KEY,
         client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
@@ -300,21 +270,9 @@ async function initializeDatabaseTables() {
         paid_amount DECIMAL(10,2) DEFAULT 0.00,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      );
 
-    // Add new columns to existing billings table if they don't exist
-    try {
-      await client.query(`
-        ALTER TABLE billings 
-        ADD COLUMN IF NOT EXISTS balance DECIMAL(10,2) DEFAULT 0.00,
-        ADD COLUMN IF NOT EXISTS paid_amount DECIMAL(10,2) DEFAULT 0.00
-      `);
-    } catch (error) {
-    }
-
-    // Create payments table
-    await client.query(`
+      -- Payments table
       CREATE TABLE IF NOT EXISTS payments (
         id SERIAL PRIMARY KEY,
         client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
@@ -324,27 +282,9 @@ async function initializeDatabaseTables() {
         notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      );
 
-    // Add client_id column to existing payments table if it doesn't exist
-    try {
-      await client.query(`
-        ALTER TABLE payments 
-        ADD COLUMN IF NOT EXISTS client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE
-      `);
-    } catch (error) {
-    }
-
-    // Remove billing_id constraint and column from payments table if it exists
-    try {
-      await client.query('ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_billing_id_fkey');
-      await client.query('ALTER TABLE payments DROP COLUMN IF EXISTS billing_id');
-    } catch (error) {
-    }
-
-    // Create MikroTik settings table
-    await client.query(`
+      -- MikroTik settings table
       CREATE TABLE IF NOT EXISTS mikrotik_settings (
         id SERIAL PRIMARY KEY,
         host VARCHAR(255) NOT NULL,
@@ -354,11 +294,9 @@ async function initializeDatabaseTables() {
         is_active BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      );
 
-    // Create company info table
-    await client.query(`
+      -- Company info table
       CREATE TABLE IF NOT EXISTS company_info (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -368,11 +306,9 @@ async function initializeDatabaseTables() {
         logo_url TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      );
 
-    // Create monitoring groups table
-    await client.query(`
+      -- Monitoring groups table
       CREATE TABLE IF NOT EXISTS monitoring_groups (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -381,11 +317,9 @@ async function initializeDatabaseTables() {
         accounts JSONB DEFAULT '[]',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      );
 
-    // Create monitoring categories table
-    await client.query(`
+      -- Monitoring categories table
       CREATE TABLE IF NOT EXISTS monitoring_categories (
         id SERIAL PRIMARY KEY,
         category_name VARCHAR(255) NOT NULL,
@@ -395,44 +329,18 @@ async function initializeDatabaseTables() {
         subcategory_index INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    
-    // Add missing columns if table already exists
-    await client.query(`
-      ALTER TABLE monitoring_categories 
-      ADD COLUMN IF NOT EXISTS group_ids JSONB DEFAULT '[]'
-    `);
-    await client.query(`
-      ALTER TABLE monitoring_categories 
-      ADD COLUMN IF NOT EXISTS category_index INTEGER DEFAULT 0
-    `);
-    await client.query(`
-      ALTER TABLE monitoring_categories 
-      ADD COLUMN IF NOT EXISTS subcategory_index INTEGER DEFAULT 0
-    `);
-    
-    // Rename groups column to group_ids if it exists
-    await client.query(`
-      ALTER TABLE monitoring_categories 
-      RENAME COLUMN groups TO group_ids
-    `).catch(() => {
-      // Column already renamed or doesn't exist
-    });
+      );
 
-    // Create inventory categories table
-    await client.query(`
+      -- Inventory categories table
       CREATE TABLE IF NOT EXISTS inventory_categories (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL UNIQUE,
         description TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      );
 
-    // Create suppliers table
-    await client.query(`
+      -- Suppliers table
       CREATE TABLE IF NOT EXISTS suppliers (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL UNIQUE,
@@ -443,11 +351,9 @@ async function initializeDatabaseTables() {
         notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      );
 
-    // Create inventory items table
-    await client.query(`
+      -- Inventory items table
       CREATE TABLE IF NOT EXISTS inventory_items (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
@@ -461,11 +367,9 @@ async function initializeDatabaseTables() {
         status VARCHAR(20) DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      );
 
-    // Create inventory assignments table
-    await client.query(`
+      -- Inventory assignments table
       CREATE TABLE IF NOT EXISTS inventory_assignments (
         id SERIAL PRIMARY KEY,
         item_id INTEGER REFERENCES inventory_items(id) ON DELETE CASCADE,
@@ -477,24 +381,99 @@ async function initializeDatabaseTables() {
         status VARCHAR(20) DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      );
 
-    // Create stock movements table
-    await client.query(`
+      -- Stock movements table
       CREATE TABLE IF NOT EXISTS stock_movements (
         id SERIAL PRIMARY KEY,
         item_id INTEGER REFERENCES inventory_items(id) ON DELETE CASCADE,
-        movement_type VARCHAR(20) NOT NULL, -- 'in', 'out', 'adjustment'
+        movement_type VARCHAR(20) NOT NULL,
         quantity INTEGER NOT NULL,
-        reason VARCHAR(100), -- 'purchase', 'assignment', 'return', 'adjustment', 'damaged'
-        reference_id INTEGER, -- Reference to client_id for assignments
+        reason VARCHAR(100),
+        reference_id INTEGER,
         unit_cost DECIMAL(10,2),
         notes TEXT,
         movement_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
+      );
     `);
+
+    // Handle table modifications in a single DO block for existing tables
+    await client.query(`
+      DO $$ 
+      BEGIN
+        -- Add missing columns to clients table if they don't exist
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='clients' AND column_name='email') THEN
+          ALTER TABLE clients ADD COLUMN email VARCHAR(100);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='clients' AND column_name='phone') THEN
+          ALTER TABLE clients ADD COLUMN phone VARCHAR(50);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='clients' AND column_name='balance') THEN
+          ALTER TABLE clients ADD COLUMN balance DECIMAL(10,2) DEFAULT 0.00;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='clients' AND column_name='installation_date') THEN
+          ALTER TABLE clients ADD COLUMN installation_date DATE;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='clients' AND column_name='due_date') THEN
+          ALTER TABLE clients ADD COLUMN due_date DATE;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='clients' AND column_name='payment_status') THEN
+          ALTER TABLE clients ADD COLUMN payment_status VARCHAR(20) DEFAULT 'unpaid';
+        END IF;
+
+        -- Add missing columns to billings table if they don't exist
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='billings' AND column_name='balance') THEN
+          ALTER TABLE billings ADD COLUMN balance DECIMAL(10,2) DEFAULT 0.00;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='billings' AND column_name='paid_amount') THEN
+          ALTER TABLE billings ADD COLUMN paid_amount DECIMAL(10,2) DEFAULT 0.00;
+        END IF;
+
+        -- Add client_id to payments if missing
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='payments' AND column_name='client_id') THEN
+          ALTER TABLE payments ADD COLUMN client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE;
+        END IF;
+
+        -- Add missing columns to monitoring_categories if they don't exist
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_categories' AND column_name='group_ids') THEN
+          ALTER TABLE monitoring_categories ADD COLUMN group_ids JSONB DEFAULT '[]';
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_categories' AND column_name='category_index') THEN
+          ALTER TABLE monitoring_categories ADD COLUMN category_index INTEGER DEFAULT 0;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_categories' AND column_name='subcategory_index') THEN
+          ALTER TABLE monitoring_categories ADD COLUMN subcategory_index INTEGER DEFAULT 0;
+        END IF;
+
+        -- Rename groups column to group_ids if it exists
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_categories' AND column_name='groups') THEN
+          ALTER TABLE monitoring_categories RENAME COLUMN groups TO group_ids;
+        END IF;
+
+        -- Drop columns that should not exist
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='client_plans' AND column_name='anchor_day') THEN
+          ALTER TABLE client_plans DROP COLUMN anchor_day;
+        END IF;
+        
+        -- Drop billing_id from payments if it exists
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='payments' AND column_name='billing_id') THEN
+          ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_billing_id_fkey;
+          ALTER TABLE payments DROP COLUMN billing_id;
+        END IF;
+      END $$;
+    `);
+
+    // Create ticketing tables in the same transaction
+    await createTicketingTables(client);
 
     // Create default admin user if not exists
     const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -504,6 +483,13 @@ async function initializeDatabaseTables() {
       ON CONFLICT (username) DO NOTHING
     `, ['admin', hashedPassword, 'admin@localhost', 'admin']);
 
+    // Commit transaction
+    await client.query('COMMIT');
+    
+  } catch (error) {
+    // Rollback on error
+    await client.query('ROLLBACK');
+    throw error;
   } finally {
     client.release();
   }
@@ -555,11 +541,6 @@ app.post('/api/auth/login', async (req, res) => {
       }
     });
   } catch (error) {
-      message: error.message,
-      stack: error.stack,
-      code: error.code,
-      detail: error.detail
-    });
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });

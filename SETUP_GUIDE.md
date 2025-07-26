@@ -81,10 +81,12 @@ curl -X POST http://localhost:8000/api/init-database
 ## Development
 
 ### Backend Development
-- Server code: `server/index.js`
+- **Main server**: `server/app.js` - Modular architecture with separate route files
+- **Legacy server**: `server/index.js` - Original monolithic server (preserved as backup)
 - Database queries use parameterized statements for security
 - JWT tokens for authentication
 - CORS enabled for frontend communication
+- Modular structure: routes/, middleware/, config/, utils/ folders
 
 ### Frontend Development
 - React with TypeScript

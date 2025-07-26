@@ -1463,7 +1463,7 @@
       }
       
       tbody.innerHTML = items.map(item => {
-        const isLowStock = item.quantity_in_stock <= item.minimum_stock_level;
+        const isLowStock = (item.quantity_in_stock || 0) <= (item.minimum_stock_level || 0);
         const stockClass = isLowStock ? 'text-red-600 font-semibold' : 'text-gray-900';
         const statusClass = item.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
         
@@ -1474,11 +1474,11 @@
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.category_name || '-'}</td>
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.supplier_name || '-'}</td>
             <td class="px-4 py-2 whitespace-nowrap text-sm ${stockClass}">
-              ${item.quantity_in_stock}
+              ${item.quantity_in_stock || 0}
               ${isLowStock ? '<i class="fas fa-exclamation-triangle text-red-500 ml-1" title="Low Stock"></i>' : ''}
             </td>
-            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.minimum_stock_level}</td>
-            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">₱${parseFloat(item.unit_price).toFixed(2)}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.minimum_stock_level || 0}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">₱${parseFloat(item.unit_price || 0).toFixed(2)}</td>
             <td class="px-4 py-2 whitespace-nowrap">
               <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">
                 ${item.status}
@@ -1618,9 +1618,10 @@
           category_id: formData.get('category_id') || null,
           supplier_id: formData.get('supplier_id') || null,
           sku: formData.get('sku'),
-          unit_price: parseFloat(formData.get('unit_price')),
-          quantity_in_stock: parseInt(formData.get('quantity_in_stock')),
-          minimum_stock_level: parseInt(formData.get('minimum_stock_level'))
+          unit_cost: parseFloat(formData.get('unit_price')), // Map unit_price to unit_cost
+          selling_price: parseFloat(formData.get('unit_price')), // Use same value for selling_price
+          quantity_on_hand: parseInt(formData.get('quantity_in_stock')), // Map quantity_in_stock to quantity_on_hand
+          reorder_level: parseInt(formData.get('minimum_stock_level')) // Map minimum_stock_level to reorder_level
         };
         
         // Client-side validation
@@ -1629,17 +1630,17 @@
           return;
         }
         
-        if (isNaN(equipmentData.unit_price) || equipmentData.unit_price < 0) {
+        if (isNaN(equipmentData.unit_cost) || equipmentData.unit_cost < 0) {
           showFormError('unit_price', 'Valid unit price is required');
           return;
         }
         
-        if (isNaN(equipmentData.quantity_in_stock) || equipmentData.quantity_in_stock < 0) {
+        if (isNaN(equipmentData.quantity_on_hand) || equipmentData.quantity_on_hand < 0) {
           showFormError('quantity_in_stock', 'Valid quantity is required');
           return;
         }
         
-        if (isNaN(equipmentData.minimum_stock_level) || equipmentData.minimum_stock_level < 0) {
+        if (isNaN(equipmentData.reorder_level) || equipmentData.reorder_level < 0) {
           showFormError('minimum_stock_level', 'Valid minimum stock level is required');
           return;
         }
@@ -1835,7 +1836,7 @@
       
       document.getElementById('adjustmentEquipmentName').textContent = item.name;
       document.getElementById('adjustmentEquipmentSKU').textContent = item.sku || 'N/A';
-      document.getElementById('adjustmentCurrentStock').textContent = item.quantity_in_stock;
+      document.getElementById('adjustmentCurrentStock').textContent = item.quantity_in_stock || 0;
       
       // Reset adjustment type selection
       resetAdjustmentTypeButtons();
@@ -1903,7 +1904,7 @@
         return;
       }
       
-      const currentStock = currentAdjustmentItem.quantity_in_stock;
+      const currentStock = currentAdjustmentItem.quantity_in_stock || 0;
       let newStock;
       
       if (type === 'increase') {
@@ -2012,12 +2013,19 @@
           return;
         }
         
-        // Calculate final quantity for API (negative for decrease)
-        const finalQuantity = adjustmentType === 'increase' ? quantity : -quantity;
+        // Map frontend adjustment type to backend format
+        let backendAdjustmentType;
+        if (adjustmentType === 'increase') {
+          backendAdjustmentType = 'in';
+        } else if (adjustmentType === 'decrease') {
+          backendAdjustmentType = 'out';
+        } else {
+          backendAdjustmentType = 'adjustment';
+        }
         
         // Check if decrease would result in negative stock
-        if (adjustmentType === 'decrease' && currentAdjustmentItem.quantity_in_stock < quantity) {
-          if (!confirm(`This adjustment will result in negative stock (${currentAdjustmentItem.quantity_in_stock - quantity}). Continue anyway?`)) {
+        if (adjustmentType === 'decrease' && (currentAdjustmentItem.quantity_in_stock || 0) < quantity) {
+          if (!confirm(`This adjustment will result in negative stock (${(currentAdjustmentItem.quantity_in_stock || 0) - quantity}). Continue anyway?`)) {
             return;
           }
         }
@@ -2030,9 +2038,9 @@
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify({
-            quantity: finalQuantity,
-            reason: reason,
-            notes: notes || ''
+            adjustment_type: backendAdjustmentType,
+            quantity: quantity, // Send positive quantity, backend will handle direction
+            notes: `${reason}: ${notes || ''}`.trim()
           })
         });
         
@@ -2078,13 +2086,13 @@
         document.getElementById('editEquipmentId').value = item.id;
         document.getElementById('editEquipmentName').value = item.name;
         document.getElementById('editEquipmentSKU').value = item.sku || '';
-        document.getElementById('editEquipmentPrice').value = item.unit_price;
+        document.getElementById('editEquipmentPrice').value = item.unit_price || ''; // Use unit_price from backend
         document.getElementById('editEquipmentCategory').value = item.category_id || '';
         document.getElementById('editEquipmentSupplier').value = item.supplier_id || '';
-        document.getElementById('editEquipmentMinLevel').value = item.minimum_stock_level;
+        document.getElementById('editEquipmentMinLevel').value = item.minimum_stock_level || ''; // Use minimum_stock_level from backend
         document.getElementById('editEquipmentStatus').value = item.status;
         document.getElementById('editEquipmentDescription').value = item.description || '';
-        document.getElementById('editCurrentStock').textContent = item.quantity_in_stock;
+        document.getElementById('editCurrentStock').textContent = item.quantity_in_stock || 0; // Use quantity_in_stock from backend
         
         // Clear any previous validation errors
         clearEditFormValidation();
@@ -2204,8 +2212,10 @@
           category_id: formData.get('category_id') || null,
           supplier_id: formData.get('supplier_id') || null,
           sku: formData.get('sku'),
-          unit_price: parseFloat(formData.get('unit_price')),
-          minimum_stock_level: parseInt(formData.get('minimum_stock_level')),
+          unit_cost: parseFloat(formData.get('unit_price')), // Map unit_price to unit_cost
+          selling_price: parseFloat(formData.get('unit_price')), // Use same value for selling_price
+          reorder_level: parseInt(formData.get('minimum_stock_level')), // Map minimum_stock_level to reorder_level
+          quantity_on_hand: currentEditItem.quantity_in_stock || 0, // Keep existing quantity - use correct field name
           status: formData.get('status')
         };
         
@@ -2215,12 +2225,12 @@
           return;
         }
         
-        if (isNaN(equipmentData.unit_price) || equipmentData.unit_price < 0) {
+        if (isNaN(equipmentData.unit_cost) || equipmentData.unit_cost < 0) {
           showEditFormError('unit_price', 'Valid unit price is required');
           return;
         }
         
-        if (isNaN(equipmentData.minimum_stock_level) || equipmentData.minimum_stock_level < 0) {
+        if (isNaN(equipmentData.reorder_level) || equipmentData.reorder_level < 0) {
           showEditFormError('minimum_stock_level', 'Valid minimum stock level is required');
           return;
         }
@@ -2290,9 +2300,10 @@
         equipmentSelect.innerHTML = '<option value="">Select equipment</option>';
         if (equipmentData.success && equipmentData.items) {
           equipmentData.items
-            .filter(item => item.status === 'active' && item.quantity_in_stock > 0)
+            .filter(item => item.status === 'active' && (item.quantity_in_stock || 0) > 0)
             .forEach(item => {
-              equipmentSelect.innerHTML += `<option value="${item.id}" data-stock="${item.quantity_in_stock}">${item.name} (Stock: ${item.quantity_in_stock})</option>`;
+              const stock = item.quantity_in_stock || 0;
+              equipmentSelect.innerHTML += `<option value="${item.id}" data-stock="${stock}">${item.name} (Stock: ${stock})</option>`;
             });
         }
         
@@ -2981,62 +2992,74 @@
       }
       
       tbody.innerHTML = movements.map(movement => {
-        const movementDate = new Date(movement.movement_date).toLocaleString();
+        const movementDate = new Date(movement.created_at).toLocaleString();
         // Check movement_type to determine if this is an increase or decrease
-        const isIncrease = movement.movement_type === 'in' || movement.quantity > 0;
+        const isIncrease = movement.movement_type === 'in';
         const quantityClass = isIncrease ? 'text-green-600' : 'text-red-600';
         const quantityPrefix = isIncrease ? '+' : '-';
         const displayQuantity = Math.abs(movement.quantity);
         
-        // Movement type icons and colors
+        // Movement type icons and colors based on reference_type
         let typeIcon = 'fas fa-exchange-alt';
         let typeClass = 'text-blue-600';
+        let typeLabel = movement.reference_type || movement.movement_type;
         
-        switch(movement.reason) {
-          case 'purchase':
-            typeIcon = 'fas fa-shopping-cart';
+        switch(movement.reference_type) {
+          case 'initial_stock':
+            typeIcon = 'fas fa-box';
             typeClass = 'text-green-600';
+            typeLabel = 'Initial Stock';
+            break;
+          case 'manual_adjustment':
+            typeIcon = 'fas fa-edit';
+            typeClass = 'text-blue-600';
+            typeLabel = 'Manual Adjustment';
             break;
           case 'assignment':
             typeIcon = 'fas fa-user-tag';
             typeClass = 'text-purple-600';
+            typeLabel = 'Assignment';
+            break;
+          case 'purchase':
+            typeIcon = 'fas fa-shopping-cart';
+            typeClass = 'text-green-600';
+            typeLabel = 'Purchase';
             break;
           case 'return':
             typeIcon = 'fas fa-undo';
             typeClass = 'text-blue-600';
+            typeLabel = 'Return';
             break;
-          case 'damaged':
-            typeIcon = 'fas fa-exclamation-triangle';
-            typeClass = 'text-red-600';
-            break;
-          case 'lost':
-            typeIcon = 'fas fa-question-circle';
-            typeClass = 'text-gray-600';
-            break;
-          case 'correction':
-            typeIcon = 'fas fa-edit';
-            typeClass = 'text-yellow-600';
+          default:
+            // Use movement_type as fallback
+            if (movement.movement_type === 'in') {
+              typeIcon = 'fas fa-plus-circle';
+              typeClass = 'text-green-600';
+            } else if (movement.movement_type === 'out') {
+              typeIcon = 'fas fa-minus-circle';
+              typeClass = 'text-red-600';
+            }
             break;
         }
         
         return `
           <tr class="hover:bg-gray-50">
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${movementDate}</td>
-            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${movement.item_name}</td>
-            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${movement.item_sku || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${movement.item_name || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${movement.sku || '-'}</td>
             <td class="px-4 py-2 whitespace-nowrap text-sm">
               <div class="flex items-center">
                 <i class="${typeIcon} ${typeClass} mr-2"></i>
-                <span class="capitalize">${movement.reason}</span>
+                <span>${typeLabel}</span>
               </div>
             </td>
             <td class="px-4 py-2 whitespace-nowrap text-sm font-semibold ${quantityClass}">
               ${quantityPrefix}${displayQuantity}
             </td>
-            <td class="px-4 py-2 text-sm text-gray-500 max-w-xs truncate" title="${movement.reason}">
-              ${movement.reason.charAt(0).toUpperCase() + movement.reason.slice(1)}
+            <td class="px-4 py-2 text-sm text-gray-500 max-w-xs truncate" title="${movement.movement_type}">
+              ${movement.movement_type.toUpperCase()}
             </td>
-            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${movement.client_name || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">-</td>
             <td class="px-4 py-2 text-sm text-gray-500 max-w-xs truncate" title="${movement.notes || 'N/A'}">${movement.notes || '-'}</td>
           </tr>
         `;
