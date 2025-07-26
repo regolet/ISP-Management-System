@@ -51,7 +51,7 @@ const pool = new Pool({
 // JWT secret (in production, use environment variable)
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// Test database connection
+// Health check endpoint
 app.get('/api/health', async (req, res) => {
   try {
     const client = await pool.connect();
@@ -63,7 +63,6 @@ app.get('/api/health', async (req, res) => {
       message: 'Database connection successful'
     });
   } catch (error) {
-    console.error('Database connection error:', error);
     res.status(500).json({ 
       status: 'error', 
       message: 'Database connection failed',
@@ -72,23 +71,6 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Initialize database tables
-app.post('/api/init-database', async (req, res) => {
-  try {
-    await initializeDatabaseTables();
-    await createTicketingTables();
-    
-    // Insert sample data
-    const client = await pool.connect();
-    await insertSampleData(client);
-    client.release();
-
-    res.json({ success: true, message: 'Database initialized successfully' });
-  } catch (error) {
-    console.error('Database initialization error:', error);
-    res.status(500).json({ success: false, message: 'Database initialization failed', error: error.message });
-  }
-});
 
 // Create ticketing system tables
 async function createTicketingTables() {
@@ -218,7 +200,6 @@ async function insertSampleData(client) {
       }
     }
   } catch (error) {
-    console.error('Error inserting sample billing data:', error);
   }
 
 }
@@ -303,7 +284,6 @@ async function initializeDatabaseTables() {
       await client.query('ALTER TABLE client_plans DROP COLUMN IF EXISTS anchor_day');
     } catch (error) {
       // Column may not exist, ignore error
-      console.log('anchor_day column removal:', error.message);
     }
 
     // Create billings table
@@ -331,7 +311,6 @@ async function initializeDatabaseTables() {
         ADD COLUMN IF NOT EXISTS paid_amount DECIMAL(10,2) DEFAULT 0.00
       `);
     } catch (error) {
-      console.log('Billings table columns already exist or error adding them:', error.message);
     }
 
     // Create payments table
@@ -355,7 +334,6 @@ async function initializeDatabaseTables() {
         ADD COLUMN IF NOT EXISTS client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE
       `);
     } catch (error) {
-      console.log('Payments table client_id column already exists or error adding it:', error.message);
     }
 
     // Remove billing_id constraint and column from payments table if it exists
@@ -363,7 +341,6 @@ async function initializeDatabaseTables() {
       await client.query('ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_billing_id_fkey');
       await client.query('ALTER TABLE payments DROP COLUMN IF EXISTS billing_id');
     } catch (error) {
-      console.log('Payments table billing_id removal:', error.message);
     }
 
     // Create MikroTik settings table
@@ -578,7 +555,6 @@ app.post('/api/auth/login', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Login error details:', {
       message: error.message,
       stack: error.stack,
       code: error.code,
@@ -619,7 +595,6 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 
     res.json({ user: result.rows[0] });
   } catch (error) {
-    console.error('Get user error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -725,7 +700,6 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get clients error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -746,7 +720,6 @@ app.post('/api/clients', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, client: formatClientDates(result.rows[0]) });
   } catch (error) {
-    console.error('Create client error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -767,7 +740,6 @@ app.put('/api/clients/:id', authenticateToken, async (req, res) => {
     }
     res.json({ success: true, updated: formatClientDates(result.rows[0]) });
   } catch (error) {
-    console.error('Update client error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -784,99 +756,10 @@ app.delete('/api/clients/:id', authenticateToken, async (req, res) => {
     }
     res.json({ success: true, deleted: result.rows[0] });
   } catch (error) {
-    console.error('Delete client error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Repair database endpoint
-app.post('/api/repair-database', authenticateToken, async (req, res) => {
-  try {
-    const client = await pool.connect();
-    
-    // Drop existing tables in correct order (respecting foreign key constraints)
-    const dropQueries = [
-      'DROP TABLE IF EXISTS payments CASCADE',
-      'DROP TABLE IF EXISTS billings CASCADE', 
-      'DROP TABLE IF EXISTS client_plans CASCADE',
-      'DROP TABLE IF EXISTS clients CASCADE',
-      'DROP TABLE IF EXISTS plans CASCADE',
-      'DROP TABLE IF EXISTS company_info CASCADE',
-      'DROP TABLE IF EXISTS mikrotik_settings CASCADE',
-      'DROP TABLE IF EXISTS monitoring_groups CASCADE',
-      'DROP TABLE IF EXISTS monitoring_categories CASCADE',
-      'DROP TABLE IF EXISTS users CASCADE'
-    ];
-    
-    for (const query of dropQueries) {
-      await client.query(query);
-    }
-    
-    client.release();
-    
-    // Reinitialize database
-    await initializeDatabaseTables();
-    
-    res.json({ success: true, message: 'Database repaired and reinitialized successfully' });
-    
-  } catch (error) {
-    console.error('Database repair error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Database repair failed', 
-      error: error.message 
-    });
-  }
-});
-
-// Reset database endpoint  
-app.post('/api/reset-database', authenticateToken, async (req, res) => {
-  try {
-    const { confirm } = req.body;
-    
-    if (confirm !== 'RESET') {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Reset confirmation required. Send {"confirm": "RESET"} to proceed.' 
-      });
-    }
-    
-    const client = await pool.connect();
-    
-    // Drop all tables and data
-    const dropQueries = [
-      'DROP TABLE IF EXISTS payments CASCADE',
-      'DROP TABLE IF EXISTS billings CASCADE',
-      'DROP TABLE IF EXISTS client_plans CASCADE', 
-      'DROP TABLE IF EXISTS clients CASCADE',
-      'DROP TABLE IF EXISTS plans CASCADE',
-      'DROP TABLE IF EXISTS company_info CASCADE',
-      'DROP TABLE IF EXISTS mikrotik_settings CASCADE',
-      'DROP TABLE IF EXISTS monitoring_groups CASCADE',
-      'DROP TABLE IF EXISTS monitoring_categories CASCADE',
-      'DROP TABLE IF EXISTS users CASCADE'
-    ];
-    
-    for (const query of dropQueries) {
-      await client.query(query);
-    }
-    
-    client.release();
-    
-    // Reinitialize database with fresh schema and default admin user
-    await initializeDatabaseTables();
-    
-    res.json({ success: true, message: 'Database reset completed successfully. All data has been removed and default admin user restored.' });
-    
-  } catch (error) {
-    console.error('Database reset error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Database reset failed', 
-      error: error.message 
-    });
-  }
-});
 
 app.get('/api/plans', authenticateToken, async (req, res) => {
   try {
@@ -885,7 +768,6 @@ app.get('/api/plans', authenticateToken, async (req, res) => {
     client.release();
     res.json(result.rows);
   } catch (error) {
-    console.error('Get plans error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -901,7 +783,6 @@ app.post('/api/plans', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, plan: result.rows[0] });
   } catch (error) {
-    console.error('Create plan error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -921,7 +802,6 @@ app.put('/api/plans/:id', authenticateToken, async (req, res) => {
     }
     res.json({ success: true, plan: result.rows[0] });
   } catch (error) {
-    console.error('Update plan error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -937,7 +817,6 @@ app.delete('/api/plans/:id', authenticateToken, async (req, res) => {
     }
     res.json({ success: true, deleted: result.rows[0] });
   } catch (error) {
-    console.error('Delete plan error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -957,7 +836,6 @@ app.get('/api/client-plans/:clientId', authenticateToken, async (req, res) => {
     client.release();
     res.json(result.rows);
   } catch (error) {
-    console.error('Get client plans error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -991,7 +869,6 @@ app.post('/api/client-plans', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, clientPlan: result.rows[0] });
   } catch (error) {
-    console.error('Create client plan error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1008,7 +885,6 @@ app.delete('/api/client-plans/:id', authenticateToken, async (req, res) => {
     }
     res.json({ success: true, deleted: result.rows[0] });
   } catch (error) {
-    console.error('Delete client plan error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1020,7 +896,6 @@ app.get('/api/client-plans-count', authenticateToken, async (req, res) => {
     client.release();
     res.json({ count: parseInt(result.rows[0].count) });
   } catch (error) {
-    console.error('Get client plans count error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1038,7 +913,6 @@ app.get('/api/client-plans-all', authenticateToken, async (req, res) => {
     client.release();
     res.json(result.rows);
   } catch (error) {
-    console.error('Get all client plans error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1098,7 +972,6 @@ app.get('/api/billings', authenticateToken, async (req, res) => {
     client.release();
     res.json(result.rows);
   } catch (error) {
-    console.error('Get billings error:', error);
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
@@ -1177,7 +1050,6 @@ app.post('/api/billings', authenticateToken, async (req, res) => {
       client_payment_status: balanceInfo.clientPaymentStatus
     });
   } catch (error) {
-    console.error('Create billing error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1212,7 +1084,6 @@ app.get('/api/billings/:id', authenticateToken, async (req, res) => {
     
     res.json(result.rows[0]);
   } catch (error) {
-    console.error('Get billing error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1251,7 +1122,6 @@ app.put('/api/billings/:id', authenticateToken, async (req, res) => {
       client_payment_status: balanceInfo.clientPaymentStatus
     });
   } catch (error) {
-    console.error('Update billing error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1338,16 +1208,13 @@ async function autoPayUnpaidBillings(client_id, dbClient) {
       let remainingPayments = totalPayments;
       const billingsToUpdate = [];
       
-      console.log(`Zero balance auto-pay: totalPayments=${totalPayments}, unpaidBillings=${unpaidBillingsResult.rows.length}`);
       
       for (const billing of unpaidBillingsResult.rows) {
         const billingAmount = parseFloat(billing.amount);
-        console.log(`Checking billing ${billing.id}: amount=${billingAmount}, remainingPayments=${remainingPayments}`);
         
         if (remainingPayments >= billingAmount) {
           billingsToUpdate.push(billing.id);
           remainingPayments -= billingAmount;
-          console.log(`Auto-paying billing ${billing.id} with zero balance logic`);
         } else {
           break; // Not enough payments to cover this billing
         }
@@ -1359,7 +1226,6 @@ async function autoPayUnpaidBillings(client_id, dbClient) {
           ['paid', billingsToUpdate]
         );
         await recalculateClientBalance(client_id, dbClient);
-        console.log(`Zero balance auto-payment completed: ${billingsToUpdate.length} billings marked as paid`);
       }
       return; // Exit early for zero balance case
     }
@@ -1401,7 +1267,6 @@ async function autoPayUnpaidBillings(client_id, dbClient) {
     }
     
   } catch (error) {
-    console.error('Error in autoPayUnpaidBillings:', error);
     // Don't throw error to avoid breaking the main payment/billing operation
   }
 }
@@ -1436,7 +1301,6 @@ app.delete('/api/billings/:id', authenticateToken, async (req, res) => {
       client_payment_status: balanceInfo.clientPaymentStatus
     });
   } catch (error) {
-    console.error('Delete billing error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1475,7 +1339,6 @@ app.get('/api/payments', authenticateToken, async (req, res) => {
     client.release();
     res.json(result.rows);
   } catch (error) {
-    console.error('Get payments error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1573,7 +1436,6 @@ app.post('/api/payments', authenticateToken, async (req, res) => {
       total_paid: totalPaid
     });
   } catch (error) {
-    console.error('Create payment error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1628,7 +1490,6 @@ app.delete('/api/payments/:id', authenticateToken, async (req, res) => {
       client_payment_status: clientPaymentStatus
     });
   } catch (error) {
-    console.error('Delete payment error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1641,7 +1502,6 @@ app.get('/api/mikrotik/settings', authenticateToken, async (req, res) => {
     client.release();
     res.json(result.rows[0] || null);
   } catch (error) {
-    console.error('Get MikroTik settings error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1668,41 +1528,10 @@ app.post('/api/mikrotik/settings', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, settings: result.rows[0] });
   } catch (error) {
-    console.error('Save MikroTik settings error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.post('/api/mikrotik/test-connection', authenticateToken, async (req, res) => {
-  try {
-    const { host, username, password, port = 8728 } = req.body;
-    
-    if (!host || !username || !password) {
-      return res.status(400).json({ error: 'Host, username, and password are required' });
-    }
-
-    const connection = new RouterOSAPI({
-      host: host,
-      user: username,
-      password: password,
-      port: port
-    });
-
-    connection.connect()
-      .then(() => {
-        connection.close();
-        res.json({ success: true, message: 'Connection successful' });
-      })
-      .catch((error) => {
-        console.error('MikroTik connection error:', error);
-        res.status(500).json({ error: 'Connection failed', details: error.message });
-      });
-
-  } catch (error) {
-    console.error('Test MikroTik connection error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
 
 app.get('/api/ppp-accounts', authenticateToken, async (req, res) => {
   try {
@@ -1746,12 +1575,10 @@ app.get('/api/ppp-accounts', authenticateToken, async (req, res) => {
       })
       .catch((error) => {
         client.release();
-        console.error('MikroTik PPP accounts error:', error);
         res.status(500).json({ error: 'Failed to fetch PPP accounts', details: error.message });
       });
 
   } catch (error) {
-    console.error('Get PPP accounts error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1790,7 +1617,6 @@ app.post('/api/import-clients', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Import clients error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1825,11 +1651,9 @@ app.get('/api/ppp-profiles', authenticateToken, async (req, res) => {
       })
       .catch((error) => {
         client.release();
-        console.error('MikroTik PPP profiles error:', error);
         res.status(500).json({ error: 'Failed to fetch PPP profiles', details: error.message });
       });
   } catch (error) {
-    console.error('Get PPP profiles error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1850,7 +1674,6 @@ app.get('/api/clients-with-plan', authenticateToken, async (req, res) => {
     client.release();
     res.json(result.rows);
   } catch (error) {
-    console.error('Get clients with plan error:', error);
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
@@ -1863,7 +1686,6 @@ app.get('/api/company-info', async (req, res) => {
     client.release();
     res.json(result.rows[0] || {});
   } catch (error) {
-    console.error('Get company info error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1882,7 +1704,6 @@ app.post('/api/company-info', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, company: result.rows[0] });
   } catch (error) {
-    console.error('Update company info error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1897,7 +1718,6 @@ app.get('/api/inventory/categories', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, categories: result.rows });
   } catch (error) {
-    console.error('Get categories error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -1914,7 +1734,6 @@ app.post('/api/inventory/categories', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, category: result.rows[0] });
   } catch (error) {
-    console.error('Add category error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -1932,7 +1751,6 @@ app.put('/api/inventory/categories/:id', authenticateToken, async (req, res) => 
     client.release();
     res.json({ success: true, category: result.rows[0] });
   } catch (error) {
-    console.error('Update category error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -1946,7 +1764,6 @@ app.delete('/api/inventory/categories/:id', authenticateToken, async (req, res) 
     client.release();
     res.json({ success: true });
   } catch (error) {
-    console.error('Delete category error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -1959,7 +1776,6 @@ app.get('/api/inventory/suppliers', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, suppliers: result.rows });
   } catch (error) {
-    console.error('Get suppliers error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -1976,7 +1792,6 @@ app.post('/api/inventory/suppliers', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, supplier: result.rows[0] });
   } catch (error) {
-    console.error('Add supplier error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -1994,7 +1809,6 @@ app.put('/api/inventory/suppliers/:id', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, supplier: result.rows[0] });
   } catch (error) {
-    console.error('Update supplier error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -2008,7 +1822,6 @@ app.delete('/api/inventory/suppliers/:id', authenticateToken, async (req, res) =
     client.release();
     res.json({ success: true });
   } catch (error) {
-    console.error('Delete supplier error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -2030,7 +1843,6 @@ app.get('/api/inventory/items', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, items: result.rows });
   } catch (error) {
-    console.error('Get items error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -2057,7 +1869,6 @@ app.post('/api/inventory/items', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, item: result.rows[0] });
   } catch (error) {
-    console.error('Add item error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -2077,7 +1888,6 @@ app.put('/api/inventory/items/:id', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, item: result.rows[0] });
   } catch (error) {
-    console.error('Update item error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -2091,7 +1901,6 @@ app.delete('/api/inventory/items/:id', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true });
   } catch (error) {
-    console.error('Delete item error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -2130,7 +1939,6 @@ app.post('/api/inventory/items/:id/adjust-stock', authenticateToken, async (req,
     client.release();
     res.json({ success: true, new_stock: newStock });
   } catch (error) {
-    console.error('Adjust stock error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -2153,7 +1961,6 @@ app.get('/api/inventory/assignments', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, assignments: result.rows });
   } catch (error) {
-    console.error('Get assignments error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -2195,7 +2002,6 @@ app.post('/api/inventory/assignments', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, assignment: assignmentResult.rows[0] });
   } catch (error) {
-    console.error('Create assignment error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -2219,7 +2025,6 @@ app.get('/api/inventory/movements', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, movements: result.rows });
   } catch (error) {
-    console.error('Get movements error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -2292,12 +2097,10 @@ app.get('/api/monitoring/dashboard', authenticateToken, async (req, res) => {
       
     } catch (mikrotikError) {
       client.release();
-      console.error('MikroTik connection error:', mikrotikError);
       res.status(500).json({ error: 'Failed to connect to MikroTik', details: mikrotikError.message });
     }
     
   } catch (error) {
-    console.error('Get monitoring dashboard error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2355,12 +2158,10 @@ app.get('/api/monitoring/ppp_accounts_summary', authenticateToken, async (req, r
       
     } catch (mikrotikError) {
       client.release();
-      console.error('MikroTik connection error:', mikrotikError);
       res.status(500).json({ error: 'Failed to connect to MikroTik', details: mikrotikError.message });
     }
     
   } catch (error) {
-    console.error('Get PPP accounts summary error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2379,7 +2180,6 @@ app.get('/api/monitoring/groups', authenticateToken, async (req, res) => {
       );
     `);
     
-    console.log('monitoring_groups table exists:', tableCheck.rows[0].exists);
     
     if (!tableCheck.rows[0].exists) {
       client.release();
@@ -2409,8 +2209,6 @@ app.get('/api/monitoring/groups', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, groups: groupsWithParsedAccounts });
   } catch (error) {
-    console.error('Get monitoring groups error:', error);
-    console.error('Error details:', error.message, error.code);
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
@@ -2418,14 +2216,12 @@ app.get('/api/monitoring/groups', authenticateToken, async (req, res) => {
 // Add or update monitoring group
 app.post('/api/monitoring/groups', authenticateToken, async (req, res) => {
   try {
-    console.log('POST /api/monitoring/groups - Request body:', req.body);
     const { name, description, max_members, accounts } = req.body;
     if (!name) {
       return res.status(400).json({ error: 'name is required' });
     }
 
     const client = await pool.connect();
-    console.log('Database connected, checking table existence...');
     
     // Check if table exists
     const tableCheck = await client.query(`
@@ -2436,11 +2232,10 @@ app.post('/api/monitoring/groups', authenticateToken, async (req, res) => {
       );
     `);
     
-    console.log('monitoring_groups table exists:', tableCheck.rows[0].exists);
     
     if (!tableCheck.rows[0].exists) {
       client.release();
-      return res.status(500).json({ error: 'monitoring_groups table does not exist. Please run database initialization first by calling POST /api/init-database' });
+      return res.status(500).json({ error: 'monitoring_groups table does not exist. Please ensure database is properly initialized.' });
     }
 
     // Double check the table schema to ensure accounts column is JSONB
@@ -2451,17 +2246,15 @@ app.post('/api/monitoring/groups', authenticateToken, async (req, res) => {
       AND column_name = 'accounts'
     `);
     
-    console.log('Table schema check:', schemaCheck.rows[0]);
     
     if (!schemaCheck.rows[0] || schemaCheck.rows[0].data_type !== 'jsonb') {
       client.release();
       return res.status(500).json({ 
-        error: 'monitoring_groups table has incorrect schema. Please reinitialize database by calling POST /api/init-database',
+        error: 'monitoring_groups table has incorrect schema. Please ensure database is properly initialized.',
         details: `accounts column type: ${schemaCheck.rows[0]?.data_type || 'missing'}`
       });
     }
     
-    console.log('Inserting group...');
     const result = await client.query(`
       INSERT INTO monitoring_groups (name, description, max_members, accounts)
       VALUES ($1, $2, $3, $4)
@@ -2473,12 +2266,9 @@ app.post('/api/monitoring/groups', authenticateToken, async (req, res) => {
       accounts: typeof result.rows[0].accounts === 'string' ? JSON.parse(result.rows[0].accounts) : result.rows[0].accounts
     };
     
-    console.log('Group inserted successfully:', insertedGroup);
     client.release();
     res.json({ success: true, group: insertedGroup });
   } catch (error) {
-    console.error('Add monitoring group error:', error);
-    console.error('Error details:', error.message, error.code);
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
@@ -2501,7 +2291,6 @@ app.put('/api/monitoring/groups', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, message: 'Group updated successfully' });
   } catch (error) {
-    console.error('Update monitoring group error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2519,7 +2308,6 @@ app.delete('/api/monitoring/groups', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, message: 'Group deleted successfully' });
   } catch (error) {
-    console.error('Delete monitoring group error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2557,7 +2345,6 @@ app.get('/api/monitoring/categories', authenticateToken, async (req, res) => {
             }
           }
         } catch (e) {
-          console.error('Error parsing group_ids JSON:', e);
           groups = [];
         }
         
@@ -2571,7 +2358,6 @@ app.get('/api/monitoring/categories', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, categories: Object.values(categories) });
   } catch (error) {
-    console.error('Get monitoring categories error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2612,7 +2398,6 @@ app.post('/api/monitoring/categories', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, message: 'Categories saved successfully' });
   } catch (error) {
-    console.error('Add monitoring categories error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2639,7 +2424,6 @@ app.put('/api/monitoring/categories', authenticateToken, async (req, res) => {
     
     res.json({ success: true, category: result.rows[0] });
   } catch (error) {
-    console.error('Update monitoring category error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2665,7 +2449,6 @@ app.delete('/api/monitoring/categories', authenticateToken, async (req, res) => 
     
     res.json({ success: true, message: 'Category deleted successfully' });
   } catch (error) {
-    console.error('Delete monitoring category error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2699,7 +2482,6 @@ app.post('/api/monitoring/categories/:categoryId/subcategories', authenticateTok
     client.release();
     res.json({ success: true, subcategory: result.rows[0] });
   } catch (error) {
-    console.error('Add monitoring subcategory error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2727,7 +2509,6 @@ app.put('/api/monitoring/categories/:categoryId/subcategories/:subcategoryId', a
     
     res.json({ success: true, subcategory: result.rows[0] });
   } catch (error) {
-    console.error('Update monitoring subcategory error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2750,7 +2531,6 @@ app.delete('/api/monitoring/categories/:categoryId/subcategories/:subcategoryId'
     
     res.json({ success: true, message: 'Subcategory deleted successfully' });
   } catch (error) {
-    console.error('Delete monitoring subcategory error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2778,7 +2558,6 @@ app.put('/api/monitoring/categories/:categoryId/subcategories/:subcategoryId/gro
     
     res.json({ success: true, subcategory: result.rows[0] });
   } catch (error) {
-    console.error('Update monitoring subcategory groups error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2903,7 +2682,6 @@ app.get('/api/tickets', authenticateToken, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get tickets error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2928,7 +2706,6 @@ app.get('/api/tickets/stats', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, stats: stats.rows[0] });
   } catch (error) {
-    console.error('Get ticket stats error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2960,7 +2737,6 @@ app.get('/api/tickets/:id', authenticateToken, async (req, res) => {
     
     res.json({ success: true, ticket: result.rows[0] });
   } catch (error) {
-    console.error('Get ticket error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -3000,7 +2776,6 @@ app.post('/api/tickets', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, ticket: result.rows[0] });
   } catch (error) {
-    console.error('Create ticket error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -3066,7 +2841,6 @@ app.put('/api/tickets/:id', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, ticket: result.rows[0] });
   } catch (error) {
-    console.error('Update ticket error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -3087,7 +2861,6 @@ app.delete('/api/tickets/:id', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, deleted: result.rows[0] });
   } catch (error) {
-    console.error('Delete ticket error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -3111,7 +2884,6 @@ app.get('/api/tickets/:id/comments', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, comments: result.rows });
   } catch (error) {
-    console.error('Get ticket comments error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -3142,7 +2914,6 @@ app.post('/api/tickets/:id/comments', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, comment: result.rows[0] });
   } catch (error) {
-    console.error('Add comment error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -3166,7 +2937,6 @@ app.get('/api/tickets/:id/history', authenticateToken, async (req, res) => {
     client.release();
     res.json({ success: true, history: result.rows });
   } catch (error) {
-    console.error('Get ticket history error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -3181,8 +2951,4 @@ app.use((req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
-  console.log(`Database init: http://localhost:${PORT}/api/init-database`);
-  console.log(`Frontend: http://localhost:${PORT}`);
 });
