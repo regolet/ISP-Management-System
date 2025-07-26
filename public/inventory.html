@@ -150,7 +150,7 @@
           </h3>
           <div class="flex items-center space-x-3">
             <input type="text" id="equipmentSearch" placeholder="Search equipment..." class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            <button id="addEquipmentBtn" onclick="openAddEquipmentModal()" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+            <button id="addEquipmentBtn" onclick="openAddEquipmentModal()" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium" title="Add Equipment (Ctrl+Shift+A)">
               <i class="fas fa-plus"></i>
               <span>Add Equipment</span>
             </button>
@@ -278,10 +278,13 @@
             <i class="fas fa-tags text-blue-600 mr-2"></i>
             Equipment Categories
           </h3>
-          <button id="addCategoryBtn" onclick="openAddCategoryModal()" class="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium">
-            <i class="fas fa-plus"></i>
-            <span>Add Category</span>
-          </button>
+          <div class="flex items-center space-x-3">
+            <input type="text" id="categoriesSearch" placeholder="Search categories..." class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+            <button id="addCategoryBtn" onclick="openAddCategoryModal()" class="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium" title="Add New Category (Ctrl+Shift+A)">
+              <i class="fas fa-plus"></i>
+              <span>Add Category</span>
+            </button>
+          </div>
         </div>
         
         <div class="p-6">
@@ -341,7 +344,974 @@
   <!-- Notification Container -->
   <div id="notificationContainer" class="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm"></div>
 
-  <!-- Modals will be added here via JavaScript -->
+  <!-- Add Equipment Modal -->
+  <div id="addEquipmentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+          <i class="fas fa-plus-circle text-blue-600 mr-2"></i>
+          Add New Equipment
+        </h3>
+      </div>
+      
+      <form id="addEquipmentForm" class="p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Equipment Name -->
+          <div class="md:col-span-2">
+            <label for="equipmentName" class="block text-sm font-medium text-gray-700 mb-1">
+              Equipment Name <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="equipmentName" 
+              name="name" 
+              required 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter equipment name"
+            >
+            <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <!-- SKU -->
+          <div>
+            <label for="equipmentSKU" class="block text-sm font-medium text-gray-700 mb-1">
+              SKU
+            </label>
+            <input 
+              type="text" 
+              id="equipmentSKU" 
+              name="sku" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter SKU"
+            >
+          </div>
+
+          <!-- Unit Price -->
+          <div>
+            <label for="equipmentPrice" class="block text-sm font-medium text-gray-700 mb-1">
+              Unit Price (₱) <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="number" 
+              id="equipmentPrice" 
+              name="unit_price" 
+              required 
+              min="0" 
+              step="0.01"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="0.00"
+            >
+            <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <!-- Category -->
+          <div>
+            <label for="equipmentCategory" class="block text-sm font-medium text-gray-700 mb-1">
+              Category
+            </label>
+            <select 
+              id="equipmentCategory" 
+              name="category_id" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select category</option>
+              <!-- Categories will be loaded here -->
+            </select>
+          </div>
+
+          <!-- Supplier -->
+          <div>
+            <label for="equipmentSupplier" class="block text-sm font-medium text-gray-700 mb-1">
+              Supplier
+            </label>
+            <select 
+              id="equipmentSupplier" 
+              name="supplier_id" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select supplier</option>
+              <!-- Suppliers will be loaded here -->
+            </select>
+          </div>
+
+          <!-- Quantity in Stock -->
+          <div>
+            <label for="equipmentQuantity" class="block text-sm font-medium text-gray-700 mb-1">
+              Initial Stock Quantity <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="number" 
+              id="equipmentQuantity" 
+              name="quantity_in_stock" 
+              required 
+              min="0"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="0"
+            >
+            <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <!-- Minimum Stock Level -->
+          <div>
+            <label for="equipmentMinLevel" class="block text-sm font-medium text-gray-700 mb-1">
+              Minimum Stock Level <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="number" 
+              id="equipmentMinLevel" 
+              name="minimum_stock_level" 
+              required 
+              min="0"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="0"
+            >
+            <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <!-- Description -->
+          <div class="md:col-span-2">
+            <label for="equipmentDescription" class="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <textarea 
+              id="equipmentDescription" 
+              name="description" 
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter equipment description"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button 
+            type="button" 
+            onclick="closeAddEquipmentModal()" 
+            class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            id="addEquipmentSubmitBtn"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors flex items-center"
+          >
+            <span class="submit-text">Add Equipment</span>
+            <div class="submit-spinner hidden ml-2">
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Stock Adjustment Modal -->
+  <div id="stockAdjustmentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+          <i class="fas fa-plus-minus text-blue-600 mr-2"></i>
+          Adjust Stock
+        </h3>
+      </div>
+      
+      <form id="stockAdjustmentForm" class="p-6 space-y-4">
+        <!-- Equipment Info -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h4 class="font-medium text-gray-900 mb-2" id="adjustmentEquipmentName">Equipment Name</h4>
+          <div class="text-sm text-gray-600 space-y-1">
+            <div>SKU: <span id="adjustmentEquipmentSKU">-</span></div>
+            <div>Current Stock: <span id="adjustmentCurrentStock" class="font-semibold">0</span></div>
+          </div>
+        </div>
+
+        <!-- Adjustment Type -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Adjustment Type</label>
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" id="increaseBtn" onclick="setAdjustmentType('increase')" class="adjustment-type-btn flex items-center justify-center space-x-2 px-4 py-3 border-2 border-green-300 text-green-700 rounded-lg hover:bg-green-50 transition-colors">
+              <i class="fas fa-plus"></i>
+              <span>Increase</span>
+            </button>
+            <button type="button" id="decreaseBtn" onclick="setAdjustmentType('decrease')" class="adjustment-type-btn flex items-center justify-center space-x-2 px-4 py-3 border-2 border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors">
+              <i class="fas fa-minus"></i>
+              <span>Decrease</span>
+            </button>
+          </div>
+          <input type="hidden" id="adjustmentType" name="adjustmentType" required>
+          <div id="adjustmentTypeError" class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+        </div>
+
+        <!-- Quantity -->
+        <div>
+          <label for="adjustmentQuantity" class="block text-sm font-medium text-gray-700 mb-1">
+            Quantity <span class="text-red-500">*</span>
+          </label>
+          <input 
+            type="number" 
+            id="adjustmentQuantity" 
+            name="quantity" 
+            required 
+            min="1"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter quantity"
+          >
+          <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+        </div>
+
+        <!-- Reason -->
+        <div>
+          <label for="adjustmentReason" class="block text-sm font-medium text-gray-700 mb-1">
+            Reason <span class="text-red-500">*</span>
+          </label>
+          <select 
+            id="adjustmentReason" 
+            name="reason" 
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Select reason</option>
+            <option value="purchase">Purchase/Restock</option>
+            <option value="damaged">Damaged/Defective</option>
+            <option value="lost">Lost/Stolen</option>
+            <option value="return">Return from Client</option>
+            <option value="correction">Inventory Correction</option>
+            <option value="other">Other</option>
+          </select>
+          <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label for="adjustmentNotes" class="block text-sm font-medium text-gray-700 mb-1">
+            Notes
+          </label>
+          <textarea 
+            id="adjustmentNotes" 
+            name="notes" 
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Additional notes (optional)"
+          ></textarea>
+        </div>
+
+        <!-- New Stock Preview -->
+        <div id="stockPreview" class="bg-blue-50 rounded-lg p-4 hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-blue-900">New Stock Level:</span>
+            <span id="newStockValue" class="text-lg font-bold text-blue-900">0</span>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button 
+            type="button" 
+            onclick="closeStockAdjustmentModal()" 
+            class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            id="stockAdjustmentSubmitBtn"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors flex items-center"
+          >
+            <span class="submit-text">Adjust Stock</span>
+            <div class="submit-spinner hidden ml-2">
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Assignment Modal -->
+  <div id="addAssignmentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+          <i class="fas fa-user-tag text-green-600 mr-2"></i>
+          Assign Equipment to Client
+        </h3>
+      </div>
+      
+      <form id="addAssignmentForm" class="p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Equipment -->
+          <div>
+            <label for="assignmentEquipment" class="block text-sm font-medium text-gray-700 mb-1">
+              Equipment <span class="text-red-500">*</span>
+            </label>
+            <select 
+              id="assignmentEquipment" 
+              name="item_id" 
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="">Select equipment</option>
+              <!-- Equipment will be loaded here -->
+            </select>
+            <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <!-- Client -->
+          <div>
+            <label for="assignmentClient" class="block text-sm font-medium text-gray-700 mb-1">
+              Client <span class="text-red-500">*</span>
+            </label>
+            <select 
+              id="assignmentClient" 
+              name="client_id" 
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="">Select client</option>
+              <!-- Clients will be loaded here -->
+            </select>
+            <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <!-- Quantity -->
+          <div>
+            <label for="assignmentQuantity" class="block text-sm font-medium text-gray-700 mb-1">
+              Quantity <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="number" 
+              id="assignmentQuantity" 
+              name="quantity" 
+              required 
+              min="1"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="1"
+            >
+            <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <!-- Available Stock Display -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Available Stock
+            </label>
+            <div class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-700">
+              <span id="availableStock">Select equipment first</span>
+            </div>
+          </div>
+
+          <!-- Installation Address -->
+          <div class="md:col-span-2">
+            <label for="assignmentAddress" class="block text-sm font-medium text-gray-700 mb-1">
+              Installation Address
+            </label>
+            <textarea 
+              id="assignmentAddress" 
+              name="installation_address" 
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="Enter installation address"
+            ></textarea>
+          </div>
+
+          <!-- Notes -->
+          <div class="md:col-span-2">
+            <label for="assignmentNotes" class="block text-sm font-medium text-gray-700 mb-1">
+              Notes
+            </label>
+            <textarea 
+              id="assignmentNotes" 
+              name="notes" 
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="Additional notes (optional)"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button 
+            type="button" 
+            onclick="closeAddAssignmentModal()" 
+            class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            id="addAssignmentSubmitBtn"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors flex items-center"
+          >
+            <span class="submit-text">Assign Equipment</span>
+            <div class="submit-spinner hidden ml-2">
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Category Modal -->
+  <div id="addCategoryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+          <i class="fas fa-tags text-purple-600 mr-2"></i>
+          Add New Category
+        </h3>
+      </div>
+      
+      <form id="addCategoryForm" class="p-6 space-y-4">
+        <!-- Category Name -->
+        <div>
+          <label for="categoryName" class="block text-sm font-medium text-gray-700 mb-1">
+            Category Name <span class="text-red-500">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="categoryName" 
+            name="name" 
+            required 
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            placeholder="Enter category name"
+          >
+          <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label for="categoryDescription" class="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea 
+            id="categoryDescription" 
+            name="description" 
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            placeholder="Enter category description"
+          ></textarea>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button 
+            type="button" 
+            onclick="closeAddCategoryModal()" 
+            class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            id="addCategorySubmitBtn"
+            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition-colors flex items-center"
+          >
+            <span class="submit-text">Add Category</span>
+            <div class="submit-spinner hidden ml-2">
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Category Modal -->
+  <div id="editCategoryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+          <i class="fas fa-edit text-purple-600 mr-2"></i>
+          Edit Category
+        </h3>
+      </div>
+      
+      <form id="editCategoryForm" class="p-6 space-y-4">
+        <input type="hidden" id="editCategoryId" name="id">
+        
+        <!-- Category Name -->
+        <div>
+          <label for="editCategoryName" class="block text-sm font-medium text-gray-700 mb-1">
+            Category Name <span class="text-red-500">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="editCategoryName" 
+            name="name" 
+            required 
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            placeholder="Enter category name"
+          >
+          <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label for="editCategoryDescription" class="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea 
+            id="editCategoryDescription" 
+            name="description" 
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            placeholder="Enter category description"
+          ></textarea>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button 
+            type="button" 
+            onclick="closeEditCategoryModal()" 
+            class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            id="editCategorySubmitBtn"
+            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition-colors flex items-center"
+          >
+            <span class="submit-text">Update Category</span>
+            <div class="submit-spinner hidden ml-2">
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Supplier Modal -->
+  <div id="addSupplierModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+          <i class="fas fa-truck text-orange-600 mr-2"></i>
+          Add New Supplier
+        </h3>
+      </div>
+      
+      <form id="addSupplierForm" class="p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Supplier Name -->
+          <div class="md:col-span-2">
+            <label for="supplierName" class="block text-sm font-medium text-gray-700 mb-1">
+              Supplier Name <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="supplierName" 
+              name="name" 
+              required 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Enter supplier name"
+            >
+            <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <!-- Contact Person -->
+          <div>
+            <label for="supplierContact" class="block text-sm font-medium text-gray-700 mb-1">
+              Contact Person
+            </label>
+            <input 
+              type="text" 
+              id="supplierContact" 
+              name="contact_person" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Enter contact person name"
+            >
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label for="supplierEmail" class="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input 
+              type="email" 
+              id="supplierEmail" 
+              name="email" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Enter email address"
+            >
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label for="supplierPhone" class="block text-sm font-medium text-gray-700 mb-1">
+              Phone
+            </label>
+            <input 
+              type="tel" 
+              id="supplierPhone" 
+              name="phone" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Enter phone number"
+            >
+          </div>
+
+          <!-- Address -->
+          <div>
+            <label for="supplierAddress" class="block text-sm font-medium text-gray-700 mb-1">
+              Address
+            </label>
+            <textarea 
+              id="supplierAddress" 
+              name="address" 
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Enter address"
+            ></textarea>
+          </div>
+
+          <!-- Notes -->
+          <div class="md:col-span-2">
+            <label for="supplierNotes" class="block text-sm font-medium text-gray-700 mb-1">
+              Notes
+            </label>
+            <textarea 
+              id="supplierNotes" 
+              name="notes" 
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Additional notes (optional)"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button 
+            type="button" 
+            onclick="closeAddSupplierModal()" 
+            class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            id="addSupplierSubmitBtn"
+            class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium transition-colors flex items-center"
+          >
+            <span class="submit-text">Add Supplier</span>
+            <div class="submit-spinner hidden ml-2">
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Supplier Modal -->
+  <div id="editSupplierModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+          <i class="fas fa-edit text-orange-600 mr-2"></i>
+          Edit Supplier
+        </h3>
+      </div>
+      
+      <form id="editSupplierForm" class="p-6 space-y-4">
+        <input type="hidden" id="editSupplierId" name="id">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Supplier Name -->
+          <div class="md:col-span-2">
+            <label for="editSupplierName" class="block text-sm font-medium text-gray-700 mb-1">
+              Supplier Name <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="editSupplierName" 
+              name="name" 
+              required 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Enter supplier name"
+            >
+            <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <!-- Contact Person -->
+          <div>
+            <label for="editSupplierContact" class="block text-sm font-medium text-gray-700 mb-1">
+              Contact Person
+            </label>
+            <input 
+              type="text" 
+              id="editSupplierContact" 
+              name="contact_person" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Enter contact person name"
+            >
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label for="editSupplierEmail" class="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input 
+              type="email" 
+              id="editSupplierEmail" 
+              name="email" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Enter email address"
+            >
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label for="editSupplierPhone" class="block text-sm font-medium text-gray-700 mb-1">
+              Phone
+            </label>
+            <input 
+              type="tel" 
+              id="editSupplierPhone" 
+              name="phone" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Enter phone number"
+            >
+          </div>
+
+          <!-- Address -->
+          <div>
+            <label for="editSupplierAddress" class="block text-sm font-medium text-gray-700 mb-1">
+              Address
+            </label>
+            <textarea 
+              id="editSupplierAddress" 
+              name="address" 
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Enter address"
+            ></textarea>
+          </div>
+
+          <!-- Notes -->
+          <div class="md:col-span-2">
+            <label for="editSupplierNotes" class="block text-sm font-medium text-gray-700 mb-1">
+              Notes
+            </label>
+            <textarea 
+              id="editSupplierNotes" 
+              name="notes" 
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Additional notes (optional)"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button 
+            type="button" 
+            onclick="closeEditSupplierModal()" 
+            class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            id="editSupplierSubmitBtn"
+            class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium transition-colors flex items-center"
+          >
+            <span class="submit-text">Update Supplier</span>
+            <div class="submit-spinner hidden ml-2">
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Equipment Modal -->
+  <div id="editEquipmentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+          <i class="fas fa-edit text-green-600 mr-2"></i>
+          Edit Equipment
+        </h3>
+      </div>
+      
+      <form id="editEquipmentForm" class="p-6 space-y-4">
+        <input type="hidden" id="editEquipmentId" name="id">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Equipment Name -->
+          <div class="md:col-span-2">
+            <label for="editEquipmentName" class="block text-sm font-medium text-gray-700 mb-1">
+              Equipment Name <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="editEquipmentName" 
+              name="name" 
+              required 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="Enter equipment name"
+            >
+            <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <!-- SKU -->
+          <div>
+            <label for="editEquipmentSKU" class="block text-sm font-medium text-gray-700 mb-1">
+              SKU
+            </label>
+            <input 
+              type="text" 
+              id="editEquipmentSKU" 
+              name="sku" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="Enter SKU"
+            >
+          </div>
+
+          <!-- Unit Price -->
+          <div>
+            <label for="editEquipmentPrice" class="block text-sm font-medium text-gray-700 mb-1">
+              Unit Price (₱) <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="number" 
+              id="editEquipmentPrice" 
+              name="unit_price" 
+              required 
+              min="0" 
+              step="0.01"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="0.00"
+            >
+            <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <!-- Category -->
+          <div>
+            <label for="editEquipmentCategory" class="block text-sm font-medium text-gray-700 mb-1">
+              Category
+            </label>
+            <select 
+              id="editEquipmentCategory" 
+              name="category_id" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="">Select category</option>
+              <!-- Categories will be loaded here -->
+            </select>
+          </div>
+
+          <!-- Supplier -->
+          <div>
+            <label for="editEquipmentSupplier" class="block text-sm font-medium text-gray-700 mb-1">
+              Supplier
+            </label>
+            <select 
+              id="editEquipmentSupplier" 
+              name="supplier_id" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="">Select supplier</option>
+              <!-- Suppliers will be loaded here -->
+            </select>
+          </div>
+
+          <!-- Minimum Stock Level -->
+          <div>
+            <label for="editEquipmentMinLevel" class="block text-sm font-medium text-gray-700 mb-1">
+              Minimum Stock Level <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="number" 
+              id="editEquipmentMinLevel" 
+              name="minimum_stock_level" 
+              required 
+              min="0"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="0"
+            >
+            <div class="invalid-feedback hidden text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <!-- Status -->
+          <div>
+            <label for="editEquipmentStatus" class="block text-sm font-medium text-gray-700 mb-1">
+              Status <span class="text-red-500">*</span>
+            </label>
+            <select 
+              id="editEquipmentStatus" 
+              name="status" 
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          <!-- Description -->
+          <div class="md:col-span-2">
+            <label for="editEquipmentDescription" class="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <textarea 
+              id="editEquipmentDescription" 
+              name="description" 
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="Enter equipment description"
+            ></textarea>
+          </div>
+
+          <!-- Current Stock Info (Read-only) -->
+          <div class="md:col-span-2 bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-sm font-medium text-gray-700">Current Stock:</span>
+                <span id="editCurrentStock" class="ml-2 text-lg font-semibold text-gray-900">0</span>
+              </div>
+              <div class="text-sm text-gray-500">
+                <i class="fas fa-info-circle mr-1"></i>
+                To adjust stock, use the stock adjustment feature
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button 
+            type="button" 
+            onclick="closeEditEquipmentModal()" 
+            class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            id="editEquipmentSubmitBtn"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors flex items-center"
+          >
+            <span class="submit-text">Update Equipment</span>
+            <div class="submit-spinner hidden ml-2">
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script>
     // Global variables
@@ -441,6 +1411,8 @@
     async function loadTabData(tabName) {
       switch(tabName) {
         case 'equipment':
+          // Reset search when switching to equipment tab
+          document.getElementById('equipmentSearch').value = '';
           await loadEquipment();
           break;
         case 'assignments':
@@ -480,15 +1452,17 @@
     }
 
     // Render equipment table
-    function renderEquipmentTable() {
+    function renderEquipmentTable(itemsToRender = null) {
       const tbody = document.getElementById('equipmentTableBody');
+      const items = itemsToRender || equipment;
       
-      if (equipment.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">No equipment found</td></tr>';
+      if (items.length === 0) {
+        const message = itemsToRender ? 'No equipment matches your search' : 'No equipment found';
+        tbody.innerHTML = `<tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">${message}</td></tr>`;
         return;
       }
       
-      tbody.innerHTML = equipment.map(item => {
+      tbody.innerHTML = items.map(item => {
         const isLowStock = item.quantity_in_stock <= item.minimum_stock_level;
         const stockClass = isLowStock ? 'text-red-600 font-semibold' : 'text-gray-900';
         const statusClass = item.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
@@ -511,7 +1485,7 @@
               </span>
             </td>
             <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium space-x-2">
-              <button onclick="adjustStock(${item.id})" class="text-blue-600 hover:text-blue-900 p-1" title="Adjust Stock">
+              <button onclick="adjustStock(${item.id})" class="text-blue-600 hover:text-blue-900 p-1" title="Adjust Stock (Increase/Decrease)">
                 <i class="fas fa-plus-minus"></i>
               </button>
               <button onclick="editEquipment(${item.id})" class="text-green-600 hover:text-green-900 p-1" title="Edit">
@@ -526,29 +1500,766 @@
       }).join('');
     }
 
-    // Placeholder functions for modals and actions
-    function openAddEquipmentModal() {
-      showNotification('Info', 'Add equipment modal will be implemented', 'info');
+    // Open add equipment modal
+    async function openAddEquipmentModal() {
+      try {
+        // Load categories and suppliers for dropdowns
+        await loadCategoriesAndSuppliers();
+        
+        // Reset form
+        document.getElementById('addEquipmentForm').reset();
+        
+        // Show modal
+        document.getElementById('addEquipmentModal').classList.remove('hidden');
+        
+        // Focus on first input
+        document.getElementById('equipmentName').focus();
+      } catch (error) {
+        console.error('Error opening add equipment modal:', error);
+        showNotification('Error', 'Failed to load form data', 'error');
+      }
     }
 
-    function openAddAssignmentModal() {
-      showNotification('Info', 'Add assignment modal will be implemented', 'info');
+    // Close add equipment modal
+    function closeAddEquipmentModal() {
+      document.getElementById('addEquipmentModal').classList.add('hidden');
+      document.getElementById('addEquipmentForm').reset();
+      clearFormValidation();
     }
 
+    // Load categories and suppliers for dropdowns
+    async function loadCategoriesAndSuppliers() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        
+        // Load categories
+        const categoriesResponse = await fetch('/api/inventory/categories', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const categoriesData = await categoriesResponse.json();
+        
+        // Load suppliers
+        const suppliersResponse = await fetch('/api/inventory/suppliers', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const suppliersData = await suppliersResponse.json();
+        
+        // Populate category dropdown
+        const categorySelect = document.getElementById('equipmentCategory');
+        categorySelect.innerHTML = '<option value="">Select category</option>';
+        if (categoriesData.success && categoriesData.categories) {
+          categoriesData.categories.forEach(category => {
+            categorySelect.innerHTML += `<option value="${category.id}">${category.name}</option>`;
+          });
+        }
+        
+        // Populate supplier dropdown
+        const supplierSelect = document.getElementById('equipmentSupplier');
+        supplierSelect.innerHTML = '<option value="">Select supplier</option>';
+        if (suppliersData.success && suppliersData.suppliers) {
+          suppliersData.suppliers.forEach(supplier => {
+            supplierSelect.innerHTML += `<option value="${supplier.id}">${supplier.name}</option>`;
+          });
+        }
+      } catch (error) {
+        console.error('Error loading dropdown data:', error);
+        throw error;
+      }
+    }
+
+    // Clear form validation
+    function clearFormValidation() {
+      document.querySelectorAll('.invalid-feedback').forEach(el => {
+        el.classList.add('hidden');
+        el.textContent = '';
+      });
+      document.querySelectorAll('.border-red-500').forEach(el => {
+        el.classList.remove('border-red-500');
+        el.classList.add('border-gray-300');
+      });
+    }
+
+    // Show form validation error
+    function showFormError(fieldName, message) {
+      const field = document.querySelector(`[name="${fieldName}"]`);
+      const feedback = field.parentElement.querySelector('.invalid-feedback');
+      
+      field.classList.remove('border-gray-300');
+      field.classList.add('border-red-500');
+      
+      if (feedback) {
+        feedback.textContent = message;
+        feedback.classList.remove('hidden');
+      }
+    }
+
+    // Handle add equipment form submission
+    async function handleAddEquipmentSubmit(event) {
+      event.preventDefault();
+      
+      const submitBtn = document.getElementById('addEquipmentSubmitBtn');
+      const submitText = submitBtn.querySelector('.submit-text');
+      const submitSpinner = submitBtn.querySelector('.submit-spinner');
+      
+      try {
+        // Clear previous validation
+        clearFormValidation();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitText.classList.add('hidden');
+        submitSpinner.classList.remove('hidden');
+        
+        // Get form data
+        const formData = new FormData(event.target);
+        const equipmentData = {
+          name: formData.get('name'),
+          description: formData.get('description'),
+          category_id: formData.get('category_id') || null,
+          supplier_id: formData.get('supplier_id') || null,
+          sku: formData.get('sku'),
+          unit_price: parseFloat(formData.get('unit_price')),
+          quantity_in_stock: parseInt(formData.get('quantity_in_stock')),
+          minimum_stock_level: parseInt(formData.get('minimum_stock_level'))
+        };
+        
+        // Client-side validation
+        if (!equipmentData.name) {
+          showFormError('name', 'Equipment name is required');
+          return;
+        }
+        
+        if (isNaN(equipmentData.unit_price) || equipmentData.unit_price < 0) {
+          showFormError('unit_price', 'Valid unit price is required');
+          return;
+        }
+        
+        if (isNaN(equipmentData.quantity_in_stock) || equipmentData.quantity_in_stock < 0) {
+          showFormError('quantity_in_stock', 'Valid quantity is required');
+          return;
+        }
+        
+        if (isNaN(equipmentData.minimum_stock_level) || equipmentData.minimum_stock_level < 0) {
+          showFormError('minimum_stock_level', 'Valid minimum stock level is required');
+          return;
+        }
+        
+        // Submit to API
+        const response = await fetch('/api/inventory/items', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify(equipmentData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('Success', 'Equipment added successfully', 'success');
+          closeAddEquipmentModal();
+          await loadEquipment(); // Refresh the equipment table
+        } else {
+          // Handle validation errors from server
+          if (result.errors && Array.isArray(result.errors)) {
+            result.errors.forEach(error => {
+              showFormError(error.field, error.message);
+            });
+          } else {
+            showNotification('Error', result.error || 'Failed to add equipment', 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Add equipment error:', error);
+        showNotification('Error', 'Failed to add equipment', 'error');
+      } finally {
+        // Reset loading state
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitSpinner.classList.add('hidden');
+      }
+    }
+
+    // Open add assignment modal
+    async function openAddAssignmentModal() {
+      try {
+        // Load equipment and clients for dropdowns
+        await loadEquipmentAndClientsForAssignment();
+        
+        // Reset form
+        document.getElementById('addAssignmentForm').reset();
+        document.getElementById('availableStock').textContent = 'Select equipment first';
+        
+        // Clear validation
+        clearAssignmentFormValidation();
+        
+        // Show modal
+        document.getElementById('addAssignmentModal').classList.remove('hidden');
+        
+        // Focus on first input
+        document.getElementById('assignmentEquipment').focus();
+      } catch (error) {
+        console.error('Error opening add assignment modal:', error);
+        showNotification('Error', 'Failed to load form data', 'error');
+      }
+    }
+
+    // Close add assignment modal
+    function closeAddAssignmentModal() {
+      document.getElementById('addAssignmentModal').classList.add('hidden');
+      document.getElementById('addAssignmentForm').reset();
+      clearAssignmentFormValidation();
+    }
+
+    // Open add category modal
     function openAddCategoryModal() {
-      showNotification('Info', 'Add category modal will be implemented', 'info');
+      // Reset form
+      document.getElementById('addCategoryForm').reset();
+      clearCategoryFormValidation();
+      
+      // Show modal
+      document.getElementById('addCategoryModal').classList.remove('hidden');
+      
+      // Focus on first input
+      document.getElementById('categoryName').focus();
     }
 
+    // Close add category modal
+    function closeAddCategoryModal() {
+      document.getElementById('addCategoryModal').classList.add('hidden');
+      document.getElementById('addCategoryForm').reset();
+      clearCategoryFormValidation();
+    }
+
+    // Open edit category modal
+    function editCategory(categoryId) {
+      const category = categories.find(cat => cat.id === categoryId);
+      if (!category) {
+        showNotification('Error', 'Category not found', 'error');
+        return;
+      }
+
+      // Populate form with category data
+      document.getElementById('editCategoryId').value = category.id;
+      document.getElementById('editCategoryName').value = category.name;
+      document.getElementById('editCategoryDescription').value = category.description || '';
+      
+      // Clear validation
+      clearEditCategoryFormValidation();
+      
+      // Show modal
+      document.getElementById('editCategoryModal').classList.remove('hidden');
+      
+      // Focus on first input
+      document.getElementById('editCategoryName').focus();
+    }
+
+    // Close edit category modal
+    function closeEditCategoryModal() {
+      document.getElementById('editCategoryModal').classList.add('hidden');
+      document.getElementById('editCategoryForm').reset();
+      clearEditCategoryFormValidation();
+    }
+
+    // Open add supplier modal
     function openAddSupplierModal() {
-      showNotification('Info', 'Add supplier modal will be implemented', 'info');
+      // Reset form
+      document.getElementById('addSupplierForm').reset();
+      clearSupplierFormValidation();
+      
+      // Show modal
+      document.getElementById('addSupplierModal').classList.remove('hidden');
+      
+      // Focus on first input
+      document.getElementById('supplierName').focus();
     }
 
+    // Close add supplier modal
+    function closeAddSupplierModal() {
+      document.getElementById('addSupplierModal').classList.add('hidden');
+      document.getElementById('addSupplierForm').reset();
+      clearSupplierFormValidation();
+    }
+
+    // Open edit supplier modal
+    function editSupplier(supplierId) {
+      const supplier = suppliers.find(sup => sup.id === supplierId);
+      if (!supplier) {
+        showNotification('Error', 'Supplier not found', 'error');
+        return;
+      }
+
+      // Populate form with supplier data
+      document.getElementById('editSupplierId').value = supplier.id;
+      document.getElementById('editSupplierName').value = supplier.name;
+      document.getElementById('editSupplierContact').value = supplier.contact_person || '';
+      document.getElementById('editSupplierEmail').value = supplier.email || '';
+      document.getElementById('editSupplierPhone').value = supplier.phone || '';
+      document.getElementById('editSupplierAddress').value = supplier.address || '';
+      document.getElementById('editSupplierNotes').value = supplier.notes || '';
+      
+      // Clear validation
+      clearEditSupplierFormValidation();
+      
+      // Show modal
+      document.getElementById('editSupplierModal').classList.remove('hidden');
+      
+      // Focus on first input
+      document.getElementById('editSupplierName').focus();
+    }
+
+    // Close edit supplier modal
+    function closeEditSupplierModal() {
+      document.getElementById('editSupplierModal').classList.add('hidden');
+      document.getElementById('editSupplierForm').reset();
+      clearEditSupplierFormValidation();
+    }
+
+    // Stock adjustment related variables
+    let currentAdjustmentItem = null;
+
+    // Open stock adjustment modal
     function adjustStock(itemId) {
-      showNotification('Info', 'Stock adjustment modal will be implemented', 'info');
+      const item = equipment.find(eq => eq.id === itemId);
+      if (!item) {
+        showNotification('Error', 'Equipment not found', 'error');
+        return;
+      }
+
+      currentAdjustmentItem = item;
+      
+      // Reset form and populate equipment info
+      document.getElementById('stockAdjustmentForm').reset();
+      clearStockAdjustmentValidation();
+      
+      document.getElementById('adjustmentEquipmentName').textContent = item.name;
+      document.getElementById('adjustmentEquipmentSKU').textContent = item.sku || 'N/A';
+      document.getElementById('adjustmentCurrentStock').textContent = item.quantity_in_stock;
+      
+      // Reset adjustment type selection
+      resetAdjustmentTypeButtons();
+      
+      // Hide stock preview
+      document.getElementById('stockPreview').classList.add('hidden');
+      
+      // Show modal
+      document.getElementById('stockAdjustmentModal').classList.remove('hidden');
+      
+      // Focus on adjustment type
+      document.getElementById('increaseBtn').focus();
     }
 
-    function editEquipment(itemId) {
-      showNotification('Info', 'Edit equipment modal will be implemented', 'info');
+    // Close stock adjustment modal
+    function closeStockAdjustmentModal() {
+      document.getElementById('stockAdjustmentModal').classList.add('hidden');
+      document.getElementById('stockAdjustmentForm').reset();
+      clearStockAdjustmentValidation();
+      resetAdjustmentTypeButtons();
+      currentAdjustmentItem = null;
+    }
+
+    // Set adjustment type (increase/decrease)
+    function setAdjustmentType(type) {
+      document.getElementById('adjustmentType').value = type;
+      
+      // Update button styles
+      resetAdjustmentTypeButtons();
+      
+      if (type === 'increase') {
+        const btn = document.getElementById('increaseBtn');
+        btn.classList.remove('border-green-300', 'text-green-700');
+        btn.classList.add('border-green-500', 'bg-green-500', 'text-white');
+      } else if (type === 'decrease') {
+        const btn = document.getElementById('decreaseBtn');
+        btn.classList.remove('border-red-300', 'text-red-700');
+        btn.classList.add('border-red-500', 'bg-red-500', 'text-white');
+      }
+      
+      // Clear validation error
+      const errorDiv = document.getElementById('adjustmentTypeError');
+      errorDiv.classList.add('hidden');
+      
+      // Update stock preview if quantity is entered
+      updateStockPreview();
+    }
+
+    // Reset adjustment type buttons
+    function resetAdjustmentTypeButtons() {
+      const increaseBtn = document.getElementById('increaseBtn');
+      const decreaseBtn = document.getElementById('decreaseBtn');
+      
+      increaseBtn.className = 'adjustment-type-btn flex items-center justify-center space-x-2 px-4 py-3 border-2 border-green-300 text-green-700 rounded-lg hover:bg-green-50 transition-colors';
+      decreaseBtn.className = 'adjustment-type-btn flex items-center justify-center space-x-2 px-4 py-3 border-2 border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors';
+    }
+
+    // Update stock preview
+    function updateStockPreview() {
+      const type = document.getElementById('adjustmentType').value;
+      const quantity = parseInt(document.getElementById('adjustmentQuantity').value);
+      
+      if (!type || !quantity || quantity <= 0 || !currentAdjustmentItem) {
+        document.getElementById('stockPreview').classList.add('hidden');
+        return;
+      }
+      
+      const currentStock = currentAdjustmentItem.quantity_in_stock;
+      let newStock;
+      
+      if (type === 'increase') {
+        newStock = currentStock + quantity;
+      } else {
+        newStock = currentStock - quantity;
+      }
+      
+      // Show warning if stock will go negative
+      const previewDiv = document.getElementById('stockPreview');
+      const valueSpan = document.getElementById('newStockValue');
+      
+      if (newStock < 0) {
+        previewDiv.className = 'bg-red-50 rounded-lg p-4';
+        valueSpan.className = 'text-lg font-bold text-red-900';
+        valueSpan.textContent = newStock + ' (Warning: Negative stock!)';
+      } else {
+        previewDiv.className = 'bg-blue-50 rounded-lg p-4';
+        valueSpan.className = 'text-lg font-bold text-blue-900';
+        valueSpan.textContent = newStock;
+      }
+      
+      previewDiv.classList.remove('hidden');
+    }
+
+    // Clear stock adjustment validation
+    function clearStockAdjustmentValidation() {
+      document.getElementById('stockAdjustmentModal').querySelectorAll('.invalid-feedback').forEach(el => {
+        el.classList.add('hidden');
+        el.textContent = '';
+      });
+      document.getElementById('stockAdjustmentModal').querySelectorAll('.border-red-500').forEach(el => {
+        el.classList.remove('border-red-500');
+        el.classList.add('border-gray-300');
+      });
+    }
+
+    // Show stock adjustment form validation error
+    function showStockAdjustmentError(fieldName, message) {
+      let field;
+      let feedback;
+      
+      if (fieldName === 'adjustmentType') {
+        feedback = document.getElementById('adjustmentTypeError');
+        feedback.textContent = message;
+        feedback.classList.remove('hidden');
+        return;
+      }
+      
+      field = document.querySelector(`#stockAdjustmentModal [name="${fieldName}"]`);
+      feedback = field.parentElement.querySelector('.invalid-feedback');
+      
+      if (field) {
+        field.classList.remove('border-gray-300');
+        field.classList.add('border-red-500');
+      }
+      
+      if (feedback) {
+        feedback.textContent = message;
+        feedback.classList.remove('hidden');
+      }
+    }
+
+    // Handle stock adjustment form submission
+    async function handleStockAdjustmentSubmit(event) {
+      event.preventDefault();
+      
+      if (!currentAdjustmentItem) {
+        showNotification('Error', 'No equipment selected for adjustment', 'error');
+        return;
+      }
+      
+      const submitBtn = document.getElementById('stockAdjustmentSubmitBtn');
+      const submitText = submitBtn.querySelector('.submit-text');
+      const submitSpinner = submitBtn.querySelector('.submit-spinner');
+      
+      try {
+        // Clear previous validation
+        clearStockAdjustmentValidation();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitText.classList.add('hidden');
+        submitSpinner.classList.remove('hidden');
+        
+        // Get form data
+        const formData = new FormData(event.target);
+        const adjustmentType = document.getElementById('adjustmentType').value;
+        const quantity = parseInt(formData.get('quantity'));
+        const reason = formData.get('reason');
+        const notes = formData.get('notes');
+        
+        // Client-side validation
+        if (!adjustmentType) {
+          showStockAdjustmentError('adjustmentType', 'Please select adjustment type');
+          return;
+        }
+        
+        if (!quantity || quantity <= 0) {
+          showStockAdjustmentError('quantity', 'Please enter a valid quantity');
+          return;
+        }
+        
+        if (!reason) {
+          showStockAdjustmentError('reason', 'Please select a reason');
+          return;
+        }
+        
+        // Calculate final quantity for API (negative for decrease)
+        const finalQuantity = adjustmentType === 'increase' ? quantity : -quantity;
+        
+        // Check if decrease would result in negative stock
+        if (adjustmentType === 'decrease' && currentAdjustmentItem.quantity_in_stock < quantity) {
+          if (!confirm(`This adjustment will result in negative stock (${currentAdjustmentItem.quantity_in_stock - quantity}). Continue anyway?`)) {
+            return;
+          }
+        }
+        
+        // Submit to API
+        const response = await fetch(`/api/inventory/items/${currentAdjustmentItem.id}/adjust-stock`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify({
+            quantity: finalQuantity,
+            reason: reason,
+            notes: notes || ''
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          const actionText = adjustmentType === 'increase' ? 'increased' : 'decreased';
+          showNotification('Success', `Stock ${actionText} successfully`, 'success');
+          closeStockAdjustmentModal();
+          await loadEquipment(); // Refresh the equipment table
+        } else {
+          showNotification('Error', result.error || 'Failed to adjust stock', 'error');
+        }
+      } catch (error) {
+        console.error('Stock adjustment error:', error);
+        showNotification('Error', 'Failed to adjust stock', 'error');
+      } finally {
+        // Reset loading state
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitSpinner.classList.add('hidden');
+      }
+    }
+
+    // Edit equipment related variables
+    let currentEditItem = null;
+
+    // Open edit equipment modal
+    async function editEquipment(itemId) {
+      const item = equipment.find(eq => eq.id === itemId);
+      if (!item) {
+        showNotification('Error', 'Equipment not found', 'error');
+        return;
+      }
+
+      currentEditItem = item;
+      
+      try {
+        // Load categories and suppliers for dropdowns
+        await loadCategoriesAndSuppliersForEdit();
+        
+        // Populate form with equipment data
+        document.getElementById('editEquipmentId').value = item.id;
+        document.getElementById('editEquipmentName').value = item.name;
+        document.getElementById('editEquipmentSKU').value = item.sku || '';
+        document.getElementById('editEquipmentPrice').value = item.unit_price;
+        document.getElementById('editEquipmentCategory').value = item.category_id || '';
+        document.getElementById('editEquipmentSupplier').value = item.supplier_id || '';
+        document.getElementById('editEquipmentMinLevel').value = item.minimum_stock_level;
+        document.getElementById('editEquipmentStatus').value = item.status;
+        document.getElementById('editEquipmentDescription').value = item.description || '';
+        document.getElementById('editCurrentStock').textContent = item.quantity_in_stock;
+        
+        // Clear any previous validation errors
+        clearEditFormValidation();
+        
+        // Show modal
+        document.getElementById('editEquipmentModal').classList.remove('hidden');
+        
+        // Focus on first input
+        document.getElementById('editEquipmentName').focus();
+      } catch (error) {
+        console.error('Error opening edit equipment modal:', error);
+        showNotification('Error', 'Failed to load equipment data', 'error');
+      }
+    }
+
+    // Close edit equipment modal
+    function closeEditEquipmentModal() {
+      document.getElementById('editEquipmentModal').classList.add('hidden');
+      document.getElementById('editEquipmentForm').reset();
+      clearEditFormValidation();
+      currentEditItem = null;
+    }
+
+    // Load categories and suppliers for edit modal
+    async function loadCategoriesAndSuppliersForEdit() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        
+        // Load categories
+        const categoriesResponse = await fetch('/api/inventory/categories', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const categoriesData = await categoriesResponse.json();
+        
+        // Load suppliers
+        const suppliersResponse = await fetch('/api/inventory/suppliers', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const suppliersData = await suppliersResponse.json();
+        
+        // Populate category dropdown
+        const categorySelect = document.getElementById('editEquipmentCategory');
+        categorySelect.innerHTML = '<option value="">Select category</option>';
+        if (categoriesData.success && categoriesData.categories) {
+          categoriesData.categories.forEach(category => {
+            categorySelect.innerHTML += `<option value="${category.id}">${category.name}</option>`;
+          });
+        }
+        
+        // Populate supplier dropdown
+        const supplierSelect = document.getElementById('editEquipmentSupplier');
+        supplierSelect.innerHTML = '<option value="">Select supplier</option>';
+        if (suppliersData.success && suppliersData.suppliers) {
+          suppliersData.suppliers.forEach(supplier => {
+            supplierSelect.innerHTML += `<option value="${supplier.id}">${supplier.name}</option>`;
+          });
+        }
+      } catch (error) {
+        console.error('Error loading dropdown data:', error);
+        throw error;
+      }
+    }
+
+    // Clear edit form validation
+    function clearEditFormValidation() {
+      document.getElementById('editEquipmentModal').querySelectorAll('.invalid-feedback').forEach(el => {
+        el.classList.add('hidden');
+        el.textContent = '';
+      });
+      document.getElementById('editEquipmentModal').querySelectorAll('.border-red-500').forEach(el => {
+        el.classList.remove('border-red-500');
+        el.classList.add('border-gray-300');
+      });
+    }
+
+    // Show edit form validation error
+    function showEditFormError(fieldName, message) {
+      const field = document.querySelector(`#editEquipmentModal [name="${fieldName}"]`);
+      const feedback = field.parentElement.querySelector('.invalid-feedback');
+      
+      field.classList.remove('border-gray-300');
+      field.classList.add('border-red-500');
+      
+      if (feedback) {
+        feedback.textContent = message;
+        feedback.classList.remove('hidden');
+      }
+    }
+
+    // Handle edit equipment form submission
+    async function handleEditEquipmentSubmit(event) {
+      event.preventDefault();
+      
+      if (!currentEditItem) {
+        showNotification('Error', 'No equipment selected for editing', 'error');
+        return;
+      }
+      
+      const submitBtn = document.getElementById('editEquipmentSubmitBtn');
+      const submitText = submitBtn.querySelector('.submit-text');
+      const submitSpinner = submitBtn.querySelector('.submit-spinner');
+      
+      try {
+        // Clear previous validation
+        clearEditFormValidation();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitText.classList.add('hidden');
+        submitSpinner.classList.remove('hidden');
+        
+        // Get form data
+        const formData = new FormData(event.target);
+        const equipmentData = {
+          name: formData.get('name'),
+          description: formData.get('description'),
+          category_id: formData.get('category_id') || null,
+          supplier_id: formData.get('supplier_id') || null,
+          sku: formData.get('sku'),
+          unit_price: parseFloat(formData.get('unit_price')),
+          minimum_stock_level: parseInt(formData.get('minimum_stock_level')),
+          status: formData.get('status')
+        };
+        
+        // Client-side validation
+        if (!equipmentData.name) {
+          showEditFormError('name', 'Equipment name is required');
+          return;
+        }
+        
+        if (isNaN(equipmentData.unit_price) || equipmentData.unit_price < 0) {
+          showEditFormError('unit_price', 'Valid unit price is required');
+          return;
+        }
+        
+        if (isNaN(equipmentData.minimum_stock_level) || equipmentData.minimum_stock_level < 0) {
+          showEditFormError('minimum_stock_level', 'Valid minimum stock level is required');
+          return;
+        }
+        
+        // Submit to API
+        const response = await fetch(`/api/inventory/items/${currentEditItem.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify(equipmentData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('Success', 'Equipment updated successfully', 'success');
+          closeEditEquipmentModal();
+          await loadEquipment(); // Refresh the equipment table
+        } else {
+          // Handle validation errors from server
+          if (result.errors && Array.isArray(result.errors)) {
+            result.errors.forEach(error => {
+              showEditFormError(error.field, error.message);
+            });
+          } else {
+            showNotification('Error', result.error || 'Failed to update equipment', 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Update equipment error:', error);
+        showNotification('Error', 'Failed to update equipment', 'error');
+      } finally {
+        // Reset loading state
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitSpinner.classList.add('hidden');
+      }
     }
 
     function deleteEquipment(itemId) {
@@ -557,29 +2268,935 @@
       }
     }
 
-    // Load other data (placeholder functions)
+    // Load equipment and clients for assignment modal
+    async function loadEquipmentAndClientsForAssignment() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        
+        // Load equipment (only active items with stock)
+        const equipmentResponse = await fetch('/api/inventory/items', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const equipmentData = await equipmentResponse.json();
+        
+        // Load clients
+        const clientsResponse = await fetch('/api/clients', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const clientsData = await clientsResponse.json();
+        
+        // Populate equipment dropdown
+        const equipmentSelect = document.getElementById('assignmentEquipment');
+        equipmentSelect.innerHTML = '<option value="">Select equipment</option>';
+        if (equipmentData.success && equipmentData.items) {
+          equipmentData.items
+            .filter(item => item.status === 'active' && item.quantity_in_stock > 0)
+            .forEach(item => {
+              equipmentSelect.innerHTML += `<option value="${item.id}" data-stock="${item.quantity_in_stock}">${item.name} (Stock: ${item.quantity_in_stock})</option>`;
+            });
+        }
+        
+        // Populate client dropdown
+        const clientSelect = document.getElementById('assignmentClient');
+        clientSelect.innerHTML = '<option value="">Select client</option>';
+        if (clientsData.success && clientsData.clients) {
+          clientsData.clients.forEach(client => {
+            clientSelect.innerHTML += `<option value="${client.id}">${client.name}</option>`;
+          });
+        }
+        
+        // Add event listener for equipment selection to show available stock
+        document.getElementById('assignmentEquipment').addEventListener('change', function() {
+          const selectedOption = this.options[this.selectedIndex];
+          const stockDisplay = document.getElementById('availableStock');
+          
+          if (selectedOption.value) {
+            const stock = selectedOption.getAttribute('data-stock');
+            stockDisplay.textContent = `${stock} units available`;
+            stockDisplay.className = 'text-green-600 font-semibold';
+          } else {
+            stockDisplay.textContent = 'Select equipment first';
+            stockDisplay.className = 'text-gray-500';
+          }
+        });
+        
+      } catch (error) {
+        console.error('Error loading dropdown data:', error);
+        throw error;
+      }
+    }
+
+    // Clear assignment form validation
+    function clearAssignmentFormValidation() {
+      document.getElementById('addAssignmentModal').querySelectorAll('.invalid-feedback').forEach(el => {
+        el.classList.add('hidden');
+        el.textContent = '';
+      });
+      document.getElementById('addAssignmentModal').querySelectorAll('.border-red-500').forEach(el => {
+        el.classList.remove('border-red-500');
+        el.classList.add('border-gray-300');
+      });
+    }
+
+    // Show assignment form validation error
+    function showAssignmentFormError(fieldName, message) {
+      const field = document.querySelector(`#addAssignmentModal [name="${fieldName}"]`);
+      const feedback = field.parentElement.querySelector('.invalid-feedback');
+      
+      field.classList.remove('border-gray-300');
+      field.classList.add('border-red-500');
+      
+      if (feedback) {
+        feedback.textContent = message;
+        feedback.classList.remove('hidden');
+      }
+    }
+
+    // Handle add assignment form submission
+    async function handleAddAssignmentSubmit(event) {
+      event.preventDefault();
+      
+      const submitBtn = document.getElementById('addAssignmentSubmitBtn');
+      const submitText = submitBtn.querySelector('.submit-text');
+      const submitSpinner = submitBtn.querySelector('.submit-spinner');
+      
+      try {
+        // Clear previous validation
+        clearAssignmentFormValidation();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitText.classList.add('hidden');
+        submitSpinner.classList.remove('hidden');
+        
+        // Get form data
+        const formData = new FormData(event.target);
+        const assignmentData = {
+          item_id: parseInt(formData.get('item_id')),
+          client_id: parseInt(formData.get('client_id')),
+          quantity: parseInt(formData.get('quantity')),
+          installation_address: formData.get('installation_address'),
+          notes: formData.get('notes')
+        };
+        
+        // Client-side validation
+        if (!assignmentData.item_id) {
+          showAssignmentFormError('item_id', 'Please select equipment');
+          return;
+        }
+        
+        if (!assignmentData.client_id) {
+          showAssignmentFormError('client_id', 'Please select client');
+          return;
+        }
+        
+        if (!assignmentData.quantity || assignmentData.quantity <= 0) {
+          showAssignmentFormError('quantity', 'Please enter valid quantity');
+          return;
+        }
+        
+        // Check available stock
+        const selectedEquipment = document.getElementById('assignmentEquipment');
+        const selectedOption = selectedEquipment.options[selectedEquipment.selectedIndex];
+        const availableStock = parseInt(selectedOption.getAttribute('data-stock'));
+        
+        if (assignmentData.quantity > availableStock) {
+          showAssignmentFormError('quantity', `Only ${availableStock} units available`);
+          return;
+        }
+        
+        // Submit to API
+        const response = await fetch('/api/inventory/assignments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify(assignmentData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('Success', 'Equipment assigned successfully', 'success');
+          closeAddAssignmentModal();
+          await loadAssignments(); // Refresh assignments table
+          if (currentTab === 'equipment') {
+            await loadEquipment(); // Refresh equipment table to show updated stock
+          }
+        } else {
+          showNotification('Error', result.error || 'Failed to assign equipment', 'error');
+        }
+      } catch (error) {
+        console.error('Add assignment error:', error);
+        showNotification('Error', 'Failed to assign equipment', 'error');
+      } finally {
+        // Reset loading state
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitSpinner.classList.add('hidden');
+      }
+    }
+
+    // View assignment details
+    function viewAssignment(assignmentId) {
+      showNotification('Info', 'Assignment details modal will be implemented', 'info');
+    }
+
+    // Return assignment
+    function returnAssignment(assignmentId) {
+      if (confirm('Mark this assignment as returned? This will return the equipment to stock.')) {
+        showNotification('Info', 'Return assignment functionality will be implemented', 'info');
+      }
+    }
+
+    // Delete assignment
+    function deleteAssignment(assignmentId) {
+      if (confirm('Are you sure you want to delete this assignment? This will return the equipment to stock.')) {
+        showNotification('Info', 'Delete assignment functionality will be implemented', 'info');
+      }
+    }
+
+    // Clear category form validation
+    function clearCategoryFormValidation() {
+      document.getElementById('addCategoryModal').querySelectorAll('.invalid-feedback').forEach(el => {
+        el.classList.add('hidden');
+        el.textContent = '';
+      });
+      document.getElementById('addCategoryModal').querySelectorAll('.border-red-500').forEach(el => {
+        el.classList.remove('border-red-500');
+        el.classList.add('border-gray-300');
+      });
+    }
+
+    // Clear edit category form validation
+    function clearEditCategoryFormValidation() {
+      document.getElementById('editCategoryModal').querySelectorAll('.invalid-feedback').forEach(el => {
+        el.classList.add('hidden');
+        el.textContent = '';
+      });
+      document.getElementById('editCategoryModal').querySelectorAll('.border-red-500').forEach(el => {
+        el.classList.remove('border-red-500');
+        el.classList.add('border-gray-300');
+      });
+    }
+
+    // Show category form validation error
+    function showCategoryFormError(fieldName, message, isEdit = false) {
+      const modalId = isEdit ? 'editCategoryModal' : 'addCategoryModal';
+      const field = document.querySelector(`#${modalId} [name="${fieldName}"]`);
+      const feedback = field.parentElement.querySelector('.invalid-feedback');
+      
+      field.classList.remove('border-gray-300');
+      field.classList.add('border-red-500');
+      
+      if (feedback) {
+        feedback.textContent = message;
+        feedback.classList.remove('hidden');
+      }
+    }
+
+    // Handle add category form submission
+    async function handleAddCategorySubmit(event) {
+      event.preventDefault();
+      
+      const submitBtn = document.getElementById('addCategorySubmitBtn');
+      const submitText = submitBtn.querySelector('.submit-text');
+      const submitSpinner = submitBtn.querySelector('.submit-spinner');
+      
+      try {
+        // Clear previous validation
+        clearCategoryFormValidation();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitText.classList.add('hidden');
+        submitSpinner.classList.remove('hidden');
+        
+        // Get form data
+        const formData = new FormData(event.target);
+        const categoryData = {
+          name: formData.get('name'),
+          description: formData.get('description')
+        };
+        
+        // Client-side validation
+        if (!categoryData.name) {
+          showCategoryFormError('name', 'Category name is required');
+          return;
+        }
+        
+        if (categoryData.name.trim().length < 2) {
+          showCategoryFormError('name', 'Category name must be at least 2 characters');
+          return;
+        }
+        
+        // Check for duplicate category names
+        const existingCategory = categories.find(cat => cat.name.toLowerCase() === categoryData.name.toLowerCase());
+        if (existingCategory) {
+          showCategoryFormError('name', 'A category with this name already exists');
+          return;
+        }
+        
+        // Submit to API
+        const response = await fetch('/api/inventory/categories', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify(categoryData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('Success', 'Category added successfully', 'success');
+          closeAddCategoryModal();
+          await loadCategories(); // Refresh categories
+        } else {
+          showNotification('Error', result.error || 'Failed to add category', 'error');
+        }
+      } catch (error) {
+        console.error('Add category error:', error);
+        showNotification('Error', 'Failed to add category', 'error');
+      } finally {
+        // Reset loading state
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitSpinner.classList.add('hidden');
+      }
+    }
+
+    // Handle edit category form submission
+    async function handleEditCategorySubmit(event) {
+      event.preventDefault();
+      
+      const submitBtn = document.getElementById('editCategorySubmitBtn');
+      const submitText = submitBtn.querySelector('.submit-text');
+      const submitSpinner = submitBtn.querySelector('.submit-spinner');
+      const categoryId = document.getElementById('editCategoryId').value;
+      
+      try {
+        // Clear previous validation
+        clearEditCategoryFormValidation();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitText.classList.add('hidden');
+        submitSpinner.classList.remove('hidden');
+        
+        // Get form data
+        const formData = new FormData(event.target);
+        const categoryData = {
+          name: formData.get('name'),
+          description: formData.get('description')
+        };
+        
+        // Client-side validation
+        if (!categoryData.name) {
+          showCategoryFormError('name', 'Category name is required', true);
+          return;
+        }
+        
+        if (categoryData.name.trim().length < 2) {
+          showCategoryFormError('name', 'Category name must be at least 2 characters', true);
+          return;
+        }
+        
+        // Check for duplicate category names (excluding current category)
+        const existingCategory = categories.find(cat => 
+          cat.id != categoryId && cat.name.toLowerCase() === categoryData.name.toLowerCase());
+        if (existingCategory) {
+          showCategoryFormError('name', 'A category with this name already exists', true);
+          return;
+        }
+        
+        // Submit to API
+        const response = await fetch(`/api/inventory/categories/${categoryId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify(categoryData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('Success', 'Category updated successfully', 'success');
+          closeEditCategoryModal();
+          await loadCategories(); // Refresh categories
+        } else {
+          showNotification('Error', result.error || 'Failed to update category', 'error');
+        }
+      } catch (error) {
+        console.error('Update category error:', error);
+        showNotification('Error', 'Failed to update category', 'error');
+      } finally {
+        // Reset loading state
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitSpinner.classList.add('hidden');
+      }
+    }
+
+    // Delete category
+    async function deleteCategory(categoryId) {
+      // Get category name and item count for confirmation
+      const category = categories.find(cat => cat.id === categoryId);
+      const categoryCountElement = document.getElementById(`category-count-${categoryId}`);
+      const itemCount = categoryCountElement ? categoryCountElement.textContent : '0';
+      
+      const confirmMessage = itemCount === '0' || itemCount === 'Loading...' ? 
+        `Are you sure you want to delete the category "${category.name}"?` :
+        `Are you sure you want to delete the category "${category.name}"? This will remove the category from ${itemCount} equipment item(s).`;
+      
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/inventory/categories/${categoryId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('Success', 'Category deleted successfully', 'success');
+          await loadCategories(); // Refresh categories
+        } else {
+          showNotification('Error', result.error || 'Failed to delete category', 'error');
+        }
+      } catch (error) {
+        console.error('Delete category error:', error);
+        showNotification('Error', 'Failed to delete category', 'error');
+      }
+    }
+
+    // Clear supplier form validation
+    function clearSupplierFormValidation() {
+      document.getElementById('addSupplierModal').querySelectorAll('.invalid-feedback').forEach(el => {
+        el.classList.add('hidden');
+        el.textContent = '';
+      });
+      document.getElementById('addSupplierModal').querySelectorAll('.border-red-500').forEach(el => {
+        el.classList.remove('border-red-500');
+        el.classList.add('border-gray-300');
+      });
+    }
+
+    // Clear edit supplier form validation
+    function clearEditSupplierFormValidation() {
+      document.getElementById('editSupplierModal').querySelectorAll('.invalid-feedback').forEach(el => {
+        el.classList.add('hidden');
+        el.textContent = '';
+      });
+      document.getElementById('editSupplierModal').querySelectorAll('.border-red-500').forEach(el => {
+        el.classList.remove('border-red-500');
+        el.classList.add('border-gray-300');
+      });
+    }
+
+    // Show supplier form validation error
+    function showSupplierFormError(fieldName, message, isEdit = false) {
+      const modalId = isEdit ? 'editSupplierModal' : 'addSupplierModal';
+      const field = document.querySelector(`#${modalId} [name="${fieldName}"]`);
+      const feedback = field.parentElement.querySelector('.invalid-feedback');
+      
+      field.classList.remove('border-gray-300');
+      field.classList.add('border-red-500');
+      
+      if (feedback) {
+        feedback.textContent = message;
+        feedback.classList.remove('hidden');
+      }
+    }
+
+    // Handle add supplier form submission
+    async function handleAddSupplierSubmit(event) {
+      event.preventDefault();
+      
+      const submitBtn = document.getElementById('addSupplierSubmitBtn');
+      const submitText = submitBtn.querySelector('.submit-text');
+      const submitSpinner = submitBtn.querySelector('.submit-spinner');
+      
+      try {
+        // Clear previous validation
+        clearSupplierFormValidation();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitText.classList.add('hidden');
+        submitSpinner.classList.remove('hidden');
+        
+        // Get form data
+        const formData = new FormData(event.target);
+        const supplierData = {
+          name: formData.get('name'),
+          contact_person: formData.get('contact_person'),
+          email: formData.get('email'),
+          phone: formData.get('phone'),
+          address: formData.get('address'),
+          notes: formData.get('notes')
+        };
+        
+        // Client-side validation
+        if (!supplierData.name) {
+          showSupplierFormError('name', 'Supplier name is required');
+          return;
+        }
+        
+        if (supplierData.email && !supplierData.email.includes('@')) {
+          showSupplierFormError('email', 'Please enter a valid email address');
+          return;
+        }
+        
+        // Submit to API
+        const response = await fetch('/api/inventory/suppliers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify(supplierData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('Success', 'Supplier added successfully', 'success');
+          closeAddSupplierModal();
+          await loadSuppliers(); // Refresh suppliers
+        } else {
+          showNotification('Error', result.error || 'Failed to add supplier', 'error');
+        }
+      } catch (error) {
+        console.error('Add supplier error:', error);
+        showNotification('Error', 'Failed to add supplier', 'error');
+      } finally {
+        // Reset loading state
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitSpinner.classList.add('hidden');
+      }
+    }
+
+    // Handle edit supplier form submission
+    async function handleEditSupplierSubmit(event) {
+      event.preventDefault();
+      
+      const submitBtn = document.getElementById('editSupplierSubmitBtn');
+      const submitText = submitBtn.querySelector('.submit-text');
+      const submitSpinner = submitBtn.querySelector('.submit-spinner');
+      const supplierId = document.getElementById('editSupplierId').value;
+      
+      try {
+        // Clear previous validation
+        clearEditSupplierFormValidation();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitText.classList.add('hidden');
+        submitSpinner.classList.remove('hidden');
+        
+        // Get form data
+        const formData = new FormData(event.target);
+        const supplierData = {
+          name: formData.get('name'),
+          contact_person: formData.get('contact_person'),
+          email: formData.get('email'),
+          phone: formData.get('phone'),
+          address: formData.get('address'),
+          notes: formData.get('notes')
+        };
+        
+        // Client-side validation
+        if (!supplierData.name) {
+          showSupplierFormError('name', 'Supplier name is required', true);
+          return;
+        }
+        
+        if (supplierData.email && !supplierData.email.includes('@')) {
+          showSupplierFormError('email', 'Please enter a valid email address', true);
+          return;
+        }
+        
+        // Submit to API
+        const response = await fetch(`/api/inventory/suppliers/${supplierId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify(supplierData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('Success', 'Supplier updated successfully', 'success');
+          closeEditSupplierModal();
+          await loadSuppliers(); // Refresh suppliers
+        } else {
+          showNotification('Error', result.error || 'Failed to update supplier', 'error');
+        }
+      } catch (error) {
+        console.error('Update supplier error:', error);
+        showNotification('Error', 'Failed to update supplier', 'error');
+      } finally {
+        // Reset loading state
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitSpinner.classList.add('hidden');
+      }
+    }
+
+    // Delete supplier
+    async function deleteSupplier(supplierId) {
+      if (!confirm('Are you sure you want to delete this supplier? Equipment using this supplier will have their supplier removed.')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/inventory/suppliers/${supplierId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('Success', 'Supplier deleted successfully', 'success');
+          await loadSuppliers(); // Refresh suppliers
+        } else {
+          showNotification('Error', result.error || 'Failed to delete supplier', 'error');
+        }
+      } catch (error) {
+        console.error('Delete supplier error:', error);
+        showNotification('Error', 'Failed to delete supplier', 'error');
+      }
+    }
+
+    // Load assignments
     async function loadAssignments() {
-      // Implementation will be added
+      try {
+        const response = await fetch('/api/inventory/assignments', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          assignments = data.assignments || [];
+          renderAssignmentsTable();
+        } else {
+          showNotification('Error', data.error || 'Failed to load assignments', 'error');
+        }
+      } catch (error) {
+        console.error('Load assignments error:', error);
+        showNotification('Error', 'Failed to load assignments', 'error');
+      }
+    }
+
+    // Render assignments table
+    function renderAssignmentsTable() {
       const tbody = document.getElementById('assignmentsTableBody');
-      tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">Assignments loading...</td></tr>';
+      
+      if (assignments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">No assignments found</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = assignments.map(assignment => {
+        const statusClass = assignment.status === 'active' ? 'bg-green-100 text-green-800' : 
+                           assignment.status === 'returned' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800';
+        
+        const assignedDate = new Date(assignment.assigned_date).toLocaleDateString();
+        
+        return `
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${assignment.item_name}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${assignment.item_sku || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${assignment.client_name}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${assignment.quantity}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${assignedDate}</td>
+            <td class="px-4 py-2 text-sm text-gray-500 max-w-xs truncate" title="${assignment.installation_address || 'N/A'}">${assignment.installation_address || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap">
+              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">
+                ${assignment.status}
+              </span>
+            </td>
+            <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium space-x-2">
+              <button onclick="viewAssignment(${assignment.id})" class="text-blue-600 hover:text-blue-900 p-1" title="View Details">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button onclick="returnAssignment(${assignment.id})" class="text-orange-600 hover:text-orange-900 p-1" title="Mark as Returned">
+                <i class="fas fa-undo"></i>
+              </button>
+              <button onclick="deleteAssignment(${assignment.id})" class="text-red-600 hover:text-red-900 p-1" title="Delete">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
+    // Load stock movements
     async function loadMovements() {
-      // Implementation will be added  
+      try {
+        const response = await fetch('/api/inventory/movements', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          movements = data.movements || [];
+          renderMovementsTable();
+        } else {
+          showNotification('Error', data.error || 'Failed to load movements', 'error');
+        }
+      } catch (error) {
+        console.error('Load movements error:', error);
+        showNotification('Error', 'Failed to load movements', 'error');
+      }
+    }
+
+    // Render stock movements table
+    function renderMovementsTable() {
       const tbody = document.getElementById('movementsTableBody');
-      tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">Movements loading...</td></tr>';
+      
+      if (movements.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">No stock movements found</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = movements.map(movement => {
+        const movementDate = new Date(movement.movement_date).toLocaleString();
+        // Check movement_type to determine if this is an increase or decrease
+        const isIncrease = movement.movement_type === 'in' || movement.quantity > 0;
+        const quantityClass = isIncrease ? 'text-green-600' : 'text-red-600';
+        const quantityPrefix = isIncrease ? '+' : '-';
+        const displayQuantity = Math.abs(movement.quantity);
+        
+        // Movement type icons and colors
+        let typeIcon = 'fas fa-exchange-alt';
+        let typeClass = 'text-blue-600';
+        
+        switch(movement.reason) {
+          case 'purchase':
+            typeIcon = 'fas fa-shopping-cart';
+            typeClass = 'text-green-600';
+            break;
+          case 'assignment':
+            typeIcon = 'fas fa-user-tag';
+            typeClass = 'text-purple-600';
+            break;
+          case 'return':
+            typeIcon = 'fas fa-undo';
+            typeClass = 'text-blue-600';
+            break;
+          case 'damaged':
+            typeIcon = 'fas fa-exclamation-triangle';
+            typeClass = 'text-red-600';
+            break;
+          case 'lost':
+            typeIcon = 'fas fa-question-circle';
+            typeClass = 'text-gray-600';
+            break;
+          case 'correction':
+            typeIcon = 'fas fa-edit';
+            typeClass = 'text-yellow-600';
+            break;
+        }
+        
+        return `
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${movementDate}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${movement.item_name}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${movement.item_sku || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm">
+              <div class="flex items-center">
+                <i class="${typeIcon} ${typeClass} mr-2"></i>
+                <span class="capitalize">${movement.reason}</span>
+              </div>
+            </td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm font-semibold ${quantityClass}">
+              ${quantityPrefix}${displayQuantity}
+            </td>
+            <td class="px-4 py-2 text-sm text-gray-500 max-w-xs truncate" title="${movement.reason}">
+              ${movement.reason.charAt(0).toUpperCase() + movement.reason.slice(1)}
+            </td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${movement.client_name || '-'}</td>
+            <td class="px-4 py-2 text-sm text-gray-500 max-w-xs truncate" title="${movement.notes || 'N/A'}">${movement.notes || '-'}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
+    // Load categories
     async function loadCategories() {
-      // Implementation will be added
-      const grid = document.getElementById('categoriesGrid');
-      grid.innerHTML = '<div class="text-center py-12"><span class="text-gray-500">Categories loading...</span></div>';
+      try {
+        const response = await fetch('/api/inventory/categories', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          categories = data.categories || [];
+          renderCategoriesGrid();
+        } else {
+          showNotification('Error', data.error || 'Failed to load categories', 'error');
+        }
+      } catch (error) {
+        console.error('Load categories error:', error);
+        showNotification('Error', 'Failed to load categories', 'error');
+      }
     }
 
+    // Render categories grid
+    function renderCategoriesGrid(categoriesToRender = null) {
+      const grid = document.getElementById('categoriesGrid');
+      const categoriesToShow = categoriesToRender || categories;
+      
+      if (categoriesToShow.length === 0) {
+        const message = categoriesToRender ? 'No categories match your search' : 'No categories found';
+        grid.innerHTML = `<div class="col-span-full text-center py-12"><span class="text-gray-500">${message}</span></div>`;
+        return;
+      }
+      
+      grid.innerHTML = categoriesToShow.map(category => {
+        const createdDate = new Date(category.created_at).toLocaleDateString();
+        
+        return `
+          <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-tag text-purple-600"></i>
+                </div>
+                <div class="ml-3">
+                  <h4 class="text-lg font-semibold text-gray-900">${category.name}</h4>
+                  <p class="text-sm text-gray-500">Created ${createdDate}</p>
+                </div>
+              </div>
+              <div class="flex space-x-2">
+                <button onclick="editCategory(${category.id})" class="text-blue-600 hover:text-blue-800 p-2" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteCategory(${category.id})" class="text-red-600 hover:text-red-800 p-2" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <p class="text-gray-700 text-sm mb-4">${category.description || 'No description provided'}</p>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-500">Items in category:</span>
+              <span class="text-purple-600 font-semibold" id="category-count-${category.id}">Loading...</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // Load item counts for each category
+      loadCategoryItemCounts();
+    }
+
+    // Load item counts for categories
+    async function loadCategoryItemCounts() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch('/api/inventory/items', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          const items = data.items || [];
+          
+          // Count items per category
+          categories.forEach(category => {
+            const count = items.filter(item => item.category_id === category.id).length;
+            const countElement = document.getElementById(`category-count-${category.id}`);
+            if (countElement) {
+              countElement.textContent = count;
+              countElement.className = count > 0 ? 'text-purple-600 font-semibold' : 'text-gray-500';
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Load category counts error:', error);
+        // Show error state for all visible category counts
+        categories.forEach(category => {
+          const countElement = document.getElementById(`category-count-${category.id}`);
+          if (countElement) {
+            countElement.textContent = 'Error';
+            countElement.className = 'text-red-500';
+          }
+        });
+      }
+    }
+
+    // Load suppliers
     async function loadSuppliers() {
-      // Implementation will be added
+      try {
+        const response = await fetch('/api/inventory/suppliers', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          suppliers = data.suppliers || [];
+          renderSuppliersTable();
+        } else {
+          showNotification('Error', data.error || 'Failed to load suppliers', 'error');
+        }
+      } catch (error) {
+        console.error('Load suppliers error:', error);
+        showNotification('Error', 'Failed to load suppliers', 'error');
+      }
+    }
+
+    // Render suppliers table
+    function renderSuppliersTable() {
       const tbody = document.getElementById('suppliersTableBody');
-      tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Suppliers loading...</td></tr>';
+      
+      if (suppliers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">No suppliers found</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = suppliers.map(supplier => {
+        return `
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${supplier.name}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${supplier.contact_person || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${supplier.email || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${supplier.phone || '-'}</td>
+            <td class="px-4 py-2 text-sm text-gray-500 max-w-xs truncate" title="${supplier.address || 'N/A'}">${supplier.address || '-'}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium space-x-2">
+              <button onclick="editSupplier(${supplier.id})" class="text-blue-600 hover:text-blue-900 p-1" title="Edit">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="deleteSupplier(${supplier.id})" class="text-red-600 hover:text-red-900 p-1" title="Delete">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     // Initialize
@@ -612,6 +3229,138 @@
       })
       .catch(error => {
         console.error('Get user info error:', error);
+      });
+
+      // Set up form event listeners
+      document.getElementById('addEquipmentForm').addEventListener('submit', handleAddEquipmentSubmit);
+      document.getElementById('stockAdjustmentForm').addEventListener('submit', handleStockAdjustmentSubmit);
+      document.getElementById('editEquipmentForm').addEventListener('submit', handleEditEquipmentSubmit);
+      document.getElementById('addAssignmentForm').addEventListener('submit', handleAddAssignmentSubmit);
+      document.getElementById('addCategoryForm').addEventListener('submit', handleAddCategorySubmit);
+      document.getElementById('editCategoryForm').addEventListener('submit', handleEditCategorySubmit);
+      document.getElementById('addSupplierForm').addEventListener('submit', handleAddSupplierSubmit);
+      document.getElementById('editSupplierForm').addEventListener('submit', handleEditSupplierSubmit);
+      
+      // Set up search functionality
+      document.getElementById('equipmentSearch').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredEquipment = equipment.filter(item => 
+          item.name.toLowerCase().includes(searchTerm) ||
+          (item.sku && item.sku.toLowerCase().includes(searchTerm)) ||
+          (item.category_name && item.category_name.toLowerCase().includes(searchTerm)) ||
+          (item.supplier_name && item.supplier_name.toLowerCase().includes(searchTerm))
+        );
+        renderEquipmentTable(filteredEquipment);
+      });
+      
+      // Set up categories search functionality
+      document.getElementById('categoriesSearch').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredCategories = categories.filter(category => 
+          category.name.toLowerCase().includes(searchTerm) ||
+          (category.description && category.description.toLowerCase().includes(searchTerm))
+        );
+        renderCategoriesGrid(filteredCategories);
+      });
+
+      // Set up stock adjustment quantity input listener for real-time preview
+      document.getElementById('adjustmentQuantity').addEventListener('input', updateStockPreview);
+      
+      // Close modal when clicking outside
+      document.getElementById('addEquipmentModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeAddEquipmentModal();
+        }
+      });
+      
+      document.getElementById('stockAdjustmentModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeStockAdjustmentModal();
+        }
+      });
+      
+      document.getElementById('editEquipmentModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeEditEquipmentModal();
+        }
+      });
+      
+      document.getElementById('addAssignmentModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeAddAssignmentModal();
+        }
+      });
+      
+      document.getElementById('addCategoryModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeAddCategoryModal();
+        }
+      });
+      
+      document.getElementById('editCategoryModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeEditCategoryModal();
+        }
+      });
+      
+      document.getElementById('addSupplierModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeAddSupplierModal();
+        }
+      });
+      
+      document.getElementById('editSupplierModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeEditSupplierModal();
+        }
+      });
+
+      // Handle keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        // Escape key to close modals
+        if (e.key === 'Escape') {
+          const addModal = document.getElementById('addEquipmentModal');
+          const adjustModal = document.getElementById('stockAdjustmentModal');
+          const editModal = document.getElementById('editEquipmentModal');
+          const assignmentModal = document.getElementById('addAssignmentModal');
+          
+          if (!addModal.classList.contains('hidden')) {
+            closeAddEquipmentModal();
+          } else if (!adjustModal.classList.contains('hidden')) {
+            closeStockAdjustmentModal();
+          } else if (!editModal.classList.contains('hidden')) {
+            closeEditEquipmentModal();
+          } else if (!assignmentModal.classList.contains('hidden')) {
+            closeAddAssignmentModal();
+          } else if (!document.getElementById('addCategoryModal').classList.contains('hidden')) {
+            closeAddCategoryModal();
+          } else if (!document.getElementById('editCategoryModal').classList.contains('hidden')) {
+            closeEditCategoryModal();
+          } else if (!document.getElementById('addSupplierModal').classList.contains('hidden')) {
+            closeAddSupplierModal();
+          } else if (!document.getElementById('editSupplierModal').classList.contains('hidden')) {
+            closeEditSupplierModal();
+          }
+        }
+        
+        // Ctrl/Cmd + Shift + A to open add modal for current tab
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'A') {
+          e.preventDefault();
+          switch(currentTab) {
+            case 'equipment':
+              openAddEquipmentModal();
+              break;
+            case 'assignments':
+              openAddAssignmentModal();
+              break;
+            case 'categories':
+              openAddCategoryModal();
+              break;
+            case 'suppliers':
+              openAddSupplierModal();
+              break;
+          }
+        }
       });
 
       // Load initial data

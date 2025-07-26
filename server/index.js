@@ -629,13 +629,16 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
   try {
     const { 
       page = 1, 
-      limit = 20, 
       sortBy = 'created_at', 
       sortOrder = 'desc',
       search = '',
       paymentStatus = '',
       status = ''
     } = req.query;
+    
+    // Parse and validate limit with a reasonable maximum
+    let limit = parseInt(req.query.limit) || 20;
+    if (limit > 1000) limit = 1000; // Cap at 1000 for performance
     
     const offset = (page - 1) * limit;
     const client = await pool.connect();
@@ -2385,7 +2388,7 @@ app.get('/api/monitoring/groups', authenticateToken, async (req, res) => {
     
     const result = await client.query(`
       SELECT * FROM monitoring_groups 
-      ORDER BY created_at DESC
+      ORDER BY name ASC
     `);
     
     // Parse the JSONB accounts back to arrays (frontend will handle online status)
@@ -2520,6 +2523,7 @@ app.delete('/api/monitoring/groups', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // Get monitoring categories
 app.get('/api/monitoring/categories', authenticateToken, async (req, res) => {

@@ -177,6 +177,9 @@
               <option value="25" selected>25</option>
               <option value="50">50</option>
               <option value="100">100</option>
+              <option value="250">250</option>
+              <option value="500">500</option>
+              <option value="1000">All</option>
             </select>
             <span class="text-sm text-gray-700">per page</span>
           </div>
@@ -208,13 +211,16 @@
               <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortClients('status')">
                 Status <i id="sort-status" class="fas fa-sort ml-1 text-gray-400"></i>
               </th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortClients('balance')">
+                Balance <i id="sort-balance" class="fas fa-sort ml-1 text-gray-400"></i>
+              </th>
               <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
               <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody id="clientsTableBody" class="bg-white divide-y divide-gray-200">
             <tr>
-              <td colspan="9" class="px-4 py-8 text-center">
+              <td colspan="10" class="px-4 py-8 text-center">
                 <div class="flex items-center justify-center">
                   <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mr-3"></div>
                   <span class="text-gray-500">Loading clients...</span>
@@ -354,18 +360,19 @@
         </div>
         
         <div>
-          <label for="clientAnchorDate" class="block text-sm font-medium text-gray-700 mb-1">Billing Anchor Date</label>
+          <label for="clientBalance" class="block text-sm font-medium text-gray-700 mb-1">Balance</label>
           <input 
             type="number" 
-            id="clientAnchorDate" 
-            name="anchor_day" 
-            min="1" 
-            max="31"
+            id="clientBalance" 
+            name="balance" 
+            step="0.01"
+            min="0"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="e.g., 15 (for 15th of each month)"
+            placeholder="0.00"
           >
-          <p class="text-xs text-gray-500 mt-1">Day of the month for billing cycle (1-31). Leave empty to use today's date.</p>
+          <p class="text-xs text-gray-500 mt-1">Outstanding balance amount (₱)</p>
         </div>
+        
         
         <div class="flex justify-end space-x-3 pt-4">
           <button 
@@ -481,17 +488,17 @@
         </div>
         
         <div>
-          <label for="editClientAnchorDate" class="block text-sm font-medium text-gray-700 mb-1">Billing Anchor Date</label>
+          <label for="editClientBalance" class="block text-sm font-medium text-gray-700 mb-1">Balance</label>
           <input 
             type="number" 
-            id="editClientAnchorDate" 
-            name="anchor_day" 
-            min="1" 
-            max="31"
+            id="editClientBalance" 
+            name="balance" 
+            step="0.01"
+            min="0"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="e.g., 15 (for 15th of each month)"
+            placeholder="0.00"
           >
-          <p class="text-xs text-gray-500 mt-1">Day of the month for billing cycle (1-31). Leave empty to use current day.</p>
+          <p class="text-xs text-gray-500 mt-1">Outstanding balance amount (₱)</p>
         </div>
         
         <div class="flex justify-end space-x-3 pt-4">
@@ -618,7 +625,6 @@
   <script>
     // Global variables
     let clients = [];
-    let filteredClients = [];
     let plans = [];
     let currentPage = 1;
     let itemsPerPage = 25;
@@ -716,32 +722,8 @@
       document.getElementById('editClientDueDate').value = client.due_date ? 
         client.due_date.split('T')[0] : '';
       document.getElementById('editClientPaymentStatus').value = client.payment_status || 'unpaid';
+      document.getElementById('editClientBalance').value = client.balance || '0.00';
       
-      // Fetch and populate anchor day if client has a plan
-      if (client.plan_id) {
-        const token = localStorage.getItem('auth_token');
-        try {
-          const response = await fetch(`/api/client-plans/${clientId}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          
-          if (response.ok) {
-            const clientPlans = await response.json();
-            const activePlan = Array.isArray(clientPlans) ? 
-              clientPlans.find(cp => cp.status === 'active') : clientPlans;
-            
-            if (activePlan && activePlan.anchor_day) {
-              document.getElementById('editClientAnchorDate').value = activePlan.anchor_day;
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching client plan details:', error);
-        }
-      } else {
-        document.getElementById('editClientAnchorDate').value = '';
-      }
 
       document.getElementById('editClientModal').classList.remove('hidden');
       document.getElementById('editClientModal').classList.add('flex');
@@ -859,11 +841,12 @@
                     <table class="w-full text-sm">
                       <thead class="bg-gray-50">
                         <tr>
-                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Plan</th>
-                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
+                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Current Charges</th>
+                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Previous Charges</th>
+                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Prev Payments</th>
+                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Total Amount Due</th>
                           <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
                         </tr>
                       </thead>
                       <tbody id="billing-list" class="divide-y divide-gray-200">
@@ -889,10 +872,10 @@
                       <thead class="bg-gray-50">
                         <tr>
                           <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Payments</th>
+                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Previous Balance</th>
+                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">New Balance</th>
                           <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
-                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                          <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
                         </tr>
                       </thead>
                       <tbody id="payments-list" class="divide-y divide-gray-200">
@@ -984,7 +967,7 @@
           if (billings.length === 0) {
             billingList.innerHTML = `
               <tr>
-                <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                <td colspan="6" class="px-4 py-8 text-center text-gray-500">
                   No billing history found for this client.
                 </td>
               </tr>
@@ -993,13 +976,19 @@
             billingList.innerHTML = billings.map(billing => `
               <tr class="hover:bg-gray-50">
                 <td class="px-4 py-2 text-sm text-gray-900">
-                  ${new Date(billing.billing_date).toLocaleDateString()}
+                  ${billing.period || 'N/A'}
                 </td>
-                <td class="px-4 py-2 text-sm text-gray-900">
-                  ${billing.plan_name || 'N/A'}
+                <td class="px-4 py-2 text-sm font-semibold text-gray-900">
+                  ₱${parseFloat(billing.amount || 0).toFixed(2)}
                 </td>
-                <td class="px-4 py-2 text-sm text-gray-900">
-                  ₱${parseFloat(billing.amount).toFixed(2)}
+                <td class="px-4 py-2 text-sm ${parseFloat(billing.prev_balance || 0) > 0 ? 'text-red-600 font-medium' : 'text-gray-500'}">
+                  ₱${parseFloat(billing.prev_balance || 0).toFixed(2)}
+                </td>
+                <td class="px-4 py-2 text-sm text-green-600 font-medium">
+                  ₱${parseFloat(billing.prev_payments || 0).toFixed(2)}
+                </td>
+                <td class="px-4 py-2 text-sm font-semibold text-gray-900">
+                  ₱${parseFloat(billing.total_amount_due || billing.amount || 0).toFixed(2)}
                 </td>
                 <td class="px-4 py-2 text-sm">
                   <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -1009,9 +998,6 @@
                   }">
                     ${billing.status.charAt(0).toUpperCase() + billing.status.slice(1)}
                   </span>
-                </td>
-                <td class="px-4 py-2 text-sm text-gray-900">
-                  ${billing.due_date ? new Date(billing.due_date).toLocaleDateString() : 'N/A'}
                 </td>
               </tr>
             `).join('');
@@ -1026,7 +1012,7 @@
         console.error('Error loading billing history:', error);
         billingList.innerHTML = `
           <tr>
-            <td colspan="5" class="px-4 py-8 text-center text-red-500">
+            <td colspan="6" class="px-4 py-8 text-center text-red-500">
               Failed to load billing history. Please try again.
             </td>
           </tr>
@@ -1065,31 +1051,38 @@
               </tr>
             `;
           } else {
-            paymentsList.innerHTML = payments.map(payment => `
-              <tr class="hover:bg-gray-50">
-                <td class="px-4 py-2 text-sm text-gray-900">
-                  ${new Date(payment.payment_date).toLocaleDateString()}
-                </td>
-                <td class="px-4 py-2 text-sm text-gray-900">
-                  ₱${parseFloat(payment.amount).toFixed(2)}
-                </td>
-                <td class="px-4 py-2 text-sm text-gray-900">
-                  ${payment.method || payment.payment_method || 'N/A'}
-                </td>
-                <td class="px-4 py-2 text-sm">
-                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    payment.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }">
-                    ${payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                  </span>
-                </td>
-                <td class="px-4 py-2 text-sm text-gray-900">
-                  ${payment.reference || payment.reference_number || payment.notes || 'N/A'}
-                </td>
-              </tr>
-            `).join('');
+            paymentsList.innerHTML = payments.map(payment => {
+              const paymentDate = new Date(payment.payment_date);
+              const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                             'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+              const month = months[paymentDate.getMonth()];
+              const day = String(paymentDate.getDate()).padStart(2, '0');
+              const year = paymentDate.getFullYear();
+              const hours = String(paymentDate.getHours()).padStart(2, '0');
+              const minutes = String(paymentDate.getMinutes()).padStart(2, '0');
+              const seconds = String(paymentDate.getSeconds()).padStart(2, '0');
+              const formattedDate = `${month}-${day}-${year} ${hours}:${minutes}:${seconds}`;
+              
+              return `
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-2 text-sm text-gray-900">
+                    ${formattedDate}
+                  </td>
+                  <td class="px-4 py-2 text-sm font-semibold text-gray-900">
+                    ₱${parseFloat(payment.amount || 0).toFixed(2)}
+                  </td>
+                  <td class="px-4 py-2 text-sm ${parseFloat(payment.prev_balance || 0) > 0 ? 'text-red-600 font-medium' : parseFloat(payment.prev_balance || 0) < 0 ? 'text-green-600 font-medium' : 'text-gray-500'}">
+                    ₱${parseFloat(payment.prev_balance || 0).toFixed(2)}
+                  </td>
+                  <td class="px-4 py-2 text-sm ${parseFloat(payment.new_balance || 0) > 0 ? 'text-red-600 font-medium' : parseFloat(payment.new_balance || 0) < 0 ? 'text-green-600 font-medium' : 'text-gray-500'}">
+                    ₱${parseFloat(payment.new_balance || 0).toFixed(2)}
+                  </td>
+                  <td class="px-4 py-2 text-sm text-gray-900">
+                    ${payment.method || payment.payment_method || 'N/A'}
+                  </td>
+                </tr>
+              `;
+            }).join('');
           }
           
           paymentsLoading.classList.add('hidden');
@@ -1111,12 +1104,30 @@
       }
     }
 
-    function deleteClient(clientId) {
-      if (!confirm('Are you sure you want to delete this client?')) return;
+    async function deleteClient(clientId) {
+      if (!confirm('Are you sure you want to delete this client? This action cannot be undone.')) return;
       
-      // Implementation for delete
-      showNotification('Client Deleted', 'Client has been successfully deleted', 'success');
-      loadClients();
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch(`/api/clients/${clientId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          showNotification('Success', 'Client has been successfully deleted', 'success');
+          loadClients();
+        } else {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to delete client');
+        }
+      } catch (error) {
+        console.error('Error deleting client:', error);
+        showNotification('Error', `Failed to delete client: ${error.message}`, 'error');
+      }
     }
 
     // Load and display clients with pagination and sorting
@@ -1127,12 +1138,14 @@
         const params = new URLSearchParams({
           page: currentPage,
           limit: itemsPerPage,
-          sort: sortField,
-          order: sortDirection,
+          sortBy: sortField,
+          sortOrder: sortDirection,
           search: document.getElementById('clientSearch')?.value || '',
           status: document.getElementById('statusFilter')?.value || '',
-          payment_status: document.getElementById('paymentStatusFilter')?.value || ''
+          paymentStatus: document.getElementById('paymentStatusFilter')?.value || ''
         });
+        
+        console.log('Fetching clients with params:', params.toString());
         
         const response = await fetch(`/api/clients?${params}`, {
           headers: {
@@ -1142,10 +1155,12 @@
         
         if (response.ok) {
           const data = await response.json();
+          console.log('Clients data received:', data);
           clients = data.clients || [];
-          filteredClients = [...clients];
-          totalPages = data.totalPages || 1;
-          updatePaginationInfo(data.total || 0);
+          totalPages = data.pagination?.totalPages || 1;
+          const totalCount = data.pagination?.totalCount || 0;
+          console.log(`Loaded page ${currentPage} of ${totalPages}, total items: ${totalCount}`);
+          updatePaginationInfo(totalCount);
           renderClients();
           updatePaginationControls();
         } else {
@@ -1207,10 +1222,10 @@
     function renderClients() {
       const tbody = document.getElementById('clientsTableBody');
       
-      if (filteredClients.length === 0) {
+      if (clients.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" class="px-4 py-8 text-center text-gray-500">
+            <td colspan="10" class="px-4 py-8 text-center text-gray-500">
               No clients found.
             </td>
           </tr>
@@ -1218,7 +1233,7 @@
         return;
       }
 
-      tbody.innerHTML = filteredClients.map(client => {
+      tbody.innerHTML = clients.map(client => {
         const paymentStatusClass = client.payment_status === 'paid' ? 
           'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
         const statusClass = client.status === 'active' ? 
@@ -1243,6 +1258,11 @@
             <td class="px-4 py-2 whitespace-nowrap">
               <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">
                 ${client.status ? client.status.charAt(0).toUpperCase() + client.status.slice(1) : 'Active'}
+              </span>
+            </td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm">
+              <span class="${parseFloat(client.balance || 0) > 0 ? 'text-red-600 font-semibold' : 'text-gray-500'}">
+                ₱${parseFloat(client.balance || 0).toFixed(2)}
               </span>
             </td>
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
@@ -1340,6 +1360,19 @@
       const nextBtn = document.getElementById('nextPageBtn');
       const pageNumbers = document.getElementById('pageNumbers');
       
+      // Hide pagination if showing all records or only one page
+      if (totalPages <= 1 || itemsPerPage >= 1000) {
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+        pageNumbers.style.display = 'none';
+        return;
+      }
+      
+      // Show pagination controls
+      prevBtn.style.display = 'inline-flex';
+      nextBtn.style.display = 'inline-flex';
+      pageNumbers.style.display = 'flex';
+      
       // Update previous/next buttons
       prevBtn.disabled = currentPage <= 1;
       nextBtn.disabled = currentPage >= totalPages;
@@ -1415,10 +1448,10 @@
         installation_date: allData.installation_date || null,
         due_date: allData.due_date || null,
         payment_status: allData.payment_status || 'unpaid',
+        balance: parseFloat(allData.balance) || 0,
         status: 'active'
       };
       const planId = allData.plan_id;
-      const anchorDay = allData.anchor_day;
       
       const token = localStorage.getItem('auth_token');
       
@@ -1448,10 +1481,6 @@
             status: 'active'
           };
           
-          // Add anchor day if provided
-          if (anchorDay && anchorDay.trim() !== '') {
-            planAssignmentData.anchor_day = parseInt(anchorDay);
-          }
           
           const planResponse = await fetch('/api/client-plans', {
             method: 'POST',
@@ -1496,10 +1525,10 @@
         installation_date: allData.installation_date || null,
         due_date: allData.due_date || null,
         payment_status: allData.payment_status || 'unpaid',
+        balance: parseFloat(allData.balance) || 0,
         status: allData.status || 'active'
       };
       const planId = allData.plan_id;
-      const anchorDay = allData.anchor_day;
       
       const token = localStorage.getItem('auth_token');
       
@@ -1549,10 +1578,6 @@
             status: 'active'
           };
           
-          // Add anchor day if provided
-          if (anchorDay && anchorDay.trim() !== '') {
-            planAssignmentData.anchor_day = parseInt(anchorDay);
-          }
           
           const planResponse = await fetch('/api/client-plans', {
             method: 'POST',
