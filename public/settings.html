@@ -27,547 +27,578 @@
   </script>
 </head>
 <body class="bg-gray-100 font-inter">
-  <!-- Header -->
-  <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
-    <div class="w-full px-6 h-16 flex items-center justify-between">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gradient-to-b from-blue-700 to-blue-800 text-white shadow-xl flex flex-col">
       <!-- Logo -->
-      <div class="flex items-center space-x-3">
+      <div class="p-6 border-b border-blue-600">
         <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
           <i class="fas fa-signal text-2xl"></i>
-          <h1 class="text-xl font-bold">ISP Management System</h1>
+          <h1 class="text-xl font-bold">ISP Management</h1>
         </a>
       </div>
       
       <!-- Navigation -->
-      <nav class="hidden md:flex items-center space-x-8">
-        <a href="/dashboard.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-tachometer-alt"></i>
+      <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        <a href="/dashboard.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-tachometer-alt w-5"></i>
           <span>Dashboard</span>
         </a>
-        <a href="/clients.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-users"></i>
+        <a href="/clients.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-users w-5"></i>
           <span>Clients</span>
         </a>
-        <a href="/plans.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-project-diagram"></i>
+        <a href="/plans.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-project-diagram w-5"></i>
           <span>Plans</span>
         </a>
-        <a href="/billings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-file-invoice-dollar"></i>
+        <a href="/billings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-file-invoice-dollar w-5"></i>
           <span>Billings</span>
         </a>
-        <a href="/payments.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-credit-card"></i>
+        <a href="/payments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-credit-card w-5"></i>
           <span>Payments</span>
         </a>
-        <a href="/inventory.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-boxes"></i>
+        <a href="/assets.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cube w-5"></i>
+          <span>Assets</span>
+        </a>
+        <a href="/inventory.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-boxes w-5"></i>
           <span>Inventory</span>
         </a>
-        <a href="/tickets.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-ticket-alt"></i>
+        <a href="/tickets.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-ticket-alt w-5"></i>
           <span>Tickets</span>
         </a>
-        <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-chart-line"></i>
+        <a href="/monitoring.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-chart-line w-5"></i>
           <span>Monitoring</span>
         </a>
-        <a href="/settings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
-          <i class="fas fa-cogs"></i>
+        <a href="/settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-white/20 text-white font-medium">
+          <i class="fas fa-cogs w-5"></i>
           <span>Settings</span>
         </a>
       </nav>
       
       <!-- User Info -->
-      <div class="flex items-center space-x-4">
-        <div class="flex items-center space-x-2">
-          <i class="fas fa-user-circle text-xl"></i>
-          <span id="username" class="font-medium">Loading...</span>
-        </div>
-        <button 
-          id="logoutBtn"
-          class="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
-        >
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Logout</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="w-full px-6 py-8">
-    <!-- Page Header -->
-    <div class="mb-8">
-      <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
-        <i class="fas fa-cogs text-blue-600 mr-3"></i>
-        Settings
-      </h2>
-      <p class="text-gray-600">Configure your ISP system settings</p>
-    </div>
-
-    <!-- Settings Cards Container -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-      <!-- Company Information Card -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <i class="fas fa-building text-blue-600 mr-2"></i>
-            Company Information
-          </h3>
-        </div>
-        <div class="p-6">
-          <div id="companyNotification" class="mb-4 hidden"></div>
-          <form id="companyInfoForm" class="space-y-4">
-            <div>
-              <label for="companyName" class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-signature text-gray-400"></i>
-                </div>
-                <input 
-                  type="text" 
-                  id="companyName" 
-                  required
-                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter company name"
-                >
-              </div>
-            </div>
-            
-            <div>
-              <label for="companyAddress" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-              <div class="relative">
-                <div class="absolute top-3 left-0 pl-3 flex items-start pointer-events-none">
-                  <i class="fas fa-map-marker-alt text-gray-400"></i>
-                </div>
-                <textarea 
-                  id="companyAddress" 
-                  rows="2" 
-                  required
-                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter company address"
-                ></textarea>
-              </div>
-            </div>
-            
-            <div>
-              <label for="companyPhone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-phone text-gray-400"></i>
-                </div>
-                <input 
-                  type="text" 
-                  id="companyPhone" 
-                  required
-                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter phone number"
-                >
-              </div>
-            </div>
-            
-            <div>
-              <label for="companyEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-envelope text-gray-400"></i>
-                </div>
-                <input 
-                  type="email" 
-                  id="companyEmail" 
-                  required
-                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter email address"
-                >
-              </div>
-            </div>
-            
-            <div>
-              <label for="companyLogoUrl" class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-image text-gray-400"></i>
-                </div>
-                <input 
-                  type="text" 
-                  id="companyLogoUrl"
-                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter logo URL (optional)"
-                >
-              </div>
-              <div id="logoPreview" class="mt-2"></div>
-            </div>
-            
-            <div class="pt-4">
-              <button 
-                type="submit"
-                class="w-full sm:w-auto flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                <i class="fas fa-save mr-2"></i>
-                Save Company Info
-              </button>
-            </div>
-          </form>
+      <div class="p-4 border-t border-blue-600">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-user-circle text-2xl"></i>
+            <span id="username" class="font-medium">Loading...</span>
+          </div>
+          <button 
+            id="logoutBtn"
+            class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+          >
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
         </div>
       </div>
+    </aside>
 
-      <!-- MikroTik Integration Card -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200" id="mikrotikCard">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <i class="fas fa-network-wired text-orange-600 mr-2"></i>
-            MikroTik Integration
-          </h3>
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Top Header -->
+      <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-gray-900">Settings</h2>
+          <div class="flex items-center space-x-4">
+            <span class="text-gray-600 text-sm">System configuration</span>
+          </div>
         </div>
-        <div class="p-6">
-          <div id="alertContainer" class="mb-4"></div>
-          
-          <form id="mikrotikForm" class="space-y-4">
-            <div>
-              <label for="mikrotik_host" class="block text-sm font-medium text-gray-700 mb-1">MikroTik Host/IP Address</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-server text-gray-400"></i>
-                </div>
-                <input 
-                  type="text" 
-                  id="mikrotik_host" 
-                  name="host" 
-                  required
-                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="192.168.1.1"
-                >
-              </div>
-            </div>
-            
-            <div>
-              <label for="mikrotik_username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-user text-gray-400"></i>
-                </div>
-                <input 
-                  type="text" 
-                  id="mikrotik_username" 
-                  name="username" 
-                  required
-                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="admin"
-                >
-              </div>
-            </div>
-            
-            <div>
-              <label for="mikrotik_password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-key text-gray-400"></i>
-                </div>
-                <input 
-                  type="password" 
-                  id="mikrotik_password" 
-                  name="password" 
-                  required
-                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter password"
-                >
-              </div>
-            </div>
-            
-            <div>
-              <label for="mikrotik_port" class="block text-sm font-medium text-gray-700 mb-1">Port</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-plug text-gray-400"></i>
-                </div>
-                <input 
-                  type="number" 
-                  id="mikrotik_port" 
-                  name="port" 
-                  value="8728" 
-                  min="1" 
-                  max="65535"
-                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-              </div>
-            </div>
-            
-            <div class="flex flex-col sm:flex-row gap-3 pt-4">
-              <button 
-                type="button" 
-                onclick="testConnection()"
-                class="flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              >
-                <i class="fas fa-exchange-alt mr-2"></i>
-                Test Connection
-              </button>
-              <button 
-                type="submit"
-                class="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                <i class="fas fa-save mr-2"></i>
-                Save Settings
-              </button>
-            </div>
-          </form>
-          
-          <div id="connectionStatus" class="mt-4"></div>
-        </div>
-      </div>
+      </header>
 
-      <!-- Database Management Card -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200" id="databaseCard">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <i class="fas fa-database text-purple-600 mr-2"></i>
-            Database Management
-          </h3>
-        </div>
-        <div class="p-6">
-          <div id="databaseNotification" class="mb-4 hidden"></div>
+      <!-- Main Content Area -->
+      <main class="flex-1 overflow-y-auto bg-gray-100 px-6 py-8">
+        <!-- Settings Cards -->
+        <div class="space-y-6">
           
-          <div class="space-y-4">
-            <!-- Database Status -->
-            <div class="bg-gray-50 rounded-lg p-4">
-              <h4 class="text-sm font-medium text-gray-900 mb-2">Database Status</h4>
-              <div id="databaseStatus" class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">Connection Status:</span>
-                  <span id="dbConnectionStatus" class="text-sm font-medium">Checking...</span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">Tables Status:</span>
-                  <span id="dbTablesStatus" class="text-sm font-medium">Checking...</span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">Last Check:</span>
-                  <span id="dbLastCheck" class="text-sm font-medium">Never</span>
-                </div>
+          <!-- Top Row: Company Information and MikroTik Integration -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Company Information Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                  <i class="fas fa-building text-blue-600 mr-2"></i>
+                  Company Information
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Configure your company details and branding</p>
+              </div>
+              <div class="p-6">
+                <form id="companyInfoForm" class="space-y-4">
+                  <div>
+                    <label for="companyName" class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-building text-gray-400"></i>
+                      </div>
+                      <input 
+                        type="text" 
+                        id="companyName" 
+                        name="company_name"
+                        required
+                        class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter company name"
+                      >
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label for="companyAddress" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <div class="relative">
+                      <div class="absolute top-3 left-0 pl-3 flex items-start pointer-events-none">
+                        <i class="fas fa-map-marker-alt text-gray-400"></i>
+                      </div>
+                      <textarea 
+                        id="companyAddress" 
+                        name="address"
+                        rows="2" 
+                        required
+                        class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter company address"
+                      ></textarea>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label for="companyPhone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-phone text-gray-400"></i>
+                      </div>
+                      <input 
+                        type="text" 
+                        id="companyPhone" 
+                        name="phone"
+                        required
+                        class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter phone number"
+                      >
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label for="companyEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-envelope text-gray-400"></i>
+                      </div>
+                      <input 
+                        type="email" 
+                        id="companyEmail" 
+                        name="email"
+                        required
+                        class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter email address"
+                      >
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label for="companyWebsite" class="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-globe text-gray-400"></i>
+                      </div>
+                      <input 
+                        type="url" 
+                        id="companyWebsite"
+                        name="website"
+                        class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter website URL (optional)"
+                      >
+                    </div>
+                  </div>
+                  
+                  <div class="pt-4">
+                    <button 
+                      type="submit"
+                      class="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      <i class="fas fa-save mr-2"></i>
+                      Save Company Info
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
 
-            <!-- Database Actions -->
-            <div class="space-y-3">
-              <div class="flex flex-col sm:flex-row gap-3">
-                <button 
-                  id="checkDatabaseBtn"
-                  class="flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-                  onclick="checkDatabaseHealth()"
-                >
-                  <i class="fas fa-heartbeat mr-2"></i>
-                  Check Database Health
-                </button>
-                <button 
-                  id="initializeDatabaseBtn"
-                  class="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                  onclick="initializeDatabase()"
-                >
-                  <i class="fas fa-play mr-2"></i>
-                  Initialize Database
-                </button>
+            <!-- MikroTik Integration Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                  <i class="fas fa-network-wired text-orange-600 mr-2"></i>
+                  MikroTik Integration
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Configure MikroTik RouterOS API connection for network monitoring</p>
               </div>
+              <div class="p-6">
+                <form id="mikrotikForm" class="space-y-4">
+                  <div>
+                    <label for="mikrotik_host" class="block text-sm font-medium text-gray-700 mb-1">Router IP Address</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-server text-gray-400"></i>
+                      </div>
+                      <input 
+                        type="text" 
+                        id="mikrotik_host" 
+                        name="host" 
+                        required
+                        class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="192.168.1.1"
+                      >
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label for="mikrotik_username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-user text-gray-400"></i>
+                      </div>
+                      <input 
+                        type="text" 
+                        id="mikrotik_username" 
+                        name="username" 
+                        required
+                        class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="admin"
+                      >
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label for="mikrotik_password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-lock text-gray-400"></i>
+                      </div>
+                      <input 
+                        type="password" 
+                        id="mikrotik_password" 
+                        name="password" 
+                        required
+                        class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter password"
+                      >
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label for="mikrotik_port" class="block text-sm font-medium text-gray-700 mb-1">API Port</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-plug text-gray-400"></i>
+                      </div>
+                      <input 
+                        type="number" 
+                        id="mikrotik_port" 
+                        name="port" 
+                        value="8728" 
+                        min="1" 
+                        max="65535"
+                        class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                    </div>
+                  </div>
+                  
+                  <div class="flex flex-col gap-3 pt-4">
+                    <button 
+                      type="button" 
+                      onclick="testConnection()"
+                      class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    >
+                      <i class="fas fa-exchange-alt mr-2"></i>
+                      Test Connection
+                    </button>
+                    <button 
+                      type="submit"
+                      class="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      <i class="fas fa-save mr-2"></i>
+                      Save Settings
+                    </button>
+                  </div>
+                </form>
+                
+                <div id="connectionStatus" class="mt-4"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Network Monitoring Scheduler and Database Management Row -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Network Monitoring Scheduler Card (Left Side) -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                  <i class="fas fa-clock text-green-600 mr-2"></i>
+                  Network Monitoring Scheduler
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Configure data collection intervals and monitoring frequency</p>
+              </div>
+              <div class="p-6">
+                <div id="schedulerNotification" class="mb-4 hidden"></div>
+                
+                <div class="space-y-6">
+                  <!-- Current Settings Display -->
+                  <div class="space-y-4">
+                    <h4 class="text-md font-medium text-gray-800">Current Configuration</h4>
+                    
+                    <div class="p-4 bg-gray-50 rounded-lg space-y-3">
+                      <div class="flex justify-between">
+                        <span class="text-sm text-gray-600">Collection Interval:</span>
+                        <span id="currentInterval" class="text-sm font-medium text-gray-900">10 seconds</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-sm text-gray-600">Daily Data Points:</span>
+                        <span id="dailyDataPoints" class="text-sm font-medium text-gray-900">8,640</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-sm text-gray-600">Storage Per Day:</span>
+                        <span id="storagePerDay" class="text-sm font-medium text-gray-900">~350 KB</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-sm text-gray-600">Status:</span>
+                        <span id="schedulerStatus" class="text-sm font-medium text-green-600">Active</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Interval Settings -->
+                  <div class="space-y-4">
+                    <h4 class="text-md font-medium text-gray-800">Change Collection Interval</h4>
+                    
+                    <div class="space-y-3">
+                      <label for="intervalSelect" class="block text-sm font-medium text-gray-700">Select Interval:</label>
+                      <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <i class="fas fa-clock text-gray-400"></i>
+                        </div>
+                        <select 
+                          id="intervalSelect" 
+                          onchange="setSchedulerInterval(this.value)"
+                          class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="10s" selected>10 seconds (High detail)</option>
+                          <option value="30s">30 seconds (Detailed)</option>
+                          <option value="1m">1 minute (Standard)</option>
+                          <option value="5m">5 minutes (Low detail)</option>
+                          <option value="15m">15 minutes (Minimal)</option>
+                          <option value="30m">30 minutes (Very minimal)</option>
+                        </select>
+                      </div>
+                      
+                      <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div class="flex items-start">
+                          <i class="fas fa-exclamation-triangle text-yellow-600 mr-2 mt-0.5"></i>
+                          <div class="text-sm text-yellow-800">
+                            <strong>Note:</strong> Shorter intervals provide more detailed data but use more storage. 
+                            Requires server restart to take effect.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="flex gap-3">
+                    <button 
+                      onclick="applySchedulerSettings()"
+                      class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    >
+                      <i class="fas fa-save mr-2"></i>
+                      Apply Settings
+                    </button>
+                    
+                    <button 
+                      onclick="restartScheduler()"
+                      class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      <i class="fas fa-sync-alt mr-2"></i>
+                      Restart Scheduler
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Database Management Card (Right Side) -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-database text-purple-600 mr-2"></i>
+                Database Management
+              </h3>
+              <p class="text-sm text-gray-600 mt-1">Monitor and manage database health and operations</p>
+            </div>
+            <div class="p-6">
+              <div id="databaseNotification" class="mb-4 hidden"></div>
               
-              <div class="flex flex-col sm:flex-row gap-3">
-                <button 
-                  id="repairDatabaseBtn"
-                  class="flex items-center justify-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
-                  onclick="repairDatabase()"
-                >
-                  <i class="fas fa-tools mr-2"></i>
-                  Repair Database
-                </button>
-                <button 
-                  id="resetDatabaseBtn"
-                  class="flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-                  onclick="resetDatabase()"
-                >
-                  <i class="fas fa-exclamation-triangle mr-2"></i>
-                  Reset Database
-                </button>
-              </div>
-            </div>
+              <div class="space-y-4">
+                <!-- Database Status -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Connection Status</label>
+                    <div id="dbConnectionStatus" class="text-sm">
+                      <span class="text-gray-500">Checking...</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tables Status</label>
+                    <div id="dbTablesStatus" class="text-sm">
+                      <span class="text-gray-500">Checking...</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Last Check</label>
+                    <div id="dbLastCheck" class="text-sm text-gray-600">Never</div>
+                  </div>
+                </div>
 
-            <!-- Warning Message -->
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div class="flex items-start">
-                <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-2"></i>
-                <div class="text-sm text-yellow-800">
-                  <strong>Warning:</strong> Database operations may affect system functionality. 
-                  "Reset Database" will permanently delete all data. Use with caution.
+                <!-- Database Actions -->
+                <div class="flex flex-wrap gap-3">
+                  <button 
+                    onclick="checkDatabaseHealth()"
+                    class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    <i class="fas fa-stethoscope mr-2"></i>
+                    Check Health
+                  </button>
+                  
+                  <button 
+                    onclick="initializeDatabase()"
+                    class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                  >
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    Initialize
+                  </button>
+                  
+                  <button 
+                    onclick="repairDatabase()"
+                    class="flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium"
+                  >
+                    <i class="fas fa-wrench mr-2"></i>
+                    Repair
+                  </button>
+                  
+                  <button 
+                    onclick="resetDatabase()"
+                    class="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                  >
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Reset
+                  </button>
+                </div>
+                
+                <div class="text-sm text-gray-600 space-y-1">
+                  <p><strong>Initialize:</strong> Create database tables and default data</p>
+                  <p><strong>Repair:</strong> Fix common database issues and rebuild indexes</p>
+                  <p><strong>Reset:</strong> ⚠️ Delete all data and recreate tables (cannot be undone)</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
-  </main>
+  </div>
 
   <!-- Toast Container -->
   <div id="notificationContainer" class="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm"></div>
 
   <script>
-    // Show notification toast
+    // Globals
+    let settings = {};
+    const token = localStorage.getItem('auth_token');
+
+    // Show notification
     function showNotification(title, message, type = 'info') {
-      const container = document.getElementById('notificationContainer');
+      const notificationContainer = document.getElementById('notificationContainer');
       
-      const toastId = 'toast-' + Math.random().toString(36).substring(2, 15);
+      const typeClasses = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+      };
       
-      let bgClass = 'bg-blue-500';
-      let icon = 'info-circle';
-      
-      switch(type) {
-        case 'success':
-          icon = 'check-circle';
-          bgClass = 'bg-green-500';
-          break;
-        case 'warning':
-          icon = 'exclamation-triangle';
-          bgClass = 'bg-amber-500';
-          break;
-        case 'error':
-          icon = 'exclamation-circle';
-          bgClass = 'bg-red-500';
-          break;
-      }
-      
-      const toast = document.createElement('div');
-      toast.id = toastId;
-      toast.className = `${bgClass} text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
-      toast.innerHTML = `
+      const notification = document.createElement('div');
+      notification.className = `${typeClasses[type]} text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 translate-y-full opacity-0`;
+      notification.innerHTML = `
         <div class="flex items-start">
-          <i class="fas fa-${icon} mt-0.5 mr-3 flex-shrink-0"></i>
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold">${title}</div>
-            <div class="text-sm opacity-90">${message}</div>
+          <div class="flex-1">
+            <h4 class="font-semibold">${title}</h4>
+            <p class="text-sm mt-1">${message}</p>
           </div>
-          <button onclick="removeToast('${toastId}')" class="ml-3 flex-shrink-0 text-white/80 hover:text-white">
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
             <i class="fas fa-times"></i>
           </button>
         </div>
       `;
       
-      container.appendChild(toast);
+      notificationContainer.appendChild(notification);
       
+      // Animate in
       setTimeout(() => {
-        toast.classList.remove('translate-x-full', 'opacity-0');
-      }, 10);
+        notification.classList.remove('translate-y-full', 'opacity-0');
+      }, 100);
       
+      // Auto remove after 5 seconds
       setTimeout(() => {
-        removeToast(toastId);
+        if (notification.parentNode) {
+          notification.classList.add('translate-y-full', 'opacity-0');
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.remove();
+            }
+          }, 300);
+        }
       }, 5000);
     }
-    
-    function removeToast(toastId) {
-      const toast = document.getElementById(toastId);
-      if (toast) {
-        toast.classList.add('translate-x-full', 'opacity-0');
-        setTimeout(() => {
-          toast.remove();
-        }, 300);
-      }
-    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-      // Check if user is logged in
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        window.location.href = '/login.html';
-        return;
-      }
-
-      // Set up logout functionality
-      document.getElementById('logoutBtn').addEventListener('click', function() {
-        localStorage.removeItem('auth_token');
-        showNotification('Logged Out', 'You have been successfully logged out', 'info');
-        setTimeout(() => {
-          window.location.href = '/login.html';
-        }, 1000);
-      });
-
-      // Fetch user info
-      fetchUserInfo();
-      
-      // Load existing settings
-      loadMikrotikSettings();
-      loadCompanyInfo();
-      
-      // Check database health on page load
-      setTimeout(() => checkDatabaseHealth(), 500);
-      
-      // Set up form submission
-      document.getElementById('mikrotikForm').addEventListener('submit', saveMikrotikSettings);
-      document.getElementById('companyInfoForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const token = localStorage.getItem('auth_token');
-        const data = {
-          name: document.getElementById('companyName').value,
-          address: document.getElementById('companyAddress').value,
-          phone: document.getElementById('companyPhone').value,
-          email: document.getElementById('companyEmail').value,
-          logo_url: document.getElementById('companyLogoUrl').value
-        };
-        
-        try {
-          const response = await fetch('/api/company-info', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(data)
-          });
-          
-          if (response.ok) {
-            showNotification('Success', 'Company information saved successfully', 'success');
-          } else {
-            throw new Error('Failed to save company info');
-          }
-        } catch (error) {
-          console.error('Error saving company info:', error);
-          showNotification('Error', 'Failed to save company information', 'error');
-        }
-      });
-    });
-
-    async function fetchUserInfo() {
-      const token = localStorage.getItem('auth_token');
+    // Load company information
+    async function loadCompanyInfo() {
       try {
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        const response = await fetch('/api/company-info', {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
           const data = await response.json();
-          document.getElementById('username').textContent = data.user.username || 'User';
-        } else {
-          localStorage.removeItem('auth_token');
-          window.location.href = '/login.html';
+          // API returns data directly, not wrapped in data.company
+          if (data && typeof data === 'object') {
+            document.getElementById('companyName').value = data.company_name || '';
+            document.getElementById('companyAddress').value = data.address || '';
+            document.getElementById('companyPhone').value = data.phone || '';
+            document.getElementById('companyEmail').value = data.email || '';
+            document.getElementById('companyWebsite').value = data.website || '';
+          }
         }
       } catch (error) {
-        console.error('Error fetching user info:', error);
-        document.getElementById('username').textContent = 'User';
+        console.error('Error loading company info:', error);
+        showNotification('Error', 'Failed to load company information', 'error');
       }
     }
 
+    // Load MikroTik settings
     async function loadMikrotikSettings() {
-      const token = localStorage.getItem('auth_token');
       try {
         const response = await fetch('/api/mikrotik/settings', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
           const data = await response.json();
-          if (data) {
+          // API returns data directly, not wrapped in data.settings
+          if (data && typeof data === 'object') {
             document.getElementById('mikrotik_host').value = data.host || '';
             document.getElementById('mikrotik_username').value = data.username || '';
-            document.getElementById('mikrotik_password').value = data.password || '';
             document.getElementById('mikrotik_port').value = data.port || 8728;
-            
-            updateConnectionStatus(data.is_active);
+            // Don't populate password field for security reasons
           }
         }
       } catch (error) {
@@ -576,167 +607,49 @@
       }
     }
 
-    async function saveMikrotikSettings(e) {
-      e.preventDefault();
-      
-      const formData = {
-        host: document.getElementById('mikrotik_host').value,
-        username: document.getElementById('mikrotik_username').value,
-        password: document.getElementById('mikrotik_password').value,
-        port: parseInt(document.getElementById('mikrotik_port').value)
-      };
-
-      const token = localStorage.getItem('auth_token');
-      try {
-        const response = await fetch('/api/mikrotik/settings', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(formData)
-        });
-        
-        const data = await response.json();
-        if (data.success) {
-          showNotification('Success', 'MikroTik settings saved successfully', 'success');
-          updateConnectionStatus(true);
-        } else {
-          throw new Error(data.error || 'Failed to save settings');
-        }
-      } catch (error) {
-        console.error('Error saving settings:', error);
-        showNotification('Error', 'Failed to save MikroTik settings', 'error');
-      }
-    }
-
+    // Test MikroTik connection
     async function testConnection() {
-      const formData = {
-        host: document.getElementById('mikrotik_host').value,
-        username: document.getElementById('mikrotik_username').value,
-        password: document.getElementById('mikrotik_password').value,
-        port: parseInt(document.getElementById('mikrotik_port').value)
-      };
+      const host = document.getElementById('mikrotik_host').value;
+      const username = document.getElementById('mikrotik_username').value;
+      const password = document.getElementById('mikrotik_password').value;
+      const port = document.getElementById('mikrotik_port').value;
 
-      const token = localStorage.getItem('auth_token');
+      if (!host || !username || !password) {
+        showNotification('Error', 'Please fill in all required fields', 'error');
+        return;
+      }
+
+      const statusDiv = document.getElementById('connectionStatus');
+      statusDiv.innerHTML = '<div class="text-blue-600"><i class="fas fa-spinner fa-spin mr-2"></i>Testing connection...</div>';
+
       try {
-        const response = await fetch('/api/mikrotik/test-connection', {
+        const response = await fetch('/api/mikrotik/test', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify(formData)
+          body: JSON.stringify({ host, username, password, port: parseInt(port) })
         });
-        
+
         const data = await response.json();
-        if (data.success) {
-          showNotification('Success', 'MikroTik connection test successful', 'success');
-          updateConnectionStatus(true);
-        } else {
-          throw new Error(data.error || 'Connection failed');
-        }
-      } catch (error) {
-        console.error('Error testing connection:', error);
-        showNotification('Error', 'MikroTik connection test failed', 'error');
-        updateConnectionStatus(false);
-      }
-    }
-
-    function updateConnectionStatus(isConnected) {
-      const statusDiv = document.getElementById('connectionStatus');
-      if (isConnected) {
-        statusDiv.innerHTML = `
-          <div class="flex items-center px-3 py-2 bg-green-100 text-green-800 rounded-lg border border-green-200">
-            <i class="fas fa-plug mr-2"></i>
-            <span class="font-medium">Connected</span>
-          </div>
-        `;
-      } else {
-        statusDiv.innerHTML = `
-          <div class="flex items-center px-3 py-2 bg-red-100 text-red-800 rounded-lg border border-red-200">
-            <i class="fas fa-plug-circle-xmark mr-2"></i>
-            <span class="font-medium">Disconnected</span>
-          </div>
-        `;
-      }
-    }
-
-    async function loadCompanyInfo() {
-      const token = localStorage.getItem('auth_token');
-      
-      try {
-        const response = await fetch('/api/company-info', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
         
-        if (response.ok) {
-          const data = await response.json();
-          if (data) {
-            document.getElementById('companyName').value = data.name || '';
-            document.getElementById('companyAddress').value = data.address || '';
-            document.getElementById('companyPhone').value = data.phone || '';
-            document.getElementById('companyEmail').value = data.email || '';
-            document.getElementById('companyLogoUrl').value = data.logo_url || '';
-            
-            updateLogoPreview();
-            
-            // Add event listener to logo URL input for real-time preview
-            document.getElementById('companyLogoUrl').addEventListener('input', updateLogoPreview);
-          }
+        if (response.ok && data.success) {
+          statusDiv.innerHTML = '<div class="text-green-600"><i class="fas fa-check-circle mr-2"></i>Connection successful!</div>';
+          showNotification('Success', 'MikroTik connection test successful', 'success');
         } else {
-          console.error('Error fetching company info:', await response.text());
+          statusDiv.innerHTML = `<div class="text-red-600"><i class="fas fa-times-circle mr-2"></i>Connection failed: ${data.error || 'Unknown error'}</div>`;
+          showNotification('Error', `Connection failed: ${data.error || 'Unknown error'}`, 'error');
         }
       } catch (error) {
-        console.error('Error loading company info:', error);
-        showNotification('Error', 'Failed to load company information', 'error');
-      }
-    }
-    
-    function updateLogoPreview() {
-      const logoUrl = document.getElementById('companyLogoUrl').value.trim();
-      const logoPreview = document.getElementById('logoPreview');
-      
-      if (logoUrl) {
-        logoPreview.innerHTML = `
-          <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <img 
-              src="${logoUrl}" 
-              alt="Company Logo" 
-              class="max-w-full h-20 object-contain rounded"
-              onerror="this.parentNode.innerHTML='<div class=\\'flex items-center justify-center h-20 bg-red-50 text-red-600 rounded\\'>\\
-                <i class=\\'fas fa-exclamation-triangle mr-2\\'></i>\\
-                <span>Unable to load image</span>\\
-              </div>';"
-            >
-            <div class="mt-2">
-              <button type="button" onclick="window.open('${logoUrl}', '_blank')" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                <i class="fas fa-external-link-alt mr-1"></i>
-                View Full Size
-              </button>
-            </div>
-          </div>
-        `;
-      } else {
-        logoPreview.innerHTML = `
-          <div class="flex items-center justify-center h-20 bg-gray-50 text-gray-500 rounded-lg border border-gray-200">
-            <i class="fas fa-image mr-2"></i>
-            <span>No logo URL provided</span>
-          </div>
-        `;
+        statusDiv.innerHTML = '<div class="text-red-600"><i class="fas fa-times-circle mr-2"></i>Connection failed</div>';
+        showNotification('Error', 'Connection test failed', 'error');
       }
     }
 
-    // Database Management Functions
+    // Database management functions
     async function checkDatabaseHealth() {
-      const statusBtn = document.getElementById('checkDatabaseBtn');
-      const originalText = statusBtn.innerHTML;
-      
-      statusBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Checking...';
-      statusBtn.disabled = true;
-      
       try {
-        const token = localStorage.getItem('auth_token');
         const response = await fetch('/api/health', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -744,146 +657,68 @@
         if (response.ok) {
           const data = await response.json();
           updateDatabaseStatus('connected', 'healthy', new Date().toLocaleString());
-          showNotification('Success', 'Database is healthy and connected', 'success');
+          showNotification('Success', 'Database is healthy', 'success');
         } else {
           updateDatabaseStatus('disconnected', 'error', new Date().toLocaleString());
           showNotification('Error', 'Database connection failed', 'error');
         }
       } catch (error) {
-        console.error('Error checking database health:', error);
         updateDatabaseStatus('disconnected', 'error', new Date().toLocaleString());
         showNotification('Error', 'Failed to check database health', 'error');
-      } finally {
-        statusBtn.innerHTML = originalText;
-        statusBtn.disabled = false;
       }
     }
 
     async function initializeDatabase() {
-      if (!confirm('This will initialize database tables and create sample data. Continue?')) {
-        return;
-      }
-      
-      const statusBtn = document.getElementById('initializeDatabaseBtn');
-      const originalText = statusBtn.innerHTML;
-      
-      statusBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Initializing...';
-      statusBtn.disabled = true;
+      if (!confirm('This will create database tables and initialize default data. Continue?')) return;
       
       try {
-        const token = localStorage.getItem('auth_token');
         const response = await fetch('/api/init-database', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
-          const data = await response.json();
-          updateDatabaseStatus('connected', 'healthy', new Date().toLocaleString());
           showNotification('Success', 'Database initialized successfully', 'success');
-          
-          // Auto-check health after initialization
-          setTimeout(() => checkDatabaseHealth(), 1000);
+          checkDatabaseHealth();
         } else {
-          const errorData = await response.json();
-          showNotification('Error', errorData.message || 'Failed to initialize database', 'error');
+          const data = await response.json();
+          showNotification('Error', data.message || 'Failed to initialize database', 'error');
         }
       } catch (error) {
-        console.error('Error initializing database:', error);
         showNotification('Error', 'Failed to initialize database', 'error');
-      } finally {
-        statusBtn.innerHTML = originalText;
-        statusBtn.disabled = false;
       }
     }
 
     async function repairDatabase() {
-      if (!confirm('This will drop and recreate database tables. Existing data will be lost. Continue?')) {
-        return;
-      }
+      if (!confirm('This will attempt to repair database issues. Continue?')) return;
       
-      const statusBtn = document.getElementById('repairDatabaseBtn');
-      const originalText = statusBtn.innerHTML;
-      
-      statusBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Repairing...';
-      statusBtn.disabled = true;
-      
-      try {
-        const token = localStorage.getItem('auth_token');
-        const response = await fetch('/api/repair-database', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` 
-          },
-          body: JSON.stringify({ force: true })
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          updateDatabaseStatus('connected', 'healthy', new Date().toLocaleString());
-          showNotification('Success', 'Database repaired successfully', 'success');
-          
-          // Auto-check health after repair
-          setTimeout(() => checkDatabaseHealth(), 1000);
-        } else {
-          const errorData = await response.json();
-          showNotification('Error', errorData.message || 'Failed to repair database', 'error');
-        }
-      } catch (error) {
-        console.error('Error repairing database:', error);
-        showNotification('Error', 'Failed to repair database', 'error');
-      } finally {
-        statusBtn.innerHTML = originalText;
-        statusBtn.disabled = false;
-      }
+      showNotification('Info', 'Database repair functionality coming soon!', 'info');
     }
 
     async function resetDatabase() {
-      if (!confirm('WARNING: This will permanently delete ALL data and reset the database. This action cannot be undone. Are you sure?')) {
-        return;
-      }
-      
-      const confirmText = prompt('FINAL WARNING: All clients, plans, payments, and other data will be permanently lost. Type "RESET" to confirm:');
-      if (confirmText !== 'RESET') {
-        showNotification('Cancelled', 'Database reset cancelled', 'info');
-        return;
-      }
-      
-      const statusBtn = document.getElementById('resetDatabaseBtn');
-      const originalText = statusBtn.innerHTML;
-      
-      statusBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Resetting...';
-      statusBtn.disabled = true;
+      if (!confirm('⚠️ WARNING: This will DELETE ALL DATA and cannot be undone! Are you absolutely sure?')) return;
+      if (!confirm('This action cannot be reversed. Type YES to confirm:') || 
+          prompt('Type "DELETE ALL DATA" to confirm:') !== 'DELETE ALL DATA') return;
       
       try {
-        const token = localStorage.getItem('auth_token');
         const response = await fetch('/api/reset-database', {
           method: 'POST',
           headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({ confirm: 'RESET' })
         });
         
         if (response.ok) {
-          const data = await response.json();
-          updateDatabaseStatus('connected', 'healthy', new Date().toLocaleString());
           showNotification('Success', 'Database reset successfully', 'success');
-          
-          // Auto-check health after reset
-          setTimeout(() => checkDatabaseHealth(), 1000);
+          checkDatabaseHealth();
         } else {
-          const errorData = await response.json();
-          showNotification('Error', errorData.message || 'Failed to reset database', 'error');
+          const data = await response.json();
+          showNotification('Error', data.message || 'Failed to reset database', 'error');
         }
       } catch (error) {
-        console.error('Error resetting database:', error);
         showNotification('Error', 'Failed to reset database', 'error');
-      } finally {
-        statusBtn.innerHTML = originalText;
-        statusBtn.disabled = false;
       }
     }
 
@@ -911,6 +746,253 @@
       // Update last check
       dbLastCheck.textContent = lastCheck || 'Never';
     }
+
+    // Form submission handlers
+    document.getElementById('companyInfoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = {
+        company_name: document.getElementById('companyName').value,
+        address: document.getElementById('companyAddress').value,
+        phone: document.getElementById('companyPhone').value,
+        email: document.getElementById('companyEmail').value,
+        website: document.getElementById('companyWebsite').value
+      };
+
+      try {
+        const response = await fetch('/api/company-info', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+          showNotification('Success', 'Company information saved successfully', 'success');
+        } else {
+          const data = await response.json();
+          showNotification('Error', data.error || 'Failed to save company information', 'error');
+        }
+      } catch (error) {
+        showNotification('Error', 'Failed to save company information', 'error');
+      }
+    });
+
+    document.getElementById('mikrotikForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = {
+        host: document.getElementById('mikrotik_host').value,
+        username: document.getElementById('mikrotik_username').value,
+        password: document.getElementById('mikrotik_password').value,
+        port: parseInt(document.getElementById('mikrotik_port').value)
+      };
+
+      try {
+        const response = await fetch('/api/mikrotik/settings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+          showNotification('Success', 'MikroTik settings saved successfully', 'success');
+          document.getElementById('connectionStatus').innerHTML = '';
+        } else {
+          const data = await response.json();
+          showNotification('Error', data.error || 'Failed to save MikroTik settings', 'error');
+        }
+      } catch (error) {
+        showNotification('Error', 'Failed to save MikroTik settings', 'error');
+      }
+    });
+
+    // Global scheduler management functions
+    function setSchedulerInterval(interval) {
+      // Update display
+      const currentInterval = document.getElementById('currentInterval');
+      const dailyDataPoints = document.getElementById('dailyDataPoints');
+      const storagePerDay = document.getElementById('storagePerDay');
+      
+      // Update current interval display
+      const intervalMap = {
+        '10s': '10 seconds',
+        '30s': '30 seconds', 
+        '1m': '1 minute',
+        '5m': '5 minutes',
+        '15m': '15 minutes',
+        '30m': '30 minutes'
+      };
+      
+      currentInterval.textContent = intervalMap[interval] || interval;
+      
+      // Calculate data points per day
+      const secondsMap = {
+        '10s': 10,
+        '30s': 30,
+        '1m': 60,
+        '5m': 300,
+        '15m': 900,
+        '30m': 1800
+      };
+      
+      const seconds = secondsMap[interval] || 10;
+      const pointsPerDay = Math.floor(86400 / seconds); // 86400 seconds in a day
+      dailyDataPoints.textContent = pointsPerDay.toLocaleString();
+      
+      // Estimate storage (rough calculation: ~40 bytes per record)
+      const storageBytes = pointsPerDay * 40;
+      const storageKB = storageBytes / 1024;
+      storagePerDay.textContent = `~${Math.round(storageKB)} KB`;
+      
+      // Store the setting
+      localStorage.setItem('schedulerInterval', interval);
+    }
+
+    async function updateSchedulerStats() {
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        // Get current settings from server
+        const response = await fetch('/api/scheduler/settings', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          const currentInterval = result.interval || '10s';
+          
+          // Update dropdown and display
+          const intervalSelect = document.getElementById('intervalSelect');
+          if (intervalSelect) {
+            intervalSelect.value = currentInterval;
+            setSchedulerInterval(currentInterval);
+          }
+          
+          // Save to localStorage for consistency
+          localStorage.setItem('schedulerInterval', currentInterval);
+        } else {
+          // Fallback to localStorage
+          const currentInterval = localStorage.getItem('schedulerInterval') || '10s';
+          const intervalSelect = document.getElementById('intervalSelect');
+          
+          if (intervalSelect) {
+            intervalSelect.value = currentInterval;
+            setSchedulerInterval(currentInterval);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading scheduler settings:', error);
+        
+        // Fallback to localStorage
+        const currentInterval = localStorage.getItem('schedulerInterval') || '10s';
+        const intervalSelect = document.getElementById('intervalSelect');
+        
+        if (intervalSelect) {
+          intervalSelect.value = currentInterval;
+          setSchedulerInterval(currentInterval);
+        }
+      }
+    }
+
+    async function applySchedulerSettings() {
+      const interval = document.getElementById('intervalSelect').value;
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch('/api/scheduler/interval', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ interval })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          // Save to localStorage for display
+          localStorage.setItem('schedulerInterval', interval);
+          
+          // Update display
+          setSchedulerInterval(interval);
+          
+          showNotification('Settings Applied', `Scheduler interval updated to ${interval} and restarted automatically.`, 'success');
+        } else {
+          showNotification('Error', result.error || 'Failed to update scheduler settings', 'error');
+        }
+      } catch (error) {
+        console.error('Error applying scheduler settings:', error);
+        showNotification('Error', 'Failed to update scheduler settings', 'error');
+      }
+    }
+
+    async function restartScheduler() {
+      if (!confirm('Restart the data collection scheduler? This will briefly interrupt data collection.')) {
+        return;
+      }
+      
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch('/api/scheduler/restart', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          showNotification('Scheduler Restarted', result.message, 'success');
+        } else {
+          showNotification('Error', result.error || 'Failed to restart scheduler', 'error');
+        }
+      } catch (error) {
+        console.error('Error restarting scheduler:', error);
+        showNotification('Error', 'Failed to restart scheduler', 'error');
+      }
+    }
+
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check authentication
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Set up logout functionality
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        showNotification('Logged Out', 'You have been successfully logged out', 'info');
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 1000);
+      });
+
+      // Load username
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.username) {
+        document.getElementById('username').textContent = user.username;
+      }
+
+      // Load settings
+      loadCompanyInfo();
+      loadMikrotikSettings();
+      checkDatabaseHealth();
+      updateSchedulerStats();
+    });
   </script>
 </body>
-</html> 
+</html>

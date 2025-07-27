@@ -26,122 +26,136 @@
   </script>
 </head>
 <body class="bg-gray-100 font-inter">
-  <!-- Header -->
-  <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
-    <div class="w-full px-6 h-16 flex items-center justify-between">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gradient-to-b from-blue-700 to-blue-800 text-white shadow-xl flex flex-col">
       <!-- Logo -->
-      <div class="flex items-center space-x-3">
+      <div class="p-6 border-b border-blue-600">
         <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
           <i class="fas fa-signal text-2xl"></i>
-          <h1 class="text-xl font-bold">ISP Management System</h1>
+          <h1 class="text-xl font-bold">ISP Management</h1>
         </a>
       </div>
       
       <!-- Navigation -->
-      <nav class="hidden md:flex items-center space-x-8">
-        <a href="/dashboard.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-tachometer-alt"></i>
+      <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        <a href="/dashboard.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-tachometer-alt w-5"></i>
           <span>Dashboard</span>
         </a>
-        <a href="/clients.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-users"></i>
+        <a href="/clients.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-users w-5"></i>
           <span>Clients</span>
         </a>
-        <a href="/plans.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
-          <i class="fas fa-project-diagram"></i>
+        <a href="/plans.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-white/20 text-white font-medium">
+          <i class="fas fa-project-diagram w-5"></i>
           <span>Plans</span>
         </a>
-        <a href="/billings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-file-invoice-dollar"></i>
+        <a href="/billings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-file-invoice-dollar w-5"></i>
           <span>Billings</span>
         </a>
-        <a href="/payments.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-credit-card"></i>
+        <a href="/payments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-credit-card w-5"></i>
           <span>Payments</span>
         </a>
-        <a href="/inventory.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-boxes"></i>
+        <a href="/assets.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cube w-5"></i>
+          <span>Assets</span>
+        </a>
+        <a href="/inventory.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-boxes w-5"></i>
           <span>Inventory</span>
         </a>
-        <a href="/tickets.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-ticket-alt"></i>
+        <a href="/tickets.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-ticket-alt w-5"></i>
           <span>Tickets</span>
         </a>
-        <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-chart-line"></i>
+        <a href="/monitoring.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-chart-line w-5"></i>
           <span>Monitoring</span>
         </a>
-        <a href="/settings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-cogs"></i>
+        <a href="/settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cogs w-5"></i>
           <span>Settings</span>
         </a>
       </nav>
       
       <!-- User Info -->
-      <div class="flex items-center space-x-4">
-        <div class="flex items-center space-x-2">
-          <i class="fas fa-user-circle text-xl"></i>
-          <span id="username" class="font-medium">Loading...</span>
+      <div class="p-4 border-t border-blue-600">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-user-circle text-2xl"></i>
+            <span id="username" class="font-medium">Loading...</span>
+          </div>
+          <button 
+            id="logoutBtn"
+            class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+          >
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
         </div>
-        <button 
-          id="logoutBtn"
-          class="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
-        >
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Logout</span>
-        </button>
       </div>
-    </div>
-  </header>
+    </aside>
 
-  <!-- Main Content -->
-  <main class="w-full px-6 py-8">
-    <!-- Page Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-      <div class="mb-4 sm:mb-0">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
-          <i class="fas fa-project-diagram text-blue-600 mr-3"></i>
-          Internet Plans
-        </h2>
-        <p class="text-gray-600">Manage your internet service plans</p>
-      </div>
-      <div class="flex flex-col sm:flex-row gap-3">
-        <button 
-          id="importPPPBtn" 
-          onclick="openImportModal()"
-          class="flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
-        >
-          <i class="fas fa-file-import mr-2"></i>
-          Import from PPP Profiles
-        </button>
-        <button 
-          id="addPlanBtn" 
-          onclick="openAddModal()"
-          class="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-        >
-          <i class="fas fa-plus mr-2"></i>
-          Add Plan
-        </button>
-      </div>
-    </div>
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Top Header -->
+      <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-gray-900">Plans</h2>
+          <div class="flex items-center space-x-4">
+            <span class="text-gray-600 text-sm">Manage your service plans</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="flex-1 overflow-y-auto bg-gray-100 px-6 py-8">
+    
 
     <!-- Plans List Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
       <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h3 class="text-lg font-semibold text-gray-900 flex items-center mb-4 sm:mb-0">
-          <i class="fas fa-list text-blue-600 mr-2"></i>
-          Plans List
+          <i class="fas fa-project-diagram text-blue-600 mr-2"></i>
+          Plan Management
         </h3>
-        <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <i class="fas fa-search text-gray-400"></i>
-          </div>
+        <div class="flex items-center space-x-3">
           <input 
             type="text" 
             id="planSearch" 
-            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64" 
-            placeholder="Search plans..."
+            placeholder="Search plans..." 
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
+          <select 
+            id="statusFilter" 
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <select id="itemsPerPage" class="px-2 py-1 border border-gray-300 rounded text-sm">
+            <option value="10">10</option>
+            <option value="25" selected>25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <button 
+            onclick="openImportModal()"
+            class="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
+          >
+            <i class="fas fa-file-import"></i>
+            <span>Import from MikroTik</span>
+          </button>
+          <button 
+            onclick="openAddModal()"
+            class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            <i class="fas fa-plus"></i>
+            <span>Add Plan</span>
+          </button>
         </div>
       </div>
       
@@ -182,6 +196,36 @@
       </div>
     </div>
   </main>
+
+  <!-- Add Plan Modal -->
+  <div id="addPlanModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Add New Plan</h3>
+      </div>
+      
+      <form id="addPlanForm" class="p-6 space-y-4">
+        <div>
+          <label for="planName" class="block text-sm font-medium text-gray-700 mb-1">Plan Name</label>
+          <input 
+            type="text" 
+            id="planName" 
+            name="name" 
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="e.g., Basic 10Mbps"
+          >
+        </div>
+        
+        <div>
+          <label for="planDescription" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea 
+            id="planDescription" 
+            name="description" 
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 ro</main>
+    </div>
+  </div>
 
   <!-- Add Plan Modal -->
   <div id="addPlanModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">

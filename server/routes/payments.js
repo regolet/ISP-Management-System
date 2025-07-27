@@ -41,16 +41,7 @@ router.get('/', authenticateToken, async (req, res) => {
         p.*,
         c.name as client_name,
         c.balance as current_client_balance,
-        -- Calculate balance progression: current balance + sum of all payments made after this one
-        (
-          c.balance + COALESCE(
-            (SELECT SUM(later_p.amount) 
-             FROM payments later_p 
-             WHERE later_p.client_id = p.client_id 
-               AND later_p.created_at > p.created_at), 0
-          )
-        ) as new_balance,
-        -- Previous balance: new balance + this payment amount
+        -- Previous balance: what the balance was BEFORE this payment (current balance + sum of all payments made after this one + this payment)
         (
           c.balance + COALESCE(
             (SELECT SUM(later_p.amount) 
@@ -58,7 +49,16 @@ router.get('/', authenticateToken, async (req, res) => {
              WHERE later_p.client_id = p.client_id 
                AND later_p.created_at > p.created_at), 0
           ) + p.amount
-        ) as prev_balance
+        ) as prev_balance,
+        -- New balance: what the balance became AFTER this payment (current balance + sum of all payments made after this one)
+        (
+          c.balance + COALESCE(
+            (SELECT SUM(later_p.amount) 
+             FROM payments later_p 
+             WHERE later_p.client_id = p.client_id 
+               AND later_p.created_at > p.created_at), 0
+          )
+        ) as new_balance
       FROM payments p
       LEFT JOIN clients c ON p.client_id = c.id
       ORDER BY p.payment_date DESC, p.created_at DESC

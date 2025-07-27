@@ -26,115 +26,108 @@
   </script>
 </head>
 <body class="bg-gray-100 font-inter">
-  <!-- Header -->
-  <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
-    <div class="w-full px-6 h-16 flex items-center justify-between">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gradient-to-b from-blue-700 to-blue-800 text-white shadow-xl flex flex-col">
       <!-- Logo -->
-      <div class="flex items-center space-x-3">
+      <div class="p-6 border-b border-blue-600">
         <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
           <i class="fas fa-signal text-2xl"></i>
-          <h1 class="text-xl font-bold">ISP Management System</h1>
+          <h1 class="text-xl font-bold">ISP Management</h1>
         </a>
       </div>
       
       <!-- Navigation -->
-      <nav class="hidden md:flex items-center space-x-8">
-        <a href="/dashboard.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-tachometer-alt"></i>
+      <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        <a href="/dashboard.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-tachometer-alt w-5"></i>
           <span>Dashboard</span>
         </a>
-        <a href="/clients.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-users"></i>
+        <a href="/clients.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-users w-5"></i>
           <span>Clients</span>
         </a>
-        <a href="/plans.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-project-diagram"></i>
+        <a href="/plans.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-project-diagram w-5"></i>
           <span>Plans</span>
         </a>
-        <a href="/billings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
-          <i class="fas fa-file-invoice-dollar"></i>
+        <a href="/billings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-white/20 text-white font-medium">
+          <i class="fas fa-file-invoice-dollar w-5"></i>
           <span>Billings</span>
         </a>
-        <a href="/payments.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-credit-card"></i>
+        <a href="/payments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-credit-card w-5"></i>
           <span>Payments</span>
         </a>
-        <a href="/inventory.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-boxes"></i>
+        <a href="/assets.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cube w-5"></i>
+          <span>Assets</span>
+        </a>
+        <a href="/inventory.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-boxes w-5"></i>
           <span>Inventory</span>
         </a>
-        <a href="/tickets.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-ticket-alt"></i>
+        <a href="/tickets.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-ticket-alt w-5"></i>
           <span>Tickets</span>
         </a>
-        <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-chart-line"></i>
+        <a href="/monitoring.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-chart-line w-5"></i>
           <span>Monitoring</span>
         </a>
-        <a href="/settings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-cogs"></i>
+        <a href="/settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cogs w-5"></i>
           <span>Settings</span>
         </a>
       </nav>
       
       <!-- User Info -->
-      <div class="flex items-center space-x-4">
-        <div class="flex items-center space-x-2">
-          <i class="fas fa-user-circle text-xl"></i>
-          <span id="username" class="font-medium">Loading...</span>
-        </div>
-        <button 
-          id="logoutBtn"
-          class="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
-        >
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Logout</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="w-full px-6 py-8">
-    <!-- Page Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-      <div class="mb-4 sm:mb-0">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
-          <i class="fas fa-file-invoice-dollar text-blue-600 mr-3"></i>
-          Billings
-        </h2>
-        <p class="text-gray-600">Manage billing records and invoice clients</p>
-      </div>
-      <div class="flex flex-col sm:flex-row gap-3">
-        <button 
-          id="addBillingBtn" 
-          onclick="openAddModal()"
-          class="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-        >
-          <i class="fas fa-plus mr-2"></i>
-          Add Billing
-        </button>
-      </div>
-    </div>
-
-    <!-- Filter Controls -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <!-- Search -->
-        <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <i class="fas fa-search text-gray-400"></i>
+      <div class="p-4 border-t border-blue-600">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-user-circle text-2xl"></i>
+            <span id="username" class="font-medium">Loading...</span>
           </div>
+          <button 
+            id="logoutBtn"
+            class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+          >
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Top Header -->
+      <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-gray-900">Billings</h2>
+          <div class="flex items-center space-x-4">
+            <span class="text-gray-600 text-sm">Manage billing and invoices</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="flex-1 overflow-y-auto bg-gray-100 px-6 py-8">
+    
+
+    <!-- Billings List Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center mb-4 sm:mb-0">
+          <i class="fas fa-file-invoice-dollar text-blue-600 mr-2"></i>
+          Billing Management
+        </h3>
+        <div class="flex items-center space-x-3">
           <input 
             type="text" 
             id="billingSearch" 
-            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full lg:w-64" 
-            placeholder="Search billings..."
+            placeholder="Search billings..." 
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-        </div>
-        
-        <!-- Filters -->
-        <div class="flex flex-col sm:flex-row gap-3">
           <select 
             id="statusFilter" 
             class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -144,24 +137,40 @@
             <option value="paid">Paid</option>
             <option value="overdue">Overdue</option>
           </select>
-          
           <select 
             id="monthFilter" 
             class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Months</option>
           </select>
+          <select id="itemsPerPage" class="px-2 py-1 border border-gray-300 rounded text-sm">
+            <option value="10">10</option>
+            <option value="25" selected>25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <button 
+            onclick="generateBillings()"
+            class="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
+          >
+            <i class="fas fa-calendar-plus"></i>
+            <span>Generate Monthly</span>
+          </button>
+          <button 
+            onclick="openGenerateForDayModal()"
+            class="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+          >
+            <i class="fas fa-calendar-day"></i>
+            <span>Generate for Day</span>
+          </button>
+          <button 
+            onclick="openAddModal()"
+            class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            <i class="fas fa-plus"></i>
+            <span>Add Billing</span>
+          </button>
         </div>
-      </div>
-    </div>
-
-    <!-- Billings List Card -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-          <i class="fas fa-list text-blue-600 mr-2"></i>
-          Billing Records
-        </h3>
       </div>
       
       <div class="overflow-x-auto">
@@ -215,6 +224,8 @@
       </div>
     </div>
   </main>
+    </div>
+  </div>
 
   <!-- Add Billing Modal -->
   <div id="addBillingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
@@ -325,6 +336,63 @@
     </div>
   </div>
 
+  <!-- Generate for Day Modal -->
+  <div id="generateForDayModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Generate Billing for Day</h3>
+        <p class="text-sm text-gray-600 mt-1">Generate billings for all clients with due date on a specific day</p>
+      </div>
+      
+      <div class="p-6">
+        <div class="space-y-4">
+          <div>
+            <label for="dayInput" class="block text-sm font-medium text-gray-700 mb-2">
+              Day of Month (1-31)
+            </label>
+            <input 
+              type="number" 
+              id="dayInput" 
+              min="1" 
+              max="31" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" 
+              placeholder="Enter day (e.g., 15)"
+              required
+            >
+            <p class="text-xs text-gray-500 mt-1">
+              This will generate billings for all active clients whose due date falls on this day of the month.
+            </p>
+          </div>
+        </div>
+        
+        <div class="flex justify-end space-x-3 mt-6">
+          <button 
+            type="button" 
+            onclick="closeGenerateForDayModal()"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="button"
+            onclick="generateBillingsForDay()"
+            id="generateForDayBtn"
+            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            <span id="generateForDayText">Generate Billings</span>
+            <div id="generateForDaySpinner" class="hidden inline-flex items-center">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Generating...
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <!-- Toast Container -->
   <div id="notificationContainer" class="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm"></div>
@@ -413,6 +481,37 @@
     }
 
     // Modal functions
+    // Generate monthly billings
+    async function generateBillings() {
+      if (!confirm('This will generate billings for all active clients for the current month. Continue?')) {
+        return;
+      }
+      
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        const response = await fetch('/api/billings/generate', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          showNotification('Success', `Generated ${data.count || 0} new billings`, 'success');
+          loadBillings();
+        } else {
+          const data = await response.json();
+          showNotification('Error', data.error || 'Failed to generate billings', 'error');
+        }
+      } catch (error) {
+        console.error('Error generating billings:', error);
+        showNotification('Error', 'Failed to generate billings', 'error');
+      }
+    }
+
     function openAddModal() {
       document.getElementById('addBillingModal').classList.remove('hidden');
       document.getElementById('addBillingModal').classList.add('flex');
@@ -446,6 +545,84 @@
       }
     }
 
+    function openGenerateForDayModal() {
+      document.getElementById('generateForDayModal').classList.remove('hidden');
+      document.getElementById('generateForDayModal').classList.add('flex');
+      
+      // Set today's day as default
+      const today = new Date();
+      document.getElementById('dayInput').value = today.getDate();
+    }
+
+    function closeGenerateForDayModal() {
+      document.getElementById('generateForDayModal').classList.add('hidden');
+      document.getElementById('generateForDayModal').classList.remove('flex');
+      document.getElementById('dayInput').value = '';
+    }
+
+    async function generateBillingsForDay() {
+      const dayInput = document.getElementById('dayInput');
+      const day = parseInt(dayInput.value);
+      
+      if (!day || day < 1 || day > 31) {
+        showNotification('Invalid Input', 'Please enter a valid day between 1 and 31', 'error');
+        return;
+      }
+      
+      const btn = document.getElementById('generateForDayBtn');
+      const btnText = document.getElementById('generateForDayText');
+      const btnSpinner = document.getElementById('generateForDaySpinner');
+      
+      // Show loading state
+      btn.disabled = true;
+      btnText.classList.add('hidden');
+      btnSpinner.classList.remove('hidden');
+      
+      try {
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch('/api/billings/generate-for-day', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ day: day })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          let message = result.message;
+          if (result.billings_created > 0) {
+            message += `\n\nCreated billings for:`;
+            result.clients_processed.forEach(client => {
+              message += `\n• ${client.client_name} - ${client.plan_name} (₱${parseFloat(client.amount).toLocaleString('en-PH', {minimumFractionDigits: 2})})`;
+            });
+          }
+          
+          if (result.errors && result.errors.length > 0) {
+            message += `\n\nErrors:`;
+            result.errors.forEach(error => {
+              message += `\n• ${error.client_name}: ${error.error}`;
+            });
+          }
+          
+          showNotification('Billing Generation Complete', message, 'success');
+          closeGenerateForDayModal();
+          loadBillings(); // Refresh the billings table
+        } else {
+          throw new Error(result.error || 'Failed to generate billings');
+        }
+      } catch (error) {
+        console.error('Error generating billings for day:', error);
+        showNotification('Generation Failed', error.message || 'Failed to generate billings', 'error');
+      } finally {
+        // Reset button state
+        btn.disabled = false;
+        btnText.classList.remove('hidden');
+        btnSpinner.classList.add('hidden');
+      }
+    }
 
     async function deleteBilling(billingId) {
       if (!confirm('Are you sure you want to delete this billing record?')) return;

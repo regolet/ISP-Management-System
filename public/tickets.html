@@ -26,147 +26,94 @@
   </script>
 </head>
 <body class="bg-gray-100 font-inter">
-  <!-- Header -->
-  <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
-    <div class="w-full px-6 h-16 flex items-center justify-between">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gradient-to-b from-blue-700 to-blue-800 text-white shadow-xl flex flex-col">
       <!-- Logo -->
-      <div class="flex items-center space-x-3">
+      <div class="p-6 border-b border-blue-600">
         <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
           <i class="fas fa-signal text-2xl"></i>
-          <h1 class="text-xl font-bold">ISP Management System</h1>
+          <h1 class="text-xl font-bold">ISP Management</h1>
         </a>
       </div>
       
       <!-- Navigation -->
-      <nav class="hidden md:flex items-center space-x-8">
-        <a href="/dashboard.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-tachometer-alt"></i>
+      <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        <a href="/dashboard.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-tachometer-alt w-5"></i>
           <span>Dashboard</span>
         </a>
-        <a href="/clients.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-users"></i>
+        <a href="/clients.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-users w-5"></i>
           <span>Clients</span>
         </a>
-        <a href="/plans.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-project-diagram"></i>
+        <a href="/plans.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-project-diagram w-5"></i>
           <span>Plans</span>
         </a>
-        <a href="/billings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-file-invoice-dollar"></i>
+        <a href="/billings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-file-invoice-dollar w-5"></i>
           <span>Billings</span>
         </a>
-        <a href="/payments.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-credit-card"></i>
+        <a href="/payments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-credit-card w-5"></i>
           <span>Payments</span>
         </a>
-        <a href="/inventory.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-boxes"></i>
+        <a href="/assets.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cube w-5"></i>
+          <span>Assets</span>
+        </a>
+        <a href="/inventory.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-boxes w-5"></i>
           <span>Inventory</span>
         </a>
-        <a href="/tickets.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
-          <i class="fas fa-ticket-alt"></i>
+        <a href="/tickets.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-white/20 text-white font-medium">
+          <i class="fas fa-ticket-alt w-5"></i>
           <span>Tickets</span>
         </a>
-        <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-chart-line"></i>
+        <a href="/monitoring.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-chart-line w-5"></i>
           <span>Monitoring</span>
         </a>
-        <a href="/settings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-cogs"></i>
+        <a href="/settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cogs w-5"></i>
           <span>Settings</span>
         </a>
       </nav>
       
       <!-- User Info -->
-      <div class="flex items-center space-x-4">
-        <div class="flex items-center space-x-2">
-          <i class="fas fa-user-circle text-xl"></i>
-          <span id="username" class="font-medium">Loading...</span>
+      <div class="p-4 border-t border-blue-600">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-user-circle text-2xl"></i>
+            <span id="username" class="font-medium">Loading...</span>
+          </div>
+          <button 
+            id="logoutBtn"
+            class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+          >
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
         </div>
-        <button 
-          id="logoutBtn"
-          class="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
-        >
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Logout</span>
-        </button>
       </div>
-    </div>
-  </header>
+    </aside>
 
-  <!-- Main Content -->
-  <main class="w-full px-6 py-8">
-    <!-- Page Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-      <div class="mb-4 sm:mb-0">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
-          <i class="fas fa-ticket-alt text-green-600 mr-3"></i>
-          Support Tickets
-        </h2>
-        <p class="text-gray-600">Manage customer support tickets and requests</p>
-      </div>
-      <div class="flex flex-col sm:flex-row gap-3">
-        <button 
-          id="newTicketBtn" 
-          onclick="openNewTicketModal()"
-          class="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-        >
-          <i class="fas fa-plus mr-2"></i>
-          New Ticket
-        </button>
-      </div>
-    </div>
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Top Header -->
+      <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-gray-900">Tickets</h2>
+          <div class="flex items-center space-x-4">
+            <span class="text-gray-600 text-sm">Support ticket management</span>
+          </div>
+        </div>
+      </header>
 
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-600">Open Tickets</p>
-            <p id="openTickets" class="text-2xl font-bold text-blue-600">0</p>
-          </div>
-          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-            <i class="fas fa-ticket-alt text-blue-600 text-xl"></i>
-          </div>
-        </div>
-      </div>
-      
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-600">In Progress</p>
-            <p id="inProgressTickets" class="text-2xl font-bold text-yellow-600">0</p>
-          </div>
-          <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-            <i class="fas fa-clock text-yellow-600 text-xl"></i>
-          </div>
-        </div>
-      </div>
-      
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-600">Resolved</p>
-            <p id="resolvedTickets" class="text-2xl font-bold text-green-600">0</p>
-          </div>
-          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <i class="fas fa-check-circle text-green-600 text-xl"></i>
-          </div>
-        </div>
-      </div>
-      
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-600">Urgent</p>
-            <p id="urgentTickets" class="text-2xl font-bold text-red-600">0</p>
-          </div>
-          <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
-          </div>
-        </div>
-      </div>
-    </div>
+      <!-- Main Content Area -->
+      <main class="flex-1 overflow-y-auto bg-gray-100 px-6 py-8">
+    
+
 
     <!-- Ticket Management Tabs -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -204,6 +151,14 @@
           <!-- Filters and Search -->
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
             <div class="flex flex-wrap gap-3 mb-4 sm:mb-0">
+              <button 
+                onclick="openNewTicketModal()"
+                class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                <i class="fas fa-plus mr-2"></i>
+                New Ticket
+              </button>
+              
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <i class="fas fa-search text-gray-400"></i>
@@ -504,9 +459,10 @@
     </div>
   </div>
 
+
   <!-- View Ticket Modal -->
-  <div id="viewTicketModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+  <div id="viewTicketModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 p-4" style="display: none;">
+    <div class="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto mx-auto my-auto">
       <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
         <h3 class="text-lg font-semibold text-gray-900">Ticket Details</h3>
         <button onclick="closeViewModal()" class="text-gray-400 hover:text-gray-600">
@@ -542,8 +498,8 @@
   </div>
 
   <!-- Edit Ticket Modal -->
-  <div id="editTicketModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+  <div id="editTicketModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 p-4" style="display: none;">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-auto my-auto">
       <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
         <h3 class="text-lg font-semibold text-gray-900">Edit Ticket</h3>
         <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
@@ -782,18 +738,22 @@
 
     // Modal functions
     function openNewTicketModal() {
-      document.getElementById('newTicketModal').classList.remove('hidden');
-      document.getElementById('newTicketModal').classList.add('flex');
+      const modal = document.getElementById('newTicketModal');
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+      modal.style.alignItems = 'center';
+      modal.style.justifyContent = 'center';
     }
 
     function closeNewTicketModal() {
-      document.getElementById('newTicketModal').classList.add('hidden');
-      document.getElementById('newTicketModal').classList.remove('flex');
+      const modal = document.getElementById('newTicketModal');
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
       document.getElementById('newTicketForm').reset();
     }
 
-    // Load statistics
-    async function loadStatistics() {
+    // Load analytics data
+    async function loadAnalyticsData() {
       const token = localStorage.getItem('auth_token');
       
       try {
@@ -807,21 +767,16 @@
           const data = await response.json();
           const stats = data.stats;
           
-          document.getElementById('openTickets').textContent = stats.open_tickets || 0;
-          document.getElementById('inProgressTickets').textContent = stats.in_progress_tickets || 0;
-          document.getElementById('resolvedTickets').textContent = stats.resolved_tickets || 0;
-          document.getElementById('urgentTickets').textContent = stats.urgent_tickets || 0;
-          
-          // Update analytics tab
-          document.getElementById('chart-open').textContent = stats.open_tickets || 0;
-          document.getElementById('chart-in-progress').textContent = stats.in_progress_tickets || 0;
-          document.getElementById('chart-resolved').textContent = stats.resolved_tickets || 0;
-          document.getElementById('chart-closed').textContent = stats.closed_tickets || 0;
-          document.getElementById('chart-urgent').textContent = stats.urgent_tickets || 0;
-          document.getElementById('chart-high').textContent = stats.high_priority_tickets || 0;
+          // Update analytics tab only
+          document.getElementById('chart-open').textContent = stats.open || 0;
+          document.getElementById('chart-in-progress').textContent = stats.in_progress || 0;
+          document.getElementById('chart-resolved').textContent = stats.resolved || 0;
+          document.getElementById('chart-closed').textContent = stats.closed || 0;
+          document.getElementById('chart-urgent').textContent = stats.high_priority || 0;
+          document.getElementById('chart-high').textContent = stats.high_priority || 0;
         }
       } catch (error) {
-        console.error('Error loading statistics:', error);
+        console.error('Error loading analytics data:', error);
       }
     }
 
@@ -967,6 +922,13 @@
               title="Edit"
             >
               <i class="fas fa-edit"></i>
+            </button>
+            <button 
+              onclick="deleteTicket(${ticket.id})"
+              class="text-red-600 hover:text-red-900 p-1"
+              title="Delete"
+            >
+              <i class="fas fa-trash"></i>
             </button>
           </td>
         </tr>
@@ -1139,7 +1101,7 @@
           showNotification('Success', 'Ticket created successfully', 'success');
           closeNewTicketModal();
           loadTickets();
-          loadStatistics();
+          loadAnalyticsData();
         } else {
           const error = await response.json();
           throw new Error(error.error || 'Failed to create ticket');
@@ -1185,7 +1147,7 @@
           showNotification('Success', 'Ticket updated successfully', 'success');
           closeEditModal();
           loadTickets();
-          loadStatistics();
+          loadAnalyticsData();
           console.log('Ticket updated successfully:', result);
         } else {
           const errorText = await response.text();
@@ -1206,12 +1168,20 @@
     // Ticket action functions
     // View ticket functionality
     async function viewTicket(ticketId) {
+      console.log('viewTicket called with ID:', ticketId);
       const modal = document.getElementById('viewTicketModal');
       const content = document.getElementById('viewTicketContent');
       
+      if (!modal) {
+        console.error('View modal not found');
+        return;
+      }
+      
       // Show modal with loading state
       modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      modal.style.display = 'flex';
+      modal.style.alignItems = 'center';
+      modal.style.justifyContent = 'center';
       
       content.innerHTML = `
         <div class="flex items-center justify-center py-8">
@@ -1228,8 +1198,12 @@
           }
         });
         
+        console.log('View ticket response status:', response.status);
+        
         if (!response.ok) {
-          throw new Error('Failed to load ticket details');
+          const errorText = await response.text();
+          console.error('Failed to load ticket details:', errorText);
+          throw new Error(`Failed to load ticket details: ${response.status}`);
         }
         
         const data = await response.json();
@@ -1327,7 +1301,13 @@
 
     // Edit ticket functionality
     async function editTicket(ticketId) {
+      console.log('editTicket called with ID:', ticketId);
       const modal = document.getElementById('editTicketModal');
+      
+      if (!modal) {
+        console.error('Edit modal not found');
+        return;
+      }
       
       // Ensure clients are loaded for dropdown
       if (clients.length === 0) {
@@ -1381,7 +1361,9 @@
         
         // Show modal
         modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        modal.style.display = 'flex';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
         
       } catch (error) {
         console.error('Error loading ticket for edit:', error);
@@ -1393,17 +1375,61 @@
       }
     }
 
+    // Delete ticket functionality
+    async function deleteTicket(ticketId) {
+      console.log('deleteTicket called with ID:', ticketId);
+      
+      // Show confirmation dialog
+      if (!confirm('Are you sure you want to delete this ticket? This action cannot be undone.')) {
+        return;
+      }
+      
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        showNotification('Deleting', 'Deleting ticket...', 'info');
+        
+        const response = await fetch(`/api/tickets/${ticketId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          showNotification('Success', 'Ticket deleted successfully', 'success');
+          
+          // Reload tickets list
+          loadTickets();
+          
+          // Reload analytics data if we're on analytics tab
+          const analyticsTab = document.querySelector('.tab-content[id="analytics"]');
+          if (analyticsTab && !analyticsTab.classList.contains('hidden')) {
+            loadAnalyticsData();
+          }
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to delete ticket');
+        }
+        
+      } catch (error) {
+        console.error('Error deleting ticket:', error);
+        showNotification('Error', error.message || 'Failed to delete ticket', 'error');
+      }
+    }
+
     // Modal control functions
     function closeViewModal() {
       const modal = document.getElementById('viewTicketModal');
       modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      modal.style.display = 'none';
     }
 
     function closeEditModal() {
       const modal = document.getElementById('editTicketModal');
       modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      modal.style.display = 'none';
       document.getElementById('editTicketForm').reset();
     }
 
@@ -1446,9 +1472,36 @@
     }
 
     function loadAnalytics() {
-      // Analytics data is loaded with statistics
-      loadStatistics();
+      // Load analytics data for the analytics tab
+      loadAnalyticsData();
     }
+
+    // Test function to check modal functionality
+    function testModal() {
+      console.log('Testing modal functionality...');
+      const viewModal = document.getElementById('viewTicketModal');
+      const editModal = document.getElementById('editTicketModal');
+      console.log('View modal found:', !!viewModal);
+      console.log('Edit modal found:', !!editModal);
+      
+      // Test view modal
+      if (viewModal) {
+        viewModal.style.display = 'flex';
+        viewModal.style.alignItems = 'center';
+        viewModal.style.justifyContent = 'center';
+        viewModal.classList.remove('hidden');
+        console.log('View modal should be visible now');
+        
+        setTimeout(() => {
+          viewModal.style.display = 'none';
+          viewModal.classList.add('hidden');
+          console.log('View modal hidden');
+        }, 2000);
+      }
+    }
+
+    // Make test function available globally
+    window.testModal = testModal;
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
@@ -1480,7 +1533,6 @@
       });
 
       // Load initial data
-      loadStatistics();
       loadTickets();
       loadClients();
       

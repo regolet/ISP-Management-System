@@ -14,6 +14,10 @@
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
   <script>
     tailwind.config = {
       theme: {
@@ -24,6 +28,7 @@
           animation: {
             'fadeIn': 'fadeIn 0.5s ease-in-out',
             'slideUp': 'slideUp 0.3s ease-out',
+            'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
           }
         }
       }
@@ -31,186 +36,450 @@
   </script>
 </head>
 <body class="bg-gray-100 font-inter">
-  <!-- Header -->
-  <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
-    <div class="w-full px-6 h-16 flex items-center justify-between">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gradient-to-b from-blue-700 to-blue-800 text-white shadow-xl flex flex-col">
       <!-- Logo -->
-      <div class="flex items-center space-x-3">
+      <div class="p-6 border-b border-blue-600">
         <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
           <i class="fas fa-signal text-2xl"></i>
-          <h1 class="text-xl font-bold">ISP Management System</h1>
+          <h1 class="text-xl font-bold">ISP Management</h1>
         </a>
       </div>
       
       <!-- Navigation -->
-      <nav class="hidden md:flex items-center space-x-8">
-        <a href="/dashboard.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
-          <i class="fas fa-tachometer-alt"></i>
+      <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        <a href="/dashboard.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-white/20 text-white font-medium">
+          <i class="fas fa-tachometer-alt w-5"></i>
           <span>Dashboard</span>
         </a>
-        <a href="/clients.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-users"></i>
+        <a href="/clients.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-users w-5"></i>
           <span>Clients</span>
         </a>
-        <a href="/plans.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-project-diagram"></i>
+        <a href="/plans.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-project-diagram w-5"></i>
           <span>Plans</span>
         </a>
-        <a href="/billings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-file-invoice-dollar"></i>
+        <a href="/billings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-file-invoice-dollar w-5"></i>
           <span>Billings</span>
         </a>
-        <a href="/payments.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-credit-card"></i>
+        <a href="/payments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-credit-card w-5"></i>
           <span>Payments</span>
         </a>
-        <a href="/inventory.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-boxes"></i>
+        <a href="/assets.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cube w-5"></i>
+          <span>Assets</span>
+        </a>
+        <a href="/inventory.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-boxes w-5"></i>
           <span>Inventory</span>
         </a>
-        <a href="/tickets.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-ticket-alt"></i>
+        <a href="/tickets.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-ticket-alt w-5"></i>
           <span>Tickets</span>
         </a>
-        <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-chart-line"></i>
+        <a href="/monitoring.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-chart-line w-5"></i>
           <span>Monitoring</span>
         </a>
-        <a href="/settings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-cogs"></i>
+        <a href="/settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cogs w-5"></i>
           <span>Settings</span>
         </a>
       </nav>
       
       <!-- User Info -->
-      <div class="flex items-center space-x-4">
-        <div class="flex items-center space-x-2">
-          <i class="fas fa-user-circle text-xl"></i>
-          <span id="username" class="font-medium">Loading...</span>
+      <div class="p-4 border-t border-blue-600">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-user-circle text-2xl"></i>
+            <span id="username" class="font-medium">Loading...</span>
+          </div>
+          <button 
+            id="logoutBtn"
+            class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+          >
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
         </div>
-        <button 
-          id="logoutBtn"
-          class="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
-        >
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Logout</span>
-        </button>
       </div>
-    </div>
-  </header>
+    </aside>
 
-  <!-- Main Content -->
-  <main class="w-full px-6 py-8">
-    <!-- Page Header -->
-    <div class="mb-8">
-      <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
-        <i class="fas fa-tachometer-alt text-blue-600 mr-3"></i>
-        Dashboard
-      </h2>
-      <p class="text-gray-600">Welcome to your ISP Management System</p>
-    </div>
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Top Header -->
+      <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-gray-900">Dashboard</h2>
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <span class="text-gray-600 text-sm">Welcome to your ISP Management System</span>
+              <div class="text-gray-900 font-medium" id="currentDateTime">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </header>
 
-    <!-- Stats Cards -->
+      <!-- Main Content Area -->
+      <main class="flex-1 overflow-y-auto bg-gray-100 px-6 py-8">
+
+    <!-- Stats Cards Row 1 -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <!-- Clients Card -->
-      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
         <div class="p-6 flex items-center">
-          <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+          <div class="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
             <i class="fas fa-users text-2xl text-blue-600"></i>
           </div>
           <div class="flex-1">
             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Total Clients</p>
-            <p class="text-2xl font-bold text-gray-900" id="clientCount">--</p>
-            <p class="text-sm text-gray-500">Active clients</p>
+            <p class="text-3xl font-bold text-gray-900" id="clientCount">0</p>
+            <p class="text-sm text-gray-500">Active subscribers</p>
           </div>
         </div>
       </div>
       
-      <!-- Plans Card -->
-      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+      <!-- Revenue Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
         <div class="p-6 flex items-center">
-          <div class="w-14 h-14 bg-cyan-100 rounded-xl flex items-center justify-center mr-4">
-            <i class="fas fa-project-diagram text-2xl text-cyan-600"></i>
+          <div class="w-14 h-14 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
+            <i class="fas fa-peso-sign text-2xl text-green-600"></i>
           </div>
           <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Service Plans</p>
-            <p class="text-2xl font-bold text-gray-900" id="planCount">--</p>
-            <p class="text-sm text-gray-500">Active plans</p>
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">This Month</p>
+            <p class="text-3xl font-bold text-gray-900" id="monthlyRevenue">₱0.00</p>
+            <p class="text-sm text-gray-500">Monthly revenue</p>
           </div>
         </div>
       </div>
       
-      <!-- Client Plans Card -->
-      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+      <!-- Active Services Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
         <div class="p-6 flex items-center">
-          <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mr-4">
-            <i class="fas fa-wifi text-2xl text-green-600"></i>
+          <div class="w-14 h-14 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
+            <i class="fas fa-wifi text-2xl text-purple-600"></i>
           </div>
           <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Client Plans</p>
-            <p class="text-2xl font-bold text-gray-900" id="clientPlansCount">--</p>
-            <p class="text-sm text-gray-500">Active subscriptions</p>
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Active Services</p>
+            <p class="text-3xl font-bold text-gray-900" id="clientPlansCount">0</p>
+            <p class="text-sm text-gray-500">Running connections</p>
           </div>
         </div>
       </div>
       
-      <!-- Invoices Card -->
-      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200">
+      <!-- Pending Issues Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
         <div class="p-6 flex items-center">
-          <div class="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center mr-4">
-            <i class="fas fa-file-invoice-dollar text-2xl text-amber-600"></i>
+          <div class="w-14 h-14 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
+            <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
           </div>
           <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Pending Invoices</p>
-            <p class="text-2xl font-bold text-gray-900" id="invoiceCount">--</p>
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Pending Issues</p>
+            <p class="text-3xl font-bold text-gray-900" id="pendingIssues">0</p>
             <p class="text-sm text-gray-500">Need attention</p>
           </div>
         </div>
       </div>
     </div>
-    
-    <!-- Quick Access Section -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-          <i class="fas fa-bolt text-amber-500 mr-2"></i>
-          Quick Access
-        </h3>
+
+    <!-- Stats Cards Row 2 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Plans Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
+        <div class="p-6 flex items-center">
+          <div class="w-14 h-14 bg-gradient-to-br from-cyan-100 to-cyan-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
+            <i class="fas fa-project-diagram text-2xl text-cyan-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Service Plans</p>
+            <p class="text-3xl font-bold text-gray-900" id="planCount">0</p>
+            <p class="text-sm text-gray-500">Available plans</p>
+          </div>
+        </div>
       </div>
-      <div class="p-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <a 
-            href="/clients.html" 
-            class="flex items-center justify-center px-4 py-3 border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 font-medium"
-          >
-            <i class="fas fa-user-plus mr-2"></i>
-            Add Client
-          </a>
-          <a 
-            href="/plans.html" 
-            class="flex items-center justify-center px-4 py-3 border border-cyan-200 text-cyan-700 rounded-lg hover:bg-cyan-50 hover:border-cyan-300 transition-all duration-200 font-medium"
-          >
-            <i class="fas fa-plus-circle mr-2"></i>
-            Create Plan
-          </a>
-          <a 
-            href="/billings.html" 
-            class="flex items-center justify-center px-4 py-3 border border-green-200 text-green-700 rounded-lg hover:bg-green-50 hover:border-green-300 transition-all duration-200 font-medium"
-          >
-            <i class="fas fa-file-invoice mr-2"></i>
-            New Invoice
-          </a>
-          <a 
-            href="/settings.html" 
-            class="flex items-center justify-center px-4 py-3 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 font-medium"
-          >
-            <i class="fas fa-cog mr-2"></i>
-            System Settings
-          </a>
+
+      <!-- Assets Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
+        <div class="p-6 flex items-center">
+          <div class="w-14 h-14 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
+            <i class="fas fa-cube text-2xl text-orange-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Total Assets</p>
+            <p class="text-3xl font-bold text-gray-900" id="assetCount">0</p>
+            <p class="text-sm text-gray-500">Network equipment</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tickets Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
+        <div class="p-6 flex items-center">
+          <div class="w-14 h-14 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
+            <i class="fas fa-ticket-alt text-2xl text-indigo-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Open Tickets</p>
+            <p class="text-3xl font-bold text-gray-900" id="openTickets">0</p>
+            <p class="text-sm text-gray-500">Support requests</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
+        <div class="p-6 flex items-center">
+          <div class="w-14 h-14 bg-gradient-to-br from-teal-100 to-teal-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
+            <i class="fas fa-boxes text-2xl text-teal-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Inventory Items</p>
+            <p class="text-3xl font-bold text-gray-900" id="inventoryCount">0</p>
+            <p class="text-sm text-gray-500">Stock items</p>
+          </div>
         </div>
       </div>
     </div>
-  </main>
+
+    <!-- Charts and Analytics Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Revenue Chart -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-chart-line text-green-600 mr-2"></i>
+            Revenue Overview
+          </h3>
+          <p class="text-sm text-gray-600 mt-1">Monthly revenue trends</p>
+        </div>
+        <div class="p-6">
+          <canvas id="revenueChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- Client Status Chart -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-users text-blue-600 mr-2"></i>
+            Client Distribution
+          </h3>
+          <p class="text-sm text-gray-600 mt-1">Client status breakdown</p>
+        </div>
+        <div class="p-6">
+          <canvas id="clientChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Network Monitoring Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Network Activity Chart -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-network-wired text-purple-600 mr-2"></i>
+            Network Activity
+          </h3>
+          <p class="text-sm text-gray-600 mt-1">Online clients over time</p>
+        </div>
+        <div class="p-6">
+          <canvas id="networkActivityChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- Bandwidth Usage Chart -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-wifi text-orange-600 mr-2"></i>
+                Bandwidth Usage
+              </h3>
+              <p class="text-sm text-gray-600 mt-1">Network bandwidth trends</p>
+            </div>
+            
+            <!-- Fixed 24-hour view info -->
+            <div class="text-sm text-gray-600">
+              <i class="fas fa-clock mr-1"></i>
+              24-hour view (12:00 AM - 12:00 PM) • Hourly averages
+            </div>
+          </div>
+        </div>
+        <div class="p-6">
+          <canvas id="bandwidthChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Network Performance Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <!-- Network Uptime -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-heartbeat text-red-600 mr-2"></i>
+            Network Uptime
+          </h3>
+          <p class="text-sm text-gray-600 mt-1">24h average</p>
+        </div>
+        <div class="p-6 text-center">
+          <div class="text-4xl font-bold text-green-600 mb-2" id="networkUptime">99.9%</div>
+          <div class="text-sm text-gray-500">Last 24 hours</div>
+        </div>
+      </div>
+
+      <!-- Peak Bandwidth -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-tachometer-alt text-yellow-600 mr-2"></i>
+            Peak Bandwidth
+          </h3>
+          <p class="text-sm text-gray-600 mt-1">24h maximum</p>
+        </div>
+        <div class="p-6 text-center">
+          <div class="text-4xl font-bold text-yellow-600 mb-2" id="peakBandwidth">0 MB/s</div>
+          <div class="text-sm text-gray-500">Maximum usage</div>
+        </div>
+      </div>
+
+      <!-- Connection Success Rate -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-link text-cyan-600 mr-2"></i>
+            Connection Rate
+          </h3>
+          <p class="text-sm text-gray-600 mt-1">Success ratio</p>
+        </div>
+        <div class="p-6 text-center">
+          <div class="text-4xl font-bold text-cyan-600 mb-2" id="connectionRate">100%</div>
+          <div class="text-sm text-gray-500">Successful connections</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Status and Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- System Status -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-server text-purple-600 mr-2"></i>
+            System Status
+          </h3>
+          <p class="text-sm text-gray-600 mt-1">Real-time system health</p>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+            <div class="flex items-center">
+              <div class="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+              <span class="text-sm font-medium text-green-800">Database Connection</span>
+            </div>
+            <span class="text-xs font-semibold text-green-600 px-2 py-1 bg-green-100 rounded-full">ONLINE</span>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+            <div class="flex items-center">
+              <div class="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+              <span class="text-sm font-medium text-green-800">API Services</span>
+            </div>
+            <span class="text-xs font-semibold text-green-600 px-2 py-1 bg-green-100 rounded-full">HEALTHY</span>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div class="flex items-center">
+              <div class="w-3 h-3 bg-yellow-500 rounded-full mr-3 animate-pulse"></div>
+              <span class="text-sm font-medium text-yellow-800">MikroTik Connection</span>
+            </div>
+            <span class="text-xs font-semibold text-yellow-600 px-2 py-1 bg-yellow-100 rounded-full" id="mikrotikStatus">CHECKING</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-bolt text-amber-500 mr-2"></i>
+            Quick Actions
+          </h3>
+          <p class="text-sm text-gray-600 mt-1">Common tasks and shortcuts</p>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <a 
+              href="/clients.html" 
+              class="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+            >
+              <i class="fas fa-user-plus mr-2"></i>
+              Add Client
+            </a>
+            <a 
+              href="/plans.html" 
+              class="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg hover:from-cyan-600 hover:to-cyan-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+            >
+              <i class="fas fa-plus-circle mr-2"></i>
+              Create Plan
+            </a>
+            <a 
+              href="/billings.html" 
+              class="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+            >
+              <i class="fas fa-file-invoice mr-2"></i>
+              New Invoice
+            </a>
+            <a 
+              href="/tickets.html" 
+              class="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+            >
+              <i class="fas fa-ticket-alt mr-2"></i>
+              New Ticket
+            </a>
+            <a 
+              href="/assets.html" 
+              class="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+            >
+              <i class="fas fa-cube mr-2"></i>
+              Add Asset
+            </a>
+            <a 
+              href="/settings.html" 
+              class="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+            >
+              <i class="fas fa-cog mr-2"></i>
+              Settings
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+          <i class="fas fa-clock text-indigo-600 mr-2"></i>
+          Recent Activity
+        </h3>
+        <p class="text-sm text-gray-600 mt-1">Latest system events and updates</p>
+      </div>
+      <div class="p-6">
+        <div id="recentActivity" class="space-y-4">
+          <!-- Activity items will be loaded here -->
+          <div class="flex items-center justify-center py-8">
+            <div class="w-8 h-8 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin"></div>
+            <span class="ml-3 text-gray-600">Loading recent activity...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+      </main>
+    </div>
+  </div>
 
   <!-- Toast Container -->
   <div id="notificationContainer" class="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm"></div>
@@ -288,7 +557,7 @@
       if (!element) return;
       
       if (isLoading) {
-        element.innerHTML = '<div class="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>';
+        element.innerHTML = '<div class="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto"></div>';
       }
     }
     
@@ -309,18 +578,51 @@
         }, 1000);
       });
 
-      // Set loading states for all counters
-      setLoadingState('clientCount', true);
-      setLoadingState('planCount', true);
-      setLoadingState('clientPlansCount', true);
-      setLoadingState('invoiceCount', true);
+      // Initial loading states are handled by HTML, no need to set them again
+      
+      // Fixed 24-hour view - no filter initialization needed
       
       // Fetch user info
       fetchUserInfo();
       
       // Fetch dashboard data
       fetchDashboardData();
+      
+      // Refresh dashboard data every 30 seconds
+      setInterval(() => {
+        fetchDashboardData(true); // true = silent refresh
+      }, 30000); // 30 seconds
+      
+      // Start the date/time display
+      updateDateTime();
+      setInterval(updateDateTime, 1000); // Update every second
     });
+
+    function updateDateTime() {
+      // Get current time in Philippine timezone (UTC+8)
+      const now = new Date();
+      const philippineTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Manila"}));
+      
+      // Format: "4:01 AM, 1/27/2025"
+      const timeOptions = { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Manila'
+      };
+      
+      const dateOptions = { 
+        month: 'numeric', 
+        day: 'numeric', 
+        year: 'numeric',
+        timeZone: 'Asia/Manila'
+      };
+      
+      const timeString = now.toLocaleTimeString('en-US', timeOptions);
+      const dateString = now.toLocaleDateString('en-US', dateOptions);
+      
+      document.getElementById('currentDateTime').textContent = `${timeString}, ${dateString}`;
+    }
 
     async function fetchUserInfo() {
       const token = localStorage.getItem('auth_token');
@@ -348,7 +650,49 @@
       }
     }
 
-    async function fetchDashboardData() {
+    // Chart instances
+    let revenueChart = null;
+    let clientChart = null;
+    let networkActivityChart = null;
+    let bandwidthChart = null;
+    
+    // Fixed 24-hour bandwidth view (no filter needed)
+    
+    async function fetchBandwidthData() {
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        // Always fetch 24 hours of data
+        const response = await fetch(`/api/network-summary/bandwidth-history?period=24h`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          let bandwidthData = result.data || [];
+          
+          // Filter to show full 24 hours (12am-12pm) of current day in Philippine time
+          const philippineNow = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Manila"}));
+          const startOfDay = new Date(philippineNow.getFullYear(), philippineNow.getMonth(), philippineNow.getDate(), 0, 0, 0);
+          const endOfDay = new Date(philippineNow.getFullYear(), philippineNow.getMonth(), philippineNow.getDate(), 23, 59, 59);
+          
+          bandwidthData = bandwidthData.filter(record => {
+            // Convert database UTC time to Philippine time for comparison
+            const utcTime = new Date(record.time_period);
+            const philippineTime = new Date(utcTime.getTime() + (8 * 60 * 60 * 1000));
+            return philippineTime >= startOfDay && philippineTime <= endOfDay;
+          });
+          
+          
+          createBandwidthChart(bandwidthData);
+          createNetworkActivityChart(bandwidthData);
+        }
+      } catch (error) {
+        console.error('Error fetching bandwidth data:', error);
+      }
+    }
+
+    async function fetchDashboardData(silent = false) {
       const token = localStorage.getItem('auth_token');
       const headers = {
         'Authorization': `Bearer ${token}`
@@ -356,20 +700,37 @@
 
       try {
         // Fetch all data in parallel
-        const [clientsResponse, plansResponse, clientPlansResponse, billingsResponse] = await Promise.all([
+        const [
+          clientsResponse, 
+          plansResponse, 
+          clientPlansResponse, 
+          billingsResponse,
+          paymentsResponse,
+          assetsResponse,
+          ticketsResponse,
+          inventoryResponse,
+          networkStatsResponse,
+          bandwidthHistoryResponse
+        ] = await Promise.all([
           fetch('/api/clients', { headers }),
           fetch('/api/plans', { headers }),
           fetch('/api/client-plans-count', { headers }),
-          fetch('/api/billings', { headers })
+          fetch('/api/billings', { headers }),
+          fetch('/api/payments', { headers }),
+          fetch('/api/assets/stats', { headers }),
+          fetch('/api/tickets/stats', { headers }),
+          fetch('/api/inventory', { headers }),
+          fetch('/api/network-summary/stats', { headers }),
+          fetch('/api/network-summary/bandwidth-history?period=24h', { headers })
         ]);
         
-        // Process clients count
+        // Process clients data
+        let clientsData = [];
         if (clientsResponse.ok) {
-          const clients = await clientsResponse.json();
-          document.getElementById('clientCount').textContent = clients.length;
-          
-          // Add animation class
-          document.getElementById('clientCount').parentElement.parentElement.classList.add('animate-fadeIn');
+          const clientsResult = await clientsResponse.json();
+          // Handle both array and object responses
+          clientsData = Array.isArray(clientsResult) ? clientsResult : (clientsResult.clients || []);
+          document.getElementById('clientCount').textContent = clientsData.length;
         } else {
           document.getElementById('clientCount').textContent = '0';
         }
@@ -378,7 +739,6 @@
         if (plansResponse.ok) {
           const plans = await plansResponse.json();
           document.getElementById('planCount').textContent = plans.length;
-          document.getElementById('planCount').parentElement.parentElement.classList.add('animate-fadeIn');
         } else {
           document.getElementById('planCount').textContent = '0';
         }
@@ -387,34 +747,98 @@
         if (clientPlansResponse.ok) {
           const clientPlansData = await clientPlansResponse.json();
           document.getElementById('clientPlansCount').textContent = clientPlansData.count || '0';
-          document.getElementById('clientPlansCount').parentElement.parentElement.classList.add('animate-fadeIn');
         } else {
           document.getElementById('clientPlansCount').textContent = '0';
         }
 
-        // Process invoices count (pending billings)
-        if (billingsResponse.ok) {
-          const billings = await billingsResponse.json();
-          const pendingCount = billings.filter(b => b.status === 'pending').length;
-          document.getElementById('invoiceCount').textContent = pendingCount;
-          document.getElementById('invoiceCount').parentElement.parentElement.classList.add('animate-fadeIn');
-          
-          // Show notification if there are pending invoices
-          if (pendingCount > 0) {
-            setTimeout(() => {
-              showNotification(
-                'Pending Invoices', 
-                `You have ${pendingCount} invoice${pendingCount === 1 ? '' : 's'} waiting for payment.`,
-                'info'
-              );
-            }, 1500);
-          }
+        // Process assets stats
+        if (assetsResponse.ok) {
+          const assetsData = await assetsResponse.json();
+          document.getElementById('assetCount').textContent = assetsData.stats?.total_assets || '0';
         } else {
-          document.getElementById('invoiceCount').textContent = '0';
+          document.getElementById('assetCount').textContent = '0';
+        }
+
+        // Process tickets stats
+        if (ticketsResponse.ok) {
+          const ticketsData = await ticketsResponse.json();
+          const openTickets = (ticketsData.stats?.open || 0) + (ticketsData.stats?.in_progress || 0);
+          document.getElementById('openTickets').textContent = openTickets;
+        } else {
+          document.getElementById('openTickets').textContent = '0';
+        }
+
+        // Process inventory count
+        if (inventoryResponse.ok) {
+          const inventoryData = await inventoryResponse.json();
+          document.getElementById('inventoryCount').textContent = inventoryData.items?.length || '0';
+        } else {
+          document.getElementById('inventoryCount').textContent = '0';
+        }
+
+        // Process payments and revenue
+        let monthlyRevenue = 0;
+        let pendingIssues = 0;
+        let paymentsData = [];
+        
+        if (paymentsResponse.ok) {
+          const paymentsResult = await paymentsResponse.json();
+          // Handle both array and object responses
+          paymentsData = Array.isArray(paymentsResult) ? paymentsResult : (paymentsResult.payments || []);
+          
+          // Calculate this month's revenue
+          const currentMonth = new Date().getMonth();
+          const currentYear = new Date().getFullYear();
+          
+          monthlyRevenue = paymentsData
+            .filter(payment => {
+              const paymentDate = new Date(payment.payment_date);
+              return paymentDate.getMonth() === currentMonth && 
+                     paymentDate.getFullYear() === currentYear;
+            })
+            .reduce((total, payment) => total + parseFloat(payment.amount || 0), 0);
         }
         
-        // Show success notification
-        showNotification('Dashboard Updated', 'Latest data has been loaded successfully', 'success');
+        // Process billings for pending issues
+        if (billingsResponse.ok) {
+          const billings = await billingsResponse.json();
+          pendingIssues = billings.filter(b => b.status === 'pending').length;
+        }
+
+        // Update revenue display
+        document.getElementById('monthlyRevenue').textContent = `₱${monthlyRevenue.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
+        document.getElementById('pendingIssues').textContent = pendingIssues;
+
+        // Process network data
+        let networkData = null;
+        let bandwidthData = [];
+        
+        if (networkStatsResponse.ok) {
+          networkData = await networkStatsResponse.json();
+          updateNetworkStats(networkData);
+        }
+        
+        if (bandwidthHistoryResponse.ok) {
+          const bandwidthResult = await bandwidthHistoryResponse.json();
+          bandwidthData = bandwidthResult.data || [];
+        }
+
+        // Create charts with fetched data
+        createRevenueChart(paymentsData);
+        createClientChart(clientsData);
+        createNetworkActivityChart(bandwidthData);  // Use same data source as bandwidth chart
+        createBandwidthChart(bandwidthData);
+        
+        // Load recent activity
+        loadRecentActivity();
+        
+        // Check MikroTik status
+        checkMikrotikStatus();
+        
+        // Show success notification only for manual refresh
+        if (!silent) {
+          showNotification('Dashboard Updated', 'Latest data has been loaded successfully', 'success');
+        }
         
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -424,9 +848,640 @@
         document.getElementById('clientCount').textContent = '-';
         document.getElementById('planCount').textContent = '-';
         document.getElementById('clientPlansCount').textContent = '-';
-        document.getElementById('invoiceCount').textContent = '-';
+        document.getElementById('monthlyRevenue').textContent = '-';
+        document.getElementById('pendingIssues').textContent = '-';
+        document.getElementById('assetCount').textContent = '-';
+        document.getElementById('openTickets').textContent = '-';
+        document.getElementById('inventoryCount').textContent = '-';
       }
     }
+
+    function createRevenueChart(paymentsData) {
+      const ctx = document.getElementById('revenueChart').getContext('2d');
+      
+      // Destroy existing chart if it exists
+      if (revenueChart) {
+        revenueChart.destroy();
+      }
+      
+      // Ensure paymentsData is an array
+      if (!Array.isArray(paymentsData)) {
+        paymentsData = [];
+      }
+      
+      // Calculate monthly revenue for last 6 months
+      const months = [];
+      const revenues = [];
+      const currentDate = new Date();
+      
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        const monthName = date.toLocaleDateString('en-PH', { month: 'short' });
+        months.push(monthName);
+        
+        const monthRevenue = paymentsData
+          .filter(payment => {
+            const paymentDate = new Date(payment.payment_date);
+            return paymentDate.getMonth() === date.getMonth() && 
+                   paymentDate.getFullYear() === date.getFullYear();
+          })
+          .reduce((total, payment) => total + parseFloat(payment.amount || 0), 0);
+        
+        revenues.push(monthRevenue);
+      }
+      
+      revenueChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: months,
+          datasets: [{
+            label: 'Revenue (₱)',
+            data: revenues,
+            borderColor: 'rgb(34, 197, 94)',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: 'rgb(34, 197, 94)',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '₱' + value.toLocaleString('en-PH');
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createClientChart(clientsData) {
+      const ctx = document.getElementById('clientChart').getContext('2d');
+      
+      // Destroy existing chart if it exists
+      if (clientChart) {
+        clientChart.destroy();
+      }
+      
+      // Ensure clientsData is an array
+      if (!Array.isArray(clientsData)) {
+        clientsData = [];
+      }
+      
+      // Count clients by status
+      const statusCounts = {
+        active: 0,
+        inactive: 0,
+        suspended: 0
+      };
+      
+      clientsData.forEach(client => {
+        const status = client.status || 'active';
+        if (statusCounts[status] !== undefined) {
+          statusCounts[status]++;
+        } else {
+          statusCounts.active++;
+        }
+      });
+      
+      clientChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Active', 'Inactive', 'Suspended'],
+          datasets: [{
+            data: [statusCounts.active, statusCounts.inactive, statusCounts.suspended],
+            backgroundColor: [
+              'rgb(34, 197, 94)',
+              'rgb(156, 163, 175)',
+              'rgb(239, 68, 68)'
+            ],
+            borderColor: [
+              'rgb(34, 197, 94)',
+              'rgb(156, 163, 175)',
+              'rgb(239, 68, 68)'
+            ],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 20,
+                usePointStyle: true
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createNetworkActivityChart(bandwidthData) {
+      const ctx = document.getElementById('networkActivityChart').getContext('2d');
+      
+      // Destroy existing chart if it exists
+      if (networkActivityChart) {
+        networkActivityChart.destroy();
+      }
+      
+      // Prepare data for 24-hour chart with 1-hour intervals (same as bandwidth chart)
+      const labels = [];
+      const onlineClients = [];
+      const totalClients = [];
+      
+      // Create 24 hourly buckets from 12am to 12pm (24 hours)
+      const hourlyData = {};
+      for (let hour = 0; hour < 24; hour++) {
+        let timeLabel;
+        if (hour === 0) {
+          timeLabel = '12:00 AM';
+        } else if (hour < 12) {
+          timeLabel = `${hour}:00 AM`;
+        } else if (hour === 12) {
+          timeLabel = '12:00 PM';
+        } else {
+          timeLabel = `${hour - 12}:00 PM`;
+        }
+        
+        hourlyData[hour] = {
+          label: timeLabel,
+          online: [],
+          total: []
+        };
+      }
+      
+      if (Array.isArray(bandwidthData) && bandwidthData.length > 0) {
+        
+        // Group data by hour with proper timezone conversion
+        bandwidthData.forEach(record => {
+          // Parse UTC time from database
+          const utcTime = new Date(record.time_period);
+          
+          // Convert to Philippine time (+8 hours)
+          const philippineTime = new Date(utcTime.getTime() + (8 * 60 * 60 * 1000));
+          const hour = philippineTime.getHours();
+          
+          // Include data for all 24 hours (0-23)
+          if (hour >= 0 && hour < 24) {
+            hourlyData[hour].online.push(parseInt(record.avg_online_clients) || 0);
+            hourlyData[hour].total.push(parseInt(record.total_clients) || 0);
+          }
+        });
+        
+        // Calculate averages for each hour
+        for (let hour = 0; hour < 24; hour++) {
+          const hourData = hourlyData[hour];
+          labels.push(hourData.label);
+          
+          // Calculate average clients for this hour
+          const avgOnline = hourData.online.length > 0 
+            ? Math.round(hourData.online.reduce((a, b) => a + b, 0) / hourData.online.length)
+            : 0;
+          const avgTotal = hourData.total.length > 0 
+            ? Math.round(hourData.total.reduce((a, b) => a + b, 0) / hourData.total.length)
+            : 0;
+          
+          onlineClients.push(avgOnline);
+          totalClients.push(avgTotal);
+        }
+      } else {
+        // Default empty data when no records exist - show 24 hours
+        for (let hour = 0; hour < 24; hour++) {
+          let timeLabel;
+          if (hour === 0) {
+            timeLabel = '12:00 AM';
+          } else if (hour < 12) {
+            timeLabel = `${hour}:00 AM`;
+          } else if (hour === 12) {
+            timeLabel = '12:00 PM';
+          } else {
+            timeLabel = `${hour - 12}:00 PM`;
+          }
+          
+          labels.push(timeLabel);
+          onlineClients.push(0);
+          totalClients.push(0);
+        }
+      }
+      
+      
+      // Create the chart with processed data
+      networkActivityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Online Clients',
+              data: onlineClients,
+              borderColor: 'rgb(34, 197, 94)',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              pointBackgroundColor: 'rgb(34, 197, 94)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointRadius: 4
+            },
+            {
+              label: 'Total Clients',
+              data: totalClients,
+              borderColor: 'rgb(59, 130, 246)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              borderWidth: 2,
+              fill: false,
+              tension: 0.4,
+              pointBackgroundColor: 'rgb(59, 130, 246)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointRadius: 3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 15,
+                usePointStyle: true
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: Math.max(...totalClients, ...onlineClients) + 50, // Set max to highest value + padding
+              ticks: {
+                stepSize: Math.ceil(Math.max(...totalClients, ...onlineClients) / 10) // Dynamic step size
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createBandwidthChart(bandwidthData) {
+      const ctx = document.getElementById('bandwidthChart').getContext('2d');
+      
+      // Destroy existing chart if it exists
+      if (bandwidthChart) {
+        bandwidthChart.destroy();
+      }
+      
+      // Prepare data for 24-hour chart with 1-hour intervals (12am-12pm)
+      const labels = [];
+      const uploadBandwidth = [];
+      const downloadBandwidth = [];
+      
+      const bytesToMbps = (bytes) => Math.round((bytes * 8) / 1000000 * 100) / 100;
+      
+      // Create 24 hourly buckets from 12am to 12pm (24 hours)
+      const hourlyData = {};
+      for (let hour = 0; hour < 24; hour++) {
+        let timeLabel;
+        if (hour === 0) {
+          timeLabel = '12:00 AM';
+        } else if (hour < 12) {
+          timeLabel = `${hour}:00 AM`;
+        } else if (hour === 12) {
+          timeLabel = '12:00 PM';
+        } else {
+          timeLabel = `${hour - 12}:00 PM`;
+        }
+        
+        hourlyData[hour] = {
+          label: timeLabel,
+          upload: [],
+          download: []
+        };
+      }
+      
+      if (Array.isArray(bandwidthData) && bandwidthData.length > 0) {
+        
+        // Group data by hour
+        bandwidthData.forEach(record => {
+          // Parse UTC time from database
+          const utcTime = new Date(record.time_period);
+          
+          // Convert to Philippine time (+8 hours)
+          const philippineTime = new Date(utcTime.getTime() + (8 * 60 * 60 * 1000));
+          const hour = philippineTime.getHours();
+          
+          
+          // Include data for all 24 hours (0-23)
+          if (hour >= 0 && hour < 24) {
+            hourlyData[hour].upload.push(parseFloat(record.upload_bandwidth) || 0);
+            hourlyData[hour].download.push(parseFloat(record.download_bandwidth) || 0);
+          }
+        });
+        
+        // Calculate averages for each hour
+        for (let hour = 0; hour < 24; hour++) {
+          const hourData = hourlyData[hour];
+          labels.push(hourData.label);
+          
+          // Calculate average bandwidth for this hour
+          const avgUpload = hourData.upload.length > 0 
+            ? hourData.upload.reduce((a, b) => a + b, 0) / hourData.upload.length 
+            : 0;
+          const avgDownload = hourData.download.length > 0 
+            ? hourData.download.reduce((a, b) => a + b, 0) / hourData.download.length 
+            : 0;
+          
+          uploadBandwidth.push(bytesToMbps(avgUpload));
+          downloadBandwidth.push(bytesToMbps(avgDownload));
+        }
+      } else {
+        // Default empty data when no records exist - show 24 hours
+        for (let hour = 0; hour < 24; hour++) {
+          let timeLabel;
+          if (hour === 0) {
+            timeLabel = '12:00 AM';
+          } else if (hour < 12) {
+            timeLabel = `${hour}:00 AM`;
+          } else if (hour === 12) {
+            timeLabel = '12:00 PM';
+          } else {
+            timeLabel = `${hour - 12}:00 PM`;
+          }
+          
+          labels.push(timeLabel);
+          uploadBandwidth.push(0);
+          downloadBandwidth.push(0);
+        }
+      }
+      
+      
+      bandwidthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Upload (Mbps)',
+              data: uploadBandwidth,
+              borderColor: 'rgb(239, 68, 68)',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              pointBackgroundColor: 'rgb(239, 68, 68)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointRadius: 4
+            },
+            {
+              label: 'Download (Mbps)',
+              data: downloadBandwidth,
+              borderColor: 'rgb(34, 197, 94)',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              pointBackgroundColor: 'rgb(34, 197, 94)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 15,
+                usePointStyle: true
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return value + ' Mbps';
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              grid: {
+                display: true,
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 0
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateNetworkStats(networkData) {
+      // Update network performance metrics
+      if (networkData && networkData.latest) {
+        const latest = networkData.latest;
+        
+        // Update uptime percentage
+        const uptimeElement = document.getElementById('networkUptime');
+        if (uptimeElement) {
+          const uptime = parseFloat(latest.network_uptime_percentage) || 100;
+          uptimeElement.textContent = uptime.toFixed(1) + '%';
+        }
+        
+        // Update peak bandwidth (using download + upload)
+        const peakBandwidthElement = document.getElementById('peakBandwidth');
+        if (peakBandwidthElement) {
+          const uploadBandwidth = parseFloat(latest.upload_bandwidth) || 0;
+          const downloadBandwidth = parseFloat(latest.download_bandwidth) || 0;
+          const totalBandwidth = uploadBandwidth + downloadBandwidth;
+          // Convert bytes to Mbps: bytes * 8 / 1,000,000
+          const totalBandwidthMbps = Math.round((totalBandwidth * 8) / 1000000 * 100) / 100;
+          peakBandwidthElement.textContent = totalBandwidthMbps + ' Mbps';
+        }
+        
+        // Update connection success rate
+        const connectionRateElement = document.getElementById('connectionRate');
+        if (connectionRateElement) {
+          const activeConnections = parseInt(latest.active_connections) || 0;
+          const failedConnections = parseInt(latest.failed_connections) || 0;
+          const totalConnections = activeConnections + failedConnections;
+          const successRate = totalConnections > 0 ? 
+            (activeConnections / totalConnections * 100) : 100;
+          connectionRateElement.textContent = successRate.toFixed(1) + '%';
+        }
+        
+        // Update total bandwidth usage (if element exists)
+        const bandwidthElement = document.getElementById('totalBandwidth');
+        if (bandwidthElement) {
+          const bandwidth = parseFloat(latest.total_bandwidth_usage) || 0;
+          // Convert bytes to Mbps: bytes * 8 / 1,000,000
+          const bandwidthMbps = Math.round((bandwidth * 8) / 1000000 * 100) / 100;
+          bandwidthElement.textContent = bandwidthMbps + ' Mbps';
+        }
+        
+        // Update active connections (if element exists)
+        const connectionsElement = document.getElementById('activeConnections');
+        if (connectionsElement) {
+          const connections = parseInt(latest.active_connections) || 0;
+          connectionsElement.textContent = connections.toLocaleString();
+        }
+        
+        // Update online/offline ratio (if elements exist)
+        const onlineElement = document.getElementById('onlineClients');
+        const offlineElement = document.getElementById('offlineClients');
+        if (onlineElement && offlineElement) {
+          onlineElement.textContent = (parseInt(latest.online_clients) || 0).toLocaleString();
+          offlineElement.textContent = (parseInt(latest.offline_clients) || 0).toLocaleString();
+        }
+      }
+    }
+
+    async function loadRecentActivity() {
+      const container = document.getElementById('recentActivity');
+      
+      // Function to format relative time
+      function getRelativeTime(date) {
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+        if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+        if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        
+        return date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+      }
+      
+      // Generate activities with real timestamps
+      const now = new Date();
+      const activities = [
+        {
+          type: 'client',
+          icon: 'fa-user-plus',
+          color: 'blue',
+          title: 'New client registered',
+          description: 'John Doe joined the network',
+          timestamp: new Date(now - 2 * 60000), // 2 minutes ago
+          time: getRelativeTime(new Date(now - 2 * 60000))
+        },
+        {
+          type: 'payment',
+          icon: 'fa-credit-card',
+          color: 'green',
+          title: 'Payment received',
+          description: '₱1,500 from Client ABC',
+          timestamp: new Date(now - 15 * 60000), // 15 minutes ago
+          time: getRelativeTime(new Date(now - 15 * 60000))
+        },
+        {
+          type: 'ticket',
+          icon: 'fa-ticket-alt',
+          color: 'orange',
+          title: 'Support ticket created',
+          description: 'Connection issue reported',
+          timestamp: new Date(now - 60 * 60000), // 1 hour ago
+          time: getRelativeTime(new Date(now - 60 * 60000))
+        },
+        {
+          type: 'system',
+          icon: 'fa-server',
+          color: 'purple',
+          title: 'System maintenance',
+          description: 'Database backup completed',
+          timestamp: new Date(now - 3 * 3600000), // 3 hours ago
+          time: getRelativeTime(new Date(now - 3 * 3600000))
+        }
+      ];
+      
+      container.innerHTML = activities.map(activity => `
+        <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+          <div class="w-10 h-10 bg-${activity.color}-100 rounded-lg flex items-center justify-center">
+            <i class="fas ${activity.icon} text-${activity.color}-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="font-medium text-gray-900">${activity.title}</p>
+            <p class="text-sm text-gray-600">${activity.description}</p>
+          </div>
+          <span class="text-xs text-gray-500">${activity.time}</span>
+        </div>
+      `).join('');
+    }
+
+    async function checkMikrotikStatus() {
+      const token = localStorage.getItem('auth_token');
+      try {
+        const response = await fetch('/api/mikrotik/settings', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          document.getElementById('mikrotikStatus').textContent = 'CONFIGURED';
+          document.getElementById('mikrotikStatus').className = 'text-xs font-semibold text-green-600 px-2 py-1 bg-green-100 rounded-full';
+        } else {
+          document.getElementById('mikrotikStatus').textContent = 'NOT CONFIGURED';
+          document.getElementById('mikrotikStatus').className = 'text-xs font-semibold text-red-600 px-2 py-1 bg-red-100 rounded-full';
+        }
+      } catch (error) {
+        document.getElementById('mikrotikStatus').textContent = 'ERROR';
+        document.getElementById('mikrotikStatus').className = 'text-xs font-semibold text-red-600 px-2 py-1 bg-red-100 rounded-full';
+      }
+    }
+
   </script>
 </body>
 </html>

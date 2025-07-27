@@ -25,7 +25,9 @@
       "Bash(rm:*)",
       "Bash(sed:*)",
       "Bash(powershell:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }

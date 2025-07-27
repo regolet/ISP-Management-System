@@ -4,6 +4,30 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+// ========== ROOT ENDPOINT FOR DASHBOARD ==========
+
+// Get inventory summary for dashboard
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(`
+      SELECT 
+        i.*,
+        c.name as category_name,
+        s.name as supplier_name
+      FROM inventory_items i
+      LEFT JOIN inventory_categories c ON i.category_id = c.id
+      LEFT JOIN inventory_suppliers s ON i.supplier_id = s.id
+      ORDER BY i.name
+    `);
+    client.release();
+    res.json({ success: true, items: result.rows });
+  } catch (error) {
+    console.error('Error fetching inventory:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
 // ========== CATEGORIES ==========
 
 // Get all categories

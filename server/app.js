@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const { PORT } = require('./config/constants');
 const { initializeDatabaseTables } = require('./utils/database');
+const { initializeScheduler } = require('./utils/scheduler');
 
 // Import routes
 const healthRoutes = require('./routes/health');
@@ -18,6 +19,10 @@ const companyRoutes = require('./routes/company');
 const inventoryRoutes = require('./routes/inventory');
 const monitoringRoutes = require('./routes/monitoring');
 const ticketRoutes = require('./routes/tickets');
+const assetRoutes = require('./routes/assets');
+const networkSummaryRoutes = require('./routes/network-summary');
+const networkTotalsRoutes = require('./routes/network-totals');
+const schedulerRoutes = require('./routes/scheduler');
 
 const app = express();
 
@@ -59,6 +64,10 @@ app.use('/api/company-info', companyRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/monitoring', monitoringRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/api/assets', assetRoutes);
+app.use('/api/network-summary', networkSummaryRoutes);
+app.use('/api/network-totals', networkTotalsRoutes);
+app.use('/api/scheduler', schedulerRoutes);
 
 // Handle special routes that don't follow REST pattern
 const pool = require('./config/database');
@@ -311,6 +320,9 @@ app.get('*', (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  
+  // Initialize scheduled tasks
+  initializeScheduler();
 });
 
 module.exports = app;

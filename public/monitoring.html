@@ -29,109 +29,114 @@
   </script>
 </head>
 <body class="bg-gray-100 font-inter">
-  <!-- Header -->
-  <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
-    <div class="w-full px-6 h-16 flex items-center justify-between">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gradient-to-b from-blue-700 to-blue-800 text-white shadow-xl flex flex-col">
       <!-- Logo -->
-      <div class="flex items-center space-x-3">
+      <div class="p-6 border-b border-blue-600">
         <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
           <i class="fas fa-signal text-2xl"></i>
-          <h1 class="text-xl font-bold">ISP Management System</h1>
+          <h1 class="text-xl font-bold">ISP Management</h1>
         </a>
       </div>
       
       <!-- Navigation -->
-      <nav class="hidden md:flex items-center space-x-8">
-        <a href="/dashboard.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-tachometer-alt"></i>
+      <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        <a href="/dashboard.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-tachometer-alt w-5"></i>
           <span>Dashboard</span>
         </a>
-        <a href="/clients.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-users"></i>
+        <a href="/clients.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-users w-5"></i>
           <span>Clients</span>
         </a>
-        <a href="/plans.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-project-diagram"></i>
+        <a href="/plans.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-project-diagram w-5"></i>
           <span>Plans</span>
         </a>
-        <a href="/billings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-file-invoice-dollar"></i>
+        <a href="/billings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-file-invoice-dollar w-5"></i>
           <span>Billings</span>
         </a>
-        <a href="/payments.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-credit-card"></i>
+        <a href="/payments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-credit-card w-5"></i>
           <span>Payments</span>
         </a>
-        <a href="/inventory.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-boxes"></i>
+        <a href="/assets.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cube w-5"></i>
+          <span>Assets</span>
+        </a>
+        <a href="/inventory.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-boxes w-5"></i>
           <span>Inventory</span>
         </a>
-        <a href="/tickets.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-ticket-alt"></i>
+        <a href="/tickets.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-ticket-alt w-5"></i>
           <span>Tickets</span>
         </a>
-        <a href="/monitoring.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 text-white font-medium">
-          <i class="fas fa-chart-line"></i>
+        <a href="/monitoring.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-white/20 text-white font-medium">
+          <i class="fas fa-chart-line w-5"></i>
           <span>Monitoring</span>
         </a>
-        <a href="/settings.html" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
-          <i class="fas fa-cogs"></i>
+        <a href="/settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/90 hover:text-white">
+          <i class="fas fa-cogs w-5"></i>
           <span>Settings</span>
         </a>
       </nav>
       
       <!-- User Info -->
-      <div class="flex items-center space-x-4">
-        <div class="flex items-center space-x-2">
-          <i class="fas fa-user-circle text-xl"></i>
-          <span id="username" class="font-medium">Loading...</span>
+      <div class="p-4 border-t border-blue-600">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-user-circle text-2xl"></i>
+            <span id="username" class="font-medium">Loading...</span>
+          </div>
+          <button 
+            id="logoutBtn"
+            class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+          >
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
         </div>
-        <button 
-          id="logoutBtn"
-          class="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
-        >
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Logout</span>
-        </button>
       </div>
-    </div>
-  </header>
+    </aside>
 
-  <!-- Main Content -->
-  <main class="w-full px-6 py-8">
-    <!-- Page Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-      <div class="mb-4 sm:mb-0">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
-          <i class="fas fa-chart-line text-blue-600 mr-3"></i>
-          Network Monitoring
-        </h2>
-        <p class="text-gray-600">Real-time monitoring of your MikroTik network</p>
-      </div>
-      <div class="flex items-center space-x-4">
-        <!-- MikroTik Status -->
-        <div class="flex items-center space-x-2">
-          <span class="text-sm font-medium text-gray-700">MikroTik:</span>
-          <span id="mikrotikStatus" class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-            Not configured
-          </span>
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Top Header -->
+      <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-gray-900">Monitoring</h2>
+          <div class="flex items-center space-x-4">
+            <span id="mikrotikStatus" class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">Checking...</span>
+            <span class="text-gray-600 text-sm">Network monitoring and analytics</span>
+          </div>
         </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="flex-1 overflow-y-auto bg-gray-100 px-6 py-8">
         <!-- Tab Navigation -->
-        <div class="flex bg-gray-200 rounded-lg p-1">
-          <button id="dashboardTab" class="px-4 py-2 text-sm font-medium rounded-md transition-colors bg-white text-blue-600 shadow-sm">
-            Dashboard
-          </button>
-          <button id="groupsTab" class="px-4 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 hover:text-gray-900">
-            Groups
-          </button>
-          <button id="categoriesTab" class="px-4 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 hover:text-gray-900">
-            Categories
-          </button>
+        <div class="mb-6">
+          <div class="flex space-x-1 bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+            <button id="dashboardTab" class="tab-button flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-blue-100 text-blue-700 rounded-md transition-colors" onclick="showTab('dashboard')">
+              <i class="fas fa-chart-bar mr-2"></i>
+              Dashboard
+            </button>
+            <button id="groupsTab" class="tab-button flex-1 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('groups')">
+              <i class="fas fa-layer-group mr-2"></i>
+              Groups
+            </button>
+            <button id="categoriesTab" class="tab-button flex-1 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('categories')">
+              <i class="fas fa-sitemap mr-2"></i>
+              Categories
+            </button>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Dashboard Tab Content -->
+        <!-- Tab Content Container -->
+        <div class="tab-container">
+          <!-- Dashboard Tab Content -->
     <div id="dashboardContent" class="tab-content">
       <!-- Network Summary -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
@@ -425,7 +430,10 @@
         </div>
       </div>
     </div>
-  </main>
+        </div>
+      </main>
+    </div>
+  </div>
 
   <!-- Toast Container -->
   <div id="notificationContainer" class="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm"></div>
@@ -474,42 +482,76 @@
           icon = 'exclamation-circle';
           bgClass = 'bg-red-500';
           break;
+        default:
+          icon = 'info-circle';
+          bgClass = 'bg-blue-500';
       }
       
-      const toast = document.createElement('div');
-      toast.id = toastId;
-      toast.className = `${bgClass} text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
-      toast.innerHTML = `
+      const notification = document.createElement('div');
+      notification.className = `${bgClass} text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 translate-y-full opacity-0`;
+      notification.innerHTML = `
         <div class="flex items-start">
-          <i class="fas fa-${icon} mt-0.5 mr-3 flex-shrink-0"></i>
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold">${title}</div>
-            <div class="text-sm opacity-90">${message}</div>
+          <i class="fas fa-${icon} text-lg mr-3 mt-0.5"></i>
+          <div class="flex-1">
+            <h4 class="font-semibold">${title}</h4>
+            <p class="text-sm mt-1">${message}</p>
           </div>
-          <button onclick="removeToast('${toastId}')" class="ml-3 flex-shrink-0 text-white/80 hover:text-white">
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
             <i class="fas fa-times"></i>
           </button>
         </div>
       `;
       
-      container.appendChild(toast);
+      notificationContainer.appendChild(notification);
       
+      // Animate in
       setTimeout(() => {
-        toast.classList.remove('translate-x-full', 'opacity-0');
-      }, 10);
+        notification.classList.remove('translate-y-full', 'opacity-0');
+      }, 100);
       
+      // Auto remove after 5 seconds
       setTimeout(() => {
-        removeToast(toastId);
+        if (notification.parentNode) {
+          notification.classList.add('translate-y-full', 'opacity-0');
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.remove();
+            }
+          }, 300);
+        }
       }, 5000);
     }
-    
-    function removeToast(toastId) {
-      const toast = document.getElementById(toastId);
-      if (toast) {
-        toast.classList.add('translate-x-full', 'opacity-0');
-        setTimeout(() => {
-          toast.remove();
-        }, 300);
+
+    // Tab switching functionality
+    function showTab(tabName) {
+      // Hide all tab content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      
+      // Remove active class from all tab buttons
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('bg-blue-100', 'text-blue-700');
+        button.classList.add('hover:bg-gray-100', 'text-gray-700');
+      });
+      
+      // Show selected tab content
+      document.getElementById(tabName + 'Content').classList.remove('hidden');
+      
+      // Add active class to selected tab button
+      const activeButton = document.getElementById(tabName + 'Tab');
+      activeButton.classList.add('bg-blue-100', 'text-blue-700');
+      activeButton.classList.remove('hover:bg-gray-100', 'text-gray-700');
+      
+      currentTab = tabName;
+      
+      // Load data for the active tab
+      if (tabName === 'dashboard') {
+        loadAccountsData();
+      } else if (tabName === 'groups') {
+        loadGroups();
+      } else if (tabName === 'categories') {
+        loadCategories();
       }
     }
 
@@ -1242,7 +1284,6 @@
       });
       
       container.innerHTML = sortedGroups.map(group => {
-        console.log('Rendering group with ID:', group.id, 'Name:', group.name);
         // Backend already parses JSONB, so accounts should be an array
         const accounts = Array.isArray(group.accounts) ? group.accounts : [];
         const totalCount = accounts.length;

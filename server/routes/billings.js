@@ -233,4 +233,182 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Generate billing for clients with due date on specific day
+router.post('/generate-for-day', authenticateToken, async (req, res) => {
+  const dbClient = await pool.connect();
+  try {
+    const { day } = req.body; // day should be 1-31
+    
+    if (!day || day < 1 || day > 31) {
+      dbClient.release();
+      return res.status(400).json({ error: 'Valid day (1-31) is required' });
+    }
+    
+    await dbClient.query('BEGIN');
+    
+    // Get all clients with active plans that have due date on the specified day
+    // This looks for clients whose due date day matches, regardless of month/year
+    const clientsResult = await dbClient.query(`
+      SELECT DISTINCT
+        c.id as client_id,
+        c.name as client_name,
+        c.due_date,
+        cp.plan_id,
+        p.name as plan_name,
+        p.price as plan_amount
+      FROM clients c
+      INNER JOIN client_plans cp ON c.id = cp.client_id AND cp.status = 'active'
+      INNER JOIN plans p ON cp.plan_id = p.id AND (p.status = 'active' OR p.status IS NULL)
+      WHERE EXTRACT(DAY FROM c.due_date) = $1
+        AND c.status = 'active'
+      ORDER BY c.name
+    `, [day]);
+    
+    // Debug: Let's also check what clients exist with this day, regardless of their plan status
+    const debugResult = await dbClient.query(`
+      SELECT 
+        c.id,
+        c.name,
+        c.status as client_status,
+        c.due_date,
+        cp.status as plan_status,
+        p.status as plan_active_status
+      FROM clients c
+      LEFT JOIN client_plans cp ON c.id = cp.client_id
+      LEFT JOIN plans p ON cp.plan_id = p.id
+      WHERE EXTRACT(DAY FROM c.due_date) = $1
+      ORDER BY c.name
+    `, [day]);
+    
+    console.log(`Debug: Found ${debugResult.rows.length} clients with due date day ${day}:`);
+    debugResult.rows.forEach(row => {
+      console.log(`- ${row.name}: client_status=${row.client_status}, plan_status=${row.plan_status}, plan_active=${row.plan_active_status}, due_date=${row.due_date}`);
+    });
+    
+    if (clientsResult.rows.length === 0) {
+      await dbClient.query('ROLLBACK');
+      dbClient.release();
+      return res.json({ 
+        success: true, 
+        message: `No active clients found with due date on day ${day}. Debug: Found ${debugResult.rows.length} total clients with this due date day - check their active status and plan assignments.`,
+        billings_created: 0,
+        clients_processed: [],
+        debug_info: debugResult.rows
+      });
+    }
+    
+    const billingsCreated = [];
+    const errors = [];
+    
+    // Get current date and set the due date for this month
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth(); // 0-based
+    
+    // Calculate the due date for this month
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const dueDateDay = Math.min(day, lastDayOfMonth); // Handle cases where day doesn't exist in current month
+    const dueDate = new Date(currentYear, currentMonth, dueDateDay);
+    const dueDateString = dueDate.toISOString().split('T')[0];
+    
+    for (const clientData of clientsResult.rows) {
+      try {
+        // Check if billing already exists for this client and month
+        const existingBillingResult = await dbClient.query(`
+          SELECT id FROM billings 
+          WHERE client_id = $1 
+            AND plan_id = $2
+            AND EXTRACT(MONTH FROM due_date) = $3 
+            AND EXTRACT(YEAR FROM due_date) = $4
+        `, [clientData.client_id, clientData.plan_id, currentMonth + 1, currentYear]);
+        
+        if (existingBillingResult.rows.length > 0) {
+          errors.push({
+            client_id: clientData.client_id,
+            client_name: clientData.client_name,
+            plan_name: clientData.plan_name,
+            error: 'Billing already exists for this month'
+          });
+          continue;
+        }
+        
+        // Get the total amount due from the most recent billing for this client
+        const lastBillingResult = await dbClient.query(`
+          SELECT 
+            (COALESCE(b.balance, 0) - COALESCE((
+              SELECT SUM(p.amount) 
+              FROM payments p 
+              WHERE p.client_id = b.client_id 
+                AND p.created_at >= (
+                  SELECT COALESCE(MAX(prev_b.created_at), '1900-01-01'::timestamp)
+                  FROM billings prev_b 
+                  WHERE prev_b.client_id = b.client_id 
+                    AND prev_b.created_at < b.created_at
+                )
+                AND p.created_at <= b.created_at
+            ), 0) + b.amount) as total_amount_due
+          FROM billings b 
+          WHERE b.client_id = $1 
+          ORDER BY b.created_at DESC 
+          LIMIT 1
+        `, [clientData.client_id]);
+        
+        // Previous balance is the total amount due from the last billing (0 if no previous billing)
+        const previousBalance = lastBillingResult.rows.length > 0 ? 
+          parseFloat(lastBillingResult.rows[0].total_amount_due) : 0;
+        
+        // Create the billing
+        const billingResult = await dbClient.query(
+          'INSERT INTO billings (client_id, plan_id, amount, due_date, status, balance) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+          [clientData.client_id, clientData.plan_id, clientData.plan_amount, dueDateString, 'pending', previousBalance]
+        );
+        
+        // Recalculate client balance
+        const balanceInfo = await recalculateClientBalance(clientData.client_id, dbClient, dueDateString);
+        
+        // Auto-pay unpaid billings if client has sufficient credit
+        await autoPayUnpaidBillings(clientData.client_id, dbClient);
+        
+        billingsCreated.push({
+          billing_id: billingResult.rows[0].id,
+          client_id: clientData.client_id,
+          client_name: clientData.client_name,
+          plan_name: clientData.plan_name,
+          amount: clientData.plan_amount,
+          due_date: dueDateString,
+          previous_balance: previousBalance,
+          new_balance: balanceInfo.calculatedBalance
+        });
+        
+      } catch (error) {
+        console.error(`Error creating billing for client ${clientData.client_id}:`, error);
+        errors.push({
+          client_id: clientData.client_id,
+          client_name: clientData.client_name,
+          plan_name: clientData.plan_name,
+          error: error.message
+        });
+      }
+    }
+    
+    await dbClient.query('COMMIT');
+    dbClient.release();
+    
+    res.json({ 
+      success: true, 
+      message: `Generated ${billingsCreated.length} billings for clients with due date on day ${day}`,
+      billings_created: billingsCreated.length,
+      clients_processed: billingsCreated,
+      errors: errors,
+      due_date_used: dueDateString
+    });
+    
+  } catch (error) {
+    await dbClient.query('ROLLBACK');
+    dbClient.release();
+    console.error('Error generating billings for day:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
 module.exports = router;

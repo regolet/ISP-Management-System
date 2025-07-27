@@ -60,15 +60,7 @@ async function createTicketingTables(client) {
   `);
 }
 
-async function insertSampleData(client) {
-  // Sample data insertion logic can be added here if needed
-  try {
-    // This function is currently empty - sample data has been removed
-    // Add sample data logic here if needed in the future
-  } catch (error) {
-    console.error('Error inserting sample data:', error);
-  }
-}
+// insertSampleData function removed - no sample data needed for production
 
 // Initialize database tables
 async function initializeDatabaseTables() {
@@ -265,6 +257,86 @@ async function initializeDatabaseTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      -- Assets table
+      CREATE TABLE IF NOT EXISTS assets (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        description TEXT,
+        location TEXT,
+        deployment_date DATE,
+        status VARCHAR(20) DEFAULT 'active',
+        serial_number VARCHAR(100),
+        model VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Asset Collections table
+      CREATE TABLE IF NOT EXISTS asset_collections (
+        id SERIAL PRIMARY KEY,
+        asset_id INTEGER REFERENCES assets(id) ON DELETE CASCADE,
+        collection_date DATE NOT NULL,
+        amount DECIMAL(10,2) NOT NULL,
+        collector_name VARCHAR(100),
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Asset Subitems table (linking assets to inventory items)
+      CREATE TABLE IF NOT EXISTS asset_subitems (
+        id SERIAL PRIMARY KEY,
+        asset_id INTEGER REFERENCES assets(id) ON DELETE CASCADE,
+        inventory_item_id INTEGER REFERENCES inventory_items(id) ON DELETE CASCADE,
+        quantity INTEGER NOT NULL DEFAULT 1,
+        notes TEXT,
+        deployment_date DATE,
+        status VARCHAR(20) DEFAULT 'deployed',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(asset_id, inventory_item_id)
+      );
+
+      -- Network Summary table for storing monitoring data
+      CREATE TABLE IF NOT EXISTS network_summary (
+        id SERIAL PRIMARY KEY,
+        total_clients INTEGER DEFAULT 0,
+        online_clients INTEGER DEFAULT 0,
+        offline_clients INTEGER DEFAULT 0,
+        total_bandwidth_usage BIGINT DEFAULT 0, -- total in bytes (upload + download)
+        upload_bandwidth BIGINT DEFAULT 0, -- upload in bytes/sec
+        download_bandwidth BIGINT DEFAULT 0, -- download in bytes/sec
+        network_uptime_percentage DECIMAL(5,2) DEFAULT 100.00,
+        active_connections INTEGER DEFAULT 0,
+        failed_connections INTEGER DEFAULT 0,
+        data_collected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Interface stats table for real-time bandwidth calculation
+      CREATE TABLE IF NOT EXISTS interface_stats (
+        id SERIAL PRIMARY KEY,
+        interface_name VARCHAR(255) NOT NULL,
+        rx_bytes BIGINT DEFAULT 0,
+        tx_bytes BIGINT DEFAULT 0,
+        collected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(interface_name, collected_at)
+      );
+      
+      -- Create index for faster lookups
+      CREATE INDEX IF NOT EXISTS idx_interface_stats_name_time 
+      ON interface_stats(interface_name, collected_at DESC);
+
+      -- Scheduler Settings table
+      CREATE TABLE IF NOT EXISTS scheduler_settings (
+        id SERIAL PRIMARY KEY,
+        setting_key VARCHAR(100) NOT NULL,
+        setting_value VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     // Add subcategory_name column if it doesn't exist
@@ -281,19 +353,42 @@ async function initializeDatabaseTables() {
       END $$;
     `);
 
-    // Remove profile column from clients table if it exists (we use client_plans instead)
+    // Add upload_bandwidth and download_bandwidth columns to network_summary if they don't exist
     await client.query(`
       DO $$ 
       BEGIN
-        IF EXISTS (
+        IF NOT EXISTS (
           SELECT 1 FROM information_schema.columns 
-          WHERE table_name = 'clients' 
-          AND column_name = 'profile'
+          WHERE table_name = 'network_summary' 
+          AND column_name = 'upload_bandwidth'
         ) THEN
-          ALTER TABLE clients DROP COLUMN profile;
+          ALTER TABLE network_summary ADD COLUMN upload_bandwidth BIGINT DEFAULT 0;
+        END IF;
+        
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'network_summary' 
+          AND column_name = 'download_bandwidth'
+        ) THEN
+          ALTER TABLE network_summary ADD COLUMN download_bandwidth BIGINT DEFAULT 0;
         END IF;
       END $$;
     `);
+
+    // SAFE: Do not remove profile column to prevent data loss
+    // If profile column exists, leave it as is - removing columns can cause data loss
+    // await client.query(`
+    //   DO $$ 
+    //   BEGIN
+    //     IF EXISTS (
+    //       SELECT 1 FROM information_schema.columns 
+    //       WHERE table_name = 'clients' 
+    //       AND column_name = 'profile'
+    //     ) THEN
+    //       ALTER TABLE clients DROP COLUMN profile;
+    //     END IF;
+    //   END $$;
+    // `);
 
     // Apply schema modifications in a single PL/pgSQL block
     await client.query(`
@@ -304,20 +399,16 @@ async function initializeDatabaseTables() {
           ALTER TABLE payments ADD COLUMN billing_id INTEGER REFERENCES billings(id) ON DELETE SET NULL;
         END IF;
         
-        -- Remove billing_id column if it exists (based on migration pattern)
-        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='payments' AND column_name='billing_id') THEN
-          ALTER TABLE payments DROP COLUMN billing_id;
-        END IF;
+        -- SAFE: Do not remove billing_id column to prevent data loss
+        -- If billing_id column exists, leave it as is - removing columns can cause data loss
+        -- IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='payments' AND column_name='billing_id') THEN
+        --   ALTER TABLE payments DROP COLUMN billing_id;
+        -- END IF;
         
-        -- Force fix monitoring_groups table schema
-        -- First, drop the table completely if it exists with wrong schema
-        IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='monitoring_groups') AND 
-           NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_groups' AND column_name='group_name') THEN
-          DROP TABLE IF EXISTS monitoring_groups CASCADE;
-        END IF;
-        
-        -- Recreate monitoring_groups table if it doesn't exist or was dropped
+        -- Fix monitoring_groups table schema (SAFE VERSION - NO DATA LOSS)
+        -- Only add missing columns, never drop the table
         IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='monitoring_groups') THEN
+          -- Create table only if it doesn't exist at all
           CREATE TABLE monitoring_groups (
             id SERIAL PRIMARY KEY,
             group_name VARCHAR(100) NOT NULL,
@@ -325,6 +416,20 @@ async function initializeDatabaseTables() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
+        ELSE
+          -- Table exists, add missing columns if needed
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_groups' AND column_name='group_name') THEN
+            ALTER TABLE monitoring_groups ADD COLUMN group_name VARCHAR(100);
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_groups' AND column_name='group_data') THEN
+            ALTER TABLE monitoring_groups ADD COLUMN group_data JSONB;
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_groups' AND column_name='created_at') THEN
+            ALTER TABLE monitoring_groups ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_groups' AND column_name='updated_at') THEN
+            ALTER TABLE monitoring_groups ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+          END IF;
         END IF;
       END $$;
     `);
@@ -354,6 +459,5 @@ async function initializeDatabaseTables() {
 
 module.exports = {
   createTicketingTables,
-  insertSampleData,
   initializeDatabaseTables
 };
