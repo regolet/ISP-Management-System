@@ -23,6 +23,7 @@ const assetRoutes = require('./routes/assets');
 const networkSummaryRoutes = require('./routes/network-summary');
 const networkTotalsRoutes = require('./routes/network-totals');
 const schedulerRoutes = require('./routes/scheduler');
+const systemRoutes = require('./routes/system');
 
 const app = express();
 
@@ -68,6 +69,7 @@ app.use('/api/assets', assetRoutes);
 app.use('/api/network-summary', networkSummaryRoutes);
 app.use('/api/network-totals', networkTotalsRoutes);
 app.use('/api/scheduler', schedulerRoutes);
+app.use('/api/system', systemRoutes);
 
 // Handle special routes that don't follow REST pattern
 const pool = require('./config/database');
