@@ -303,10 +303,10 @@
               <p class="text-sm text-gray-600 mt-1">Network bandwidth trends</p>
             </div>
             
-            <!-- Fixed 24-hour view info -->
+            <!-- Smart view info -->
             <div class="text-sm text-gray-600">
               <i class="fas fa-clock mr-1"></i>
-              24-hour view (12:00 AM - 12:00 PM) • Hourly averages
+              Morning view (12:00 AM - 12:00 PM) or recent data • Asia/Manila (+8 GMT)
             </div>
           </div>
         </div>
@@ -1038,14 +1038,12 @@
       
       if (Array.isArray(bandwidthData) && bandwidthData.length > 0) {
         
-        // Group data by hour with proper timezone conversion
+        // Group data by hour - convert UTC to Manila time (+8 hours)
         bandwidthData.forEach(record => {
-          // Parse UTC time from database
-          const utcTime = new Date(record.time_period);
-          
-          // Convert to Philippine time (+8 hours)
-          const philippineTime = new Date(utcTime.getTime() + (8 * 60 * 60 * 1000));
-          const hour = philippineTime.getHours();
+          // Convert UTC time to Manila time (+8 hours)
+          const utcDate = new Date(record.time_period);
+          const manilaTime = new Date(utcDate.getTime() + (8 * 60 * 60 * 1000));
+          const hour = manilaTime.getHours();
           
           // Include data for all 24 hours (0-23)
           if (hour >= 0 && hour < 24) {
@@ -1159,19 +1157,18 @@
     }
 
     function createBandwidthChart(bandwidthData) {
-      const ctx = document.getElementById('bandwidthChart').getContext('2d');
-      
+      const ctx = document.getElementById('bandwidthChart');
+      if (!ctx) return;
+
       // Destroy existing chart if it exists
       if (bandwidthChart) {
         bandwidthChart.destroy();
       }
-      
-      // Prepare data for 24-hour chart with 1-hour intervals (12am-12pm)
+
+      // Prepare data for 24-hour chart with 1-hour intervals (exact copy from Network Activity chart)
       const labels = [];
-      const uploadBandwidth = [];
-      const downloadBandwidth = [];
-      
-      const bytesToMbps = (bytes) => Math.round((bytes * 8) / 1000000 * 100) / 100;
+      const uploadData = [];
+      const downloadData = [];
       
       // Create 24 hourly buckets from 12am to 12pm (24 hours)
       const hourlyData = {};
@@ -1196,20 +1193,21 @@
       
       if (Array.isArray(bandwidthData) && bandwidthData.length > 0) {
         
-        // Group data by hour
+        // Group data by hour - convert UTC to Manila time (+8 hours)
         bandwidthData.forEach(record => {
-          // Parse UTC time from database
-          const utcTime = new Date(record.time_period);
-          
-          // Convert to Philippine time (+8 hours)
-          const philippineTime = new Date(utcTime.getTime() + (8 * 60 * 60 * 1000));
-          const hour = philippineTime.getHours();
-          
+          // Convert UTC time to Manila time (+8 hours)
+          const utcDate = new Date(record.time_period);
+          const manilaTime = new Date(utcDate.getTime() + (8 * 60 * 60 * 1000));
+          const hour = manilaTime.getHours();
           
           // Include data for all 24 hours (0-23)
           if (hour >= 0 && hour < 24) {
-            hourlyData[hour].upload.push(parseFloat(record.upload_bandwidth) || 0);
-            hourlyData[hour].download.push(parseFloat(record.download_bandwidth) || 0);
+            // Convert bytes to Mbps
+            const uploadMbps = (record.upload_bandwidth * 8) / 1000000;
+            const downloadMbps = (record.download_bandwidth * 8) / 1000000;
+            
+            hourlyData[hour].upload.push(uploadMbps);
+            hourlyData[hour].download.push(downloadMbps);
           }
         });
         
@@ -1220,14 +1218,14 @@
           
           // Calculate average bandwidth for this hour
           const avgUpload = hourData.upload.length > 0 
-            ? hourData.upload.reduce((a, b) => a + b, 0) / hourData.upload.length 
+            ? (hourData.upload.reduce((a, b) => a + b, 0) / hourData.upload.length)
             : 0;
           const avgDownload = hourData.download.length > 0 
-            ? hourData.download.reduce((a, b) => a + b, 0) / hourData.download.length 
+            ? (hourData.download.reduce((a, b) => a + b, 0) / hourData.download.length)
             : 0;
           
-          uploadBandwidth.push(bytesToMbps(avgUpload));
-          downloadBandwidth.push(bytesToMbps(avgDownload));
+          uploadData.push(avgUpload);
+          downloadData.push(avgDownload);
         }
       } else {
         // Default empty data when no records exist - show 24 hours
@@ -1244,12 +1242,12 @@
           }
           
           labels.push(timeLabel);
-          uploadBandwidth.push(0);
-          downloadBandwidth.push(0);
+          uploadData.push(0);
+          downloadData.push(0);
         }
       }
-      
-      
+
+      // Create the chart
       bandwidthChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -1257,29 +1255,21 @@
           datasets: [
             {
               label: 'Upload (Mbps)',
-              data: uploadBandwidth,
+              data: uploadData,
               borderColor: 'rgb(239, 68, 68)',
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              borderWidth: 3,
-              fill: true,
+              borderWidth: 2,
               tension: 0.4,
-              pointBackgroundColor: 'rgb(239, 68, 68)',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 2,
-              pointRadius: 4
+              fill: true
             },
             {
               label: 'Download (Mbps)',
-              data: downloadBandwidth,
+              data: downloadData,
               borderColor: 'rgb(34, 197, 94)',
               backgroundColor: 'rgba(34, 197, 94, 0.1)',
-              borderWidth: 3,
-              fill: true,
+              borderWidth: 2,
               tension: 0.4,
-              pointBackgroundColor: 'rgb(34, 197, 94)',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 2,
-              pointRadius: 4
+              fill: true
             }
           ]
         },
@@ -1288,10 +1278,13 @@
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: 'bottom',
-              labels: {
-                padding: 15,
-                usePointStyle: true
+              position: 'bottom'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' Mbps';
+                }
               }
             }
           },
@@ -1300,21 +1293,16 @@
               beginAtZero: true,
               ticks: {
                 callback: function(value) {
-                  return value + ' Mbps';
+                  return value.toFixed(1) + ' Mbps';
                 }
-              },
-              grid: {
-                color: 'rgba(0, 0, 0, 0.05)'
               }
             },
             x: {
-              grid: {
-                display: true,
-                color: 'rgba(0, 0, 0, 0.05)'
-              },
               ticks: {
                 maxRotation: 45,
-                minRotation: 0
+                minRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 12
               }
             }
           }

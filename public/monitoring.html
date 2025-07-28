@@ -27,6 +27,10 @@
       }
     }
   </script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
 </head>
 <body class="bg-gray-100 font-inter">
   <div class="flex h-screen overflow-hidden">
@@ -116,24 +120,6 @@
 
       <!-- Main Content Area -->
       <main class="flex-1 overflow-y-auto bg-gray-100 px-6 py-8">
-        <!-- Tab Navigation -->
-        <div class="mb-6">
-          <div class="flex space-x-1 bg-white rounded-lg p-1 shadow-sm border border-gray-200">
-            <button id="dashboardTab" class="tab-button flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-blue-100 text-blue-700 rounded-md transition-colors" onclick="showTab('dashboard')">
-              <i class="fas fa-chart-bar mr-2"></i>
-              Dashboard
-            </button>
-            <button id="groupsTab" class="tab-button flex-1 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('groups')">
-              <i class="fas fa-layer-group mr-2"></i>
-              Groups
-            </button>
-            <button id="categoriesTab" class="tab-button flex-1 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('categories')">
-              <i class="fas fa-sitemap mr-2"></i>
-              Categories
-            </button>
-          </div>
-        </div>
-
         <!-- Tab Content Container -->
         <div class="tab-container">
           <!-- Dashboard Tab Content -->
@@ -141,15 +127,38 @@
       <!-- Network Summary -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <i class="fas fa-chart-bar text-blue-600 mr-2"></i>
-            Network Summary
-          </h3>
-          <p class="text-sm text-gray-500 mt-1">
-            Last updated: <span id="lastUpdated">-</span>
-          </p>
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-chart-bar text-blue-600 mr-2"></i>
+                Network Summary
+              </h3>
+              <p class="text-sm text-gray-500 mt-1">
+                Last updated: <span id="lastUpdated">-</span>
+              </p>
+            </div>
+            <div class="flex space-x-1">
+              <button id="dashboardTab" class="tab-button px-4 py-2 text-sm font-medium text-gray-700 bg-blue-100 text-blue-700 rounded-md transition-colors" onclick="showTab('dashboard')">
+                <i class="fas fa-chart-bar mr-2"></i>
+                Dashboard
+              </button>
+              <button id="groupsTab" class="tab-button px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('groups')">
+                <i class="fas fa-layer-group mr-2"></i>
+                Groups
+              </button>
+              <button id="categoriesTab" class="tab-button px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('categories')">
+                <i class="fas fa-sitemap mr-2"></i>
+                Categories
+              </button>
+              <button id="bandwidthTab" class="tab-button px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                <i class="fas fa-wifi mr-2"></i>
+                Bandwidth
+              </button>
+            </div>
+          </div>
         </div>
         <div class="p-6">
+
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
             <!-- Total Accounts -->
             <div class="bg-gray-50 rounded-lg p-4">
@@ -367,10 +376,24 @@
               <i class="fas fa-layer-group text-blue-600 mr-2"></i>
               Groups Management
             </h3>
-            <button id="addGroupBtn" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              <i class="fas fa-plus"></i>
-              <span>Add Group</span>
-            </button>
+            <div class="flex items-center space-x-2">
+              <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('dashboard')">
+                <i class="fas fa-chart-bar mr-2"></i>
+                Dashboard
+              </button>
+              <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('categories')">
+                <i class="fas fa-sitemap mr-2"></i>
+                Categories
+              </button>
+              <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('bandwidth')">
+                <i class="fas fa-wifi mr-2"></i>
+                Bandwidth
+              </button>
+              <button id="addGroupBtn" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-plus"></i>
+                <span>Add Group</span>
+              </button>
+            </div>
           </div>
           <div class="mt-4 flex items-center justify-between">
             <div class="relative w-full max-w-md">
@@ -417,16 +440,131 @@
               <i class="fas fa-sitemap text-blue-600 mr-2"></i>
               Categories Management
             </h3>
-            <button id="addCategoryBtn" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              <i class="fas fa-plus"></i>
-              <span>Add Category</span>
-            </button>
+            <div class="flex items-center space-x-2">
+              <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('dashboard')">
+                <i class="fas fa-chart-bar mr-2"></i>
+                Dashboard
+              </button>
+              <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('groups')">
+                <i class="fas fa-layer-group mr-2"></i>
+                Groups
+              </button>
+              <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('bandwidth')">
+                <i class="fas fa-wifi mr-2"></i>
+                Bandwidth
+              </button>
+              <button id="addCategoryBtn" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-plus"></i>
+                <span>Add Category</span>
+              </button>
+            </div>
           </div>
         </div>
         <div class="p-6">
           <div id="categoriesContainer">
             <!-- Categories will be loaded here -->
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bandwidth Tab Content -->
+    <div id="bandwidthContent" class="tab-content hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+              <i class="fas fa-wifi text-orange-600 mr-2"></i>
+              Bandwidth Monitoring
+            </h3>
+            <div class="flex items-center space-x-2">
+              <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('dashboard')">
+                <i class="fas fa-chart-bar mr-2"></i>
+                Dashboard
+              </button>
+              <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('groups')">
+                <i class="fas fa-layer-group mr-2"></i>
+                Groups
+              </button>
+              <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('categories')">
+                <i class="fas fa-sitemap mr-2"></i>
+                Categories
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="p-6">
+          <!-- Network Performance Cards -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Network Uptime -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                  <i class="fas fa-heartbeat text-red-600 mr-2"></i>
+                  Network Uptime
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">24h average</p>
+              </div>
+              <div class="p-6 text-center">
+                <div class="text-4xl font-bold text-green-600 mb-2" id="networkUptime">99.9%</div>
+                <div class="text-sm text-gray-500">Last 24 hours</div>
+              </div>
+            </div>
+
+            <!-- Peak Bandwidth -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                  <i class="fas fa-wifi text-yellow-600 mr-2"></i>
+                  Peak Bandwidth
+                </h3>
+                <p class="text-sm text-gray-600 mt-1" id="peakBandwidthSubtext">Daily maximum</p>
+              </div>
+              <div class="p-6 text-center">
+                <div class="text-4xl font-bold text-yellow-600 mb-2" id="peakBandwidth">0 Mbps</div>
+                <div class="text-sm text-gray-500">Maximum usage</div>
+              </div>
+            </div>
+
+            <!-- Connection Success Rate -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                  <i class="fas fa-link text-cyan-600 mr-2"></i>
+                  Connection Rate
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Success ratio</p>
+              </div>
+              <div class="p-6 text-center">
+                <div class="text-4xl font-bold text-cyan-600 mb-2" id="connectionRate">100%</div>
+                <div class="text-sm text-gray-500">Successful connections</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bandwidth Usage Chart -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <div class="flex justify-between items-center">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                    Bandwidth Usage Trends
+                  </h3>
+                  <p class="text-sm text-gray-600 mt-1">24-hour bandwidth usage from network summary</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span id="chartLastUpdated" class="text-sm text-gray-500"></span>
+                </div>
+              </div>
+            </div>
+            <div class="p-6">
+              <div class="relative" style="height: 400px;">
+                <canvas id="bandwidthChart"></canvas>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -449,6 +587,9 @@
     let currentOnlineAccounts = [];
     let updateInterval = null;
     let mikrotikConfigured = false;
+    
+    // Chart instances
+    let bandwidthChart = null;
     
     // Search and pagination state
     let onlineSearch = '';
@@ -547,11 +688,13 @@
       
       // Load data for the active tab
       if (tabName === 'dashboard') {
-        loadAccountsData();
+        loadDashboardData();
       } else if (tabName === 'groups') {
         loadGroups();
       } else if (tabName === 'categories') {
         loadCategories();
+      } else if (tabName === 'bandwidth') {
+        loadBandwidthTab();
       }
     }
 
@@ -586,6 +729,9 @@
             break;
           case 'categories':
             loadCategories();
+            break;
+          case 'bandwidth':
+            loadBandwidthTab();
             break;
         }
       } else {
@@ -690,13 +836,20 @@
           
           updateDashboardStats(data.aggregate_stats);
           updateAccountsTables(data.ppp_active || [], data.ppp_accounts || [], data.pppoe_interfaces || []);
-          document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+          document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('en-US', { 
+            timeZone: 'Asia/Manila',
+            hour12: true,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          }) + ' (Asia/Manila)';
           
           // Update groups with current online status if groups are loaded
           if (groups.length > 0) {
             updateGroupsOnlineStatus();
             renderGroups();
           }
+          
         } else {
           showNotification('Error', data.error || 'Failed to load dashboard data', 'error');
         }
@@ -1211,7 +1364,6 @@
     function renderGroups(searchTerm = '') {
       const container = document.getElementById('groupsGrid');
       
-      console.log('Rendering groups:', groups);
       
       // Filter groups based on search term
       let filteredGroups = groups;
@@ -1564,10 +1716,290 @@
       }).join('');
     }
 
+    // Load bandwidth tab data
+    async function loadBandwidthTab() {
+      if (!mikrotikConfigured) return;
+      
+      try {
+        // Load bandwidth chart
+        await loadBandwidthChart();
+        
+      } catch (error) {
+        console.error('[Bandwidth Tab] Error loading bandwidth tab:', error);
+        showNotification('Error', 'Failed to load bandwidth monitoring data', 'error');
+      }
+    }
+
+    // Create bandwidth chart with proper timezone handling
+    function createBandwidthChart(data) {
+      const ctx = document.getElementById('bandwidthChart');
+      if (!ctx) return;
+
+      // Destroy existing chart if it exists
+      if (bandwidthChart) {
+        bandwidthChart.destroy();
+      }
+
+      // Process data to ensure proper timezone display
+      const labels = [];
+      const uploadData = [];
+      const downloadData = [];
+
+      // Sort data by time
+      data.sort((a, b) => new Date(a.time_period) - new Date(b.time_period));
+
+      data.forEach((record, index) => {
+        // The database stores UTC time, but without timezone indicator
+        // The API adds 'Z' but sometimes this creates wrong interpretation
+        const timeString = record.time_period;
+        
+        // Parse as UTC and add 8 hours for Manila time
+        const utcDate = new Date(timeString);
+        const manilaTime = new Date(utcDate.getTime() + (8 * 60 * 60 * 1000));
+        
+        // Debug the conversion for first, last, and a middle record
+        if (index < 3 || index === data.length - 1) {
+          console.log(`Record ${index}:`);
+          console.log(`  Raw time: ${timeString}`);
+          console.log(`  UTC parsed: ${utcDate.toISOString()}`);
+          console.log(`  Manila time: ${manilaTime.toString()}`);
+        }
+        
+        // Format Manila time for display
+        const hours = manilaTime.getHours();
+        const minutes = manilaTime.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        const timeLabel = `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+        
+        labels.push(timeLabel);
+        
+        // Convert bytes to Mbps
+        const uploadMbps = (record.upload_bandwidth * 8) / 1000000;
+        const downloadMbps = (record.download_bandwidth * 8) / 1000000;
+        
+        uploadData.push(uploadMbps);
+        downloadData.push(downloadMbps);
+      });
+
+      // Update last updated timestamp
+      const now = new Date();
+      const lastUpdatedString = now.toLocaleString("en-US", {
+        timeZone: "Asia/Manila",
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+      const lastUpdatedElement = document.getElementById('chartLastUpdated');
+      if (lastUpdatedElement) {
+        lastUpdatedElement.textContent = `Last updated: ${lastUpdatedString}`;
+      }
+
+      // Log data summary and check last record
+      if (data.length > 0) {
+        const lastRecord = data[data.length - 1];
+        const lastDate = new Date(lastRecord.time_period);
+        const lastManilaTime = lastDate.toLocaleString("en-US", {
+          timeZone: "Asia/Manila",
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        });
+        console.log(`Last data point: ${lastRecord.time_period} -> ${lastManilaTime}`);
+      }
+      console.log(`Chart data: ${data.length} points, from ${labels[0]} to ${labels[labels.length - 1]}`);
+
+      // Create the chart
+      bandwidthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Upload (Mbps)',
+              data: uploadData,
+              borderColor: 'rgb(239, 68, 68)',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: 'Download (Mbps)',
+              data: downloadData,
+              borderColor: 'rgb(34, 197, 94)',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' Mbps';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return value.toFixed(1) + ' Mbps';
+                }
+              }
+            },
+            x: {
+              ticks: {
+                maxRotation: 45,
+                minRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 24,
+                callback: function(value, index, ticks) {
+                  // Show every 30 minutes for better visibility
+                  return index % 2 === 0 ? this.getLabelForValue(value) : '';
+                }
+              },
+              grid: {
+                display: true,
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Load bandwidth chart data
+    async function loadBandwidthChart() {
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        // Fetch bandwidth history for the last 24 hours
+        const response = await fetch('/api/network-summary/bandwidth-history?period=24h', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('Raw data from API:', result);
+          
+          if (result.success && result.data && result.data.length > 0) {
+            // Log sample of raw data
+            console.log('Sample raw data (first 3 records):');
+            result.data.slice(0, 3).forEach((record, i) => {
+              console.log(`Record ${i}: time_period = ${record.time_period}`);
+            });
+            
+            // Check if we need to add current real-time data
+            const now = new Date();
+            const lastDataTime = new Date(result.data[result.data.length - 1].time_period);
+            const timeDiffMinutes = (now - lastDataTime) / (1000 * 60);
+            
+            console.log(`Time since last data point: ${timeDiffMinutes.toFixed(1)} minutes`);
+            
+            // If last data is more than 5 minutes old, fetch current bandwidth
+            if (timeDiffMinutes > 5) {
+              try {
+                const realtimeResponse = await fetch('/api/network-totals/bandwidth-totals', {
+                  headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (realtimeResponse.ok) {
+                  const realtimeData = await realtimeResponse.json();
+                  if (realtimeData.success && (realtimeData.totalUploadMbps > 0 || realtimeData.totalDownloadMbps > 0)) {
+                    // Add current point
+                    const currentPoint = {
+                      time_period: now.toISOString(),
+                      upload_bandwidth: (realtimeData.totalUploadMbps * 1000000) / 8,
+                      download_bandwidth: (realtimeData.totalDownloadMbps * 1000000) / 8
+                    };
+                    result.data.push(currentPoint);
+                    console.log('Added real-time data point:', currentPoint);
+                  }
+                }
+              } catch (error) {
+                console.error('Error fetching real-time data:', error);
+              }
+            }
+            
+            createBandwidthChart(result.data);
+            
+            // Update the network stats cards
+            updateNetworkStatsCards();
+          } else {
+            console.log('No bandwidth data available');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading bandwidth chart:', error);
+      }
+    }
+
+    // Update network stats cards
+    async function updateNetworkStatsCards() {
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        // Fetch network stats
+        const [statsResponse, uptimeResponse] = await Promise.all([
+          fetch('/api/network-summary/stats', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch('/api/network-summary/uptime-stats', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ]);
+
+        if (statsResponse.ok) {
+          const statsResult = await statsResponse.json();
+          
+          // Update peak bandwidth
+          if (statsResult.daily && statsResult.daily.length > 0) {
+            const peakBandwidth = Math.max(...statsResult.daily.map(d => d.peak_bandwidth || 0));
+            const peakMbps = (peakBandwidth * 8) / 1000000;
+            document.getElementById('peakBandwidth').textContent = peakMbps.toFixed(2) + ' Mbps';
+          }
+        }
+
+        if (uptimeResponse.ok) {
+          const uptimeResult = await uptimeResponse.json();
+          
+          // Update network uptime
+          if (uptimeResult.uptime_24h) {
+            document.getElementById('networkUptime').textContent = parseFloat(uptimeResult.uptime_24h).toFixed(1) + '%';
+          }
+          
+          // Update connection rate (using uptime as proxy for connection success)
+          document.getElementById('connectionRate').textContent = parseFloat(uptimeResult.uptime_24h || 100).toFixed(1) + '%';
+        }
+      } catch (error) {
+        console.error('Error updating network stats:', error);
+      }
+    }
+
+
+
     // Event listeners
     document.getElementById('dashboardTab').addEventListener('click', () => switchTab('dashboard'));
     document.getElementById('groupsTab').addEventListener('click', () => switchTab('groups'));
     document.getElementById('categoriesTab').addEventListener('click', () => switchTab('categories'));
+    document.getElementById('bandwidthTab').addEventListener('click', () => switchTab('bandwidth'));
     
     // Online table controls
     document.getElementById('onlineSearch').addEventListener('input', (e) => {
@@ -1609,6 +2041,8 @@
 
       // Check MikroTik configuration and load initial data
       checkMikrotikConfig();
+      
+      // Initialize filters
       
       // Start auto-refresh for dashboard
       updateInterval = setInterval(() => {
@@ -1903,18 +2337,15 @@
 
     async function loadAccountsForGroup(group) {
       try {
-        console.log('Loading accounts for group:', group);
         // Get all PPP accounts
         const response = await fetch('/api/ppp-accounts', {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
         });
         
         const data = await response.json();
-        console.log('PPP Accounts API response:', data);
         
         if (data.success) {
           const allAccounts = data.accounts || [];
-          console.log('All accounts:', allAccounts);
           populateAccountSelects(allAccounts, group);
         } else {
           console.error('PPP Accounts API failed:', data.error);
@@ -1925,7 +2356,6 @@
           const dashboardData = await dashboardResponse.json();
           
           if (dashboardData.success && dashboardData.ppp_accounts) {
-            console.log('Using dashboard API for accounts');
             const allAccounts = dashboardData.ppp_accounts || [];
             populateAccountSelects(allAccounts, group);
           } else {
@@ -1940,8 +2370,6 @@
     
     function populateAccountSelects(allAccounts, group) {
       const selectedAccountNames = group ? (group.accounts || []).map(acc => typeof acc === 'string' ? acc : acc.name) : [];
-      console.log('Selected account names:', selectedAccountNames);
-      
       // Get accounts already used in other groups
       const usedAccounts = new Set();
       groups.forEach(g => {
@@ -1956,21 +2384,15 @@
       const availableSelect = document.getElementById('availableAccounts');
       const selectedSelect = document.getElementById('selectedAccounts');
       
-      console.log('Available select element:', availableSelect);
-      console.log('Selected select element:', selectedSelect);
-      console.log('Used accounts:', Array.from(usedAccounts));
-      
       // Filter available accounts
       const filteredAccounts = allAccounts
         .filter(acc => !usedAccounts.has(acc.name) && !selectedAccountNames.includes(acc.name));
-      console.log('Filtered available accounts:', filteredAccounts);
       
       // Populate available accounts
       if (availableSelect) {
         availableSelect.innerHTML = filteredAccounts
           .map(acc => `<option value="${acc.name}">${acc.name}</option>`)
           .join('');
-        console.log('Populated available accounts, count:', availableSelect.options.length);
       }
       
       // Populate selected accounts
@@ -1978,7 +2400,6 @@
         selectedSelect.innerHTML = selectedAccountNames
           .map(name => `<option value="${name}">${name}</option>`)
           .join('');
-        console.log('Populated selected accounts, count:', selectedSelect.options.length);
       }
     }
 
@@ -2378,7 +2799,6 @@
     
     async function loadGroupsForAssignment(subcategory) {
       try {
-        console.log('Loading groups for assignment, subcategory:', subcategory);
         
         // Load all groups
         const response = await fetch('/api/monitoring/groups', {
@@ -2386,7 +2806,6 @@
         });
         
         const data = await response.json();
-        console.log('Groups API response:', data);
         
         if (data.success) {
           // Transform backend data structure to frontend expected structure
@@ -2400,7 +2819,6 @@
             created_at: group.created_at,
             updated_at: group.updated_at
           }));
-          console.log('All groups loaded:', allGroups);
           
           // Get all assigned group IDs across ALL subcategories
           const allAssignedGroupIds = new Set();
@@ -2416,15 +2834,11 @@
           
           // Groups assigned to current subcategory
           const currentSubcategoryGroupIds = Array.isArray(subcategory?.groups) ? subcategory.groups : [];
-          console.log('Groups assigned to current subcategory:', currentSubcategoryGroupIds);
-          console.log('Groups assigned to ANY subcategory:', Array.from(allAssignedGroupIds));
           
           // Get DOM elements
           const availableSelect = document.getElementById('availableGroups');
           const assignedSelect = document.getElementById('assignedGroups');
           
-          console.log('Available select element:', availableSelect);
-          console.log('Assigned select element:', assignedSelect);
           
           if (!availableSelect || !assignedSelect) {
             console.error('DOM elements not found!');
@@ -2436,7 +2850,6 @@
             const groupId = typeof group.id === 'string' ? parseInt(group.id) : group.id;
             return !allAssignedGroupIds.has(groupId);
           });
-          console.log('Available groups after filtering:', availableGroups);
           
           availableSelect.innerHTML = availableGroups
             .map(group => `<option value="${group.id}">${group.name} (${group.accounts?.length || 0} members)</option>`)
@@ -2448,14 +2861,11 @@
             const groupId = typeof group.id === 'string' ? parseInt(group.id) : group.id;
             return numericCurrentSubcategoryIds.includes(groupId);
           });
-          console.log('Assigned groups for current subcategory:', assignedGroups);
           
           assignedSelect.innerHTML = assignedGroups
             .map(group => `<option value="${group.id}">${group.name} (${group.accounts?.length || 0} members)</option>`)
             .join('');
           
-          console.log('Available select populated with', availableSelect.options.length, 'options');
-          console.log('Assigned select populated with', assignedSelect.options.length, 'options');
             
         } else {
           console.error('Groups API failed:', data.error);
@@ -2495,7 +2905,6 @@
         const assignedSelect = document.getElementById('assignedGroups');
         const assignedGroupIds = Array.from(assignedSelect.options).map(option => parseInt(option.value));
         
-        console.log('Saving group assignments:', { categoryName, subcategoryName, assignedGroupIds });
         
         // Update the categories data structure
         const updatedCategories = categories.map(category => {
@@ -2511,7 +2920,6 @@
           return category;
         });
         
-        console.log('Updated categories structure:', JSON.stringify(updatedCategories, null, 2));
         
         const response = await fetch('/api/monitoring/categories', {
           method: 'POST',
@@ -2523,7 +2931,6 @@
         });
         
         const data = await response.json();
-        console.log('Save response:', data);
         
         if (data.success) {
           showNotification('Success', 'Group assignments saved successfully', 'success');
@@ -2569,6 +2976,9 @@
       clearGroupSearchBtn.classList.add('hidden');
       filterAndRenderGroups('');
     });
+
+
+
   </script>
 </body>
 </html>

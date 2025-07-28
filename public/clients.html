@@ -550,6 +550,12 @@
                     Select All
                   </button>
                   <button 
+                    onclick="selectAllNewClients()" 
+                    class="text-sm text-green-600 hover:text-green-800"
+                  >
+                    Select All New Clients
+                  </button>
+                  <button 
                     onclick="selectNoneAccounts()" 
                     class="text-sm text-blue-600 hover:text-blue-800"
                   >
@@ -1763,30 +1769,43 @@
         return;
       }
 
-      tbody.innerHTML = mikrotikAccounts.map((account, index) => `
-        <tr class="hover:bg-gray-50">
-          <td class="px-4 py-2">
-            <input 
-              type="checkbox" 
-              id="account-${index}"
-              value="${index}"
-              onchange="updateSelectedCount()"
-              class="rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-            >
-          </td>
-          <td class="px-4 py-2 text-sm font-medium text-gray-900">${account.name || account.user || 'Unknown'}</td>
-          <td class="px-4 py-2 text-sm text-gray-500">${account.profile || '-'}</td>
-          <td class="px-4 py-2 text-sm text-gray-500 max-w-48 truncate" title="${account.comment || '-'}">${account.comment || '-'}</td>
-          <td class="px-4 py-2">
-            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-              account.disabled === 'false' || !account.disabled ? 
-              'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }">
-              ${account.disabled === 'false' || !account.disabled ? 'Active' : 'Disabled'}
-            </span>
-          </td>
-        </tr>
-      `).join('');
+      // Get all existing client names (normalized)
+      const existingClientNames = new Set(
+        clients.map(client => client.name.toLowerCase().trim())
+      );
+
+      tbody.innerHTML = mikrotikAccounts.map((account, index) => {
+        const accountName = (account.name || account.user || '').toLowerCase().trim();
+        const isExistingClient = existingClientNames.has(accountName);
+        
+        return `
+          <tr class="hover:bg-gray-50 ${isExistingClient ? 'bg-yellow-50' : ''}">
+            <td class="px-4 py-2">
+              <input 
+                type="checkbox" 
+                id="account-${index}"
+                value="${index}"
+                onchange="updateSelectedCount()"
+                class="rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+              >
+            </td>
+            <td class="px-4 py-2 text-sm font-medium text-gray-900">
+              ${account.name || account.user || 'Unknown'}
+              ${isExistingClient ? '<span class="ml-2 text-xs text-yellow-600 font-normal">(Already exists)</span>' : ''}
+            </td>
+            <td class="px-4 py-2 text-sm text-gray-500">${account.profile || '-'}</td>
+            <td class="px-4 py-2 text-sm text-gray-500 max-w-48 truncate" title="${account.comment || '-'}">${account.comment || '-'}</td>
+            <td class="px-4 py-2">
+              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                account.disabled === 'false' || !account.disabled ? 
+                'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }">
+                ${account.disabled === 'false' || !account.disabled ? 'Active' : 'Disabled'}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
       
       updateSelectedCount();
     }
@@ -1803,6 +1822,31 @@
       toggleAllAccounts(selectAllCheckbox);
     }
 
+    function selectAllNewClients() {
+      // First, uncheck all
+      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+      selectAllCheckbox.checked = false;
+      toggleAllAccounts(selectAllCheckbox);
+      
+      // Get all existing client names (normalized)
+      const existingClientNames = new Set(
+        clients.map(client => client.name.toLowerCase().trim())
+      );
+      
+      // Check only accounts that don't exist in the clients list
+      const accountCheckboxes = document.querySelectorAll('input[id^="account-"]');
+      accountCheckboxes.forEach((checkbox, index) => {
+        if (mikrotikAccounts[index]) {
+          const accountName = (mikrotikAccounts[index].name || mikrotikAccounts[index].user || '').toLowerCase().trim();
+          // Check the checkbox only if this account name doesn't exist in clients
+          checkbox.checked = !existingClientNames.has(accountName);
+        }
+      });
+      
+      updateSelectedCount();
+      updateSelectAllCheckboxState();
+    }
+
     function selectNoneAccounts() {
       const selectAllCheckbox = document.getElementById('selectAllCheckbox');
       selectAllCheckbox.checked = false;
@@ -1816,9 +1860,15 @@
       document.getElementById('selectedCount').textContent = `${count} selected`;
       document.getElementById('importSelectedBtn').disabled = count === 0;
       
+      updateSelectAllCheckboxState();
+    }
+    
+    function updateSelectAllCheckboxState() {
       // Update select all checkbox state
       const totalCheckboxes = document.querySelectorAll('input[id^="account-"]');
+      const selectedCheckboxes = document.querySelectorAll('input[id^="account-"]:checked');
       const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+      const count = selectedCheckboxes.length;
       
       if (count === 0) {
         selectAllCheckbox.indeterminate = false;
