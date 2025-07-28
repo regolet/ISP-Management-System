@@ -27,7 +27,8 @@
       "Bash(powershell:*)",
       "Bash(mkdir:*)",
       "Bash(mv:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "WebFetch(domain:localhost)"
     ],
     "deny": []
   }

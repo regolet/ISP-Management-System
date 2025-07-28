@@ -7,6 +7,18 @@ const router = express.Router();
 // In-memory storage for previous interface stats (like monitoring.html uses localStorage)
 const interfaceStatsCache = new Map();
 
+// Clean up old cache entries periodically (every hour)
+setInterval(() => {
+  const now = Date.now();
+  const oneHourAgo = now - (60 * 60 * 1000);
+  
+  for (const [key, stats] of interfaceStatsCache.entries()) {
+    if (stats.t < oneHourAgo) {
+      interfaceStatsCache.delete(key);
+    }
+  }
+}, 60 * 60 * 1000);
+
 // Helper to normalize names (copied from monitoring.html)
 function normalizeName(name) {
   if (!name) return '';
@@ -106,7 +118,8 @@ router.get('/bandwidth-totals', async (req, res) => {
           }
         }
         
-        // Store current stats for next calculation (like monitoring.html localStorage)
+        // Always store current stats for next calculation (like monitoring.html localStorage)
+        // This ensures we have data for the next call
         interfaceStatsCache.set(storageKey, { rx: rxBytes, tx: txBytes, t: now });
       });
       

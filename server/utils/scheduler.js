@@ -74,20 +74,18 @@ async function collectNetworkData() {
       const downloadBandwidth = onlineClients * 250000; // 2 Mbps download per client
       const totalBandwidthUsage = uploadBandwidth + downloadBandwidth;
       
-      // Get current Philippine time
-      const currentTime = getPhilippineTime();
+      // Data will use created_at timestamp automatically
       
       await client.query(`
         INSERT INTO network_summary (
           total_clients, online_clients, offline_clients,
           total_bandwidth_usage, upload_bandwidth, download_bandwidth,
-          network_uptime_percentage, active_connections, failed_connections,
-          data_collected_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          network_uptime_percentage, active_connections, failed_connections
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       `, [
         totalClients, onlineClients, offlineClients,
         totalBandwidthUsage, uploadBandwidth, downloadBandwidth,
-        99.0, onlineClients, 0, currentTime
+        99.0, onlineClients, 0
       ]);
       
       client.release();
@@ -137,18 +135,39 @@ async function collectNetworkData() {
       let downloadBandwidthBytes = 0;
       
       try {
-        const response = await axios.get('http://localhost:3000/api/network-totals/bandwidth-totals', {
+        // First call to prime the cache if needed
+        const firstResponse = await axios.get('http://localhost:3000/api/network-totals/bandwidth-totals', {
           timeout: 30000
         });
         
-        if (response.data.success) {
-          // Convert Mbps to bytes per second
-          uploadBandwidthBytes = Math.round(response.data.totalUploadMbps * 125000); // Mbps to bytes/sec
-          downloadBandwidthBytes = Math.round(response.data.totalDownloadMbps * 125000);
-          console.log(`[Scheduler] API returned: ${response.data.totalUploadMbps} Mbps upload, ${response.data.totalDownloadMbps} Mbps download`);
+        // If first call returns 0, wait a bit and try again
+        if (firstResponse.data.success && 
+            firstResponse.data.totalUploadMbps === 0 && 
+            firstResponse.data.totalDownloadMbps === 0) {
+          console.log('[Scheduler] First bandwidth reading is 0, waiting 5 seconds for second reading...');
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          
+          // Second call to get actual bandwidth
+          const response = await axios.get('http://localhost:3000/api/network-totals/bandwidth-totals', {
+            timeout: 30000
+          });
+          
+          if (response.data.success) {
+            // Convert Mbps to bytes per second
+            uploadBandwidthBytes = Math.round(response.data.totalUploadMbps * 125000); // Mbps to bytes/sec
+            downloadBandwidthBytes = Math.round(response.data.totalDownloadMbps * 125000);
+            console.log(`[Scheduler] API returned: ${response.data.totalUploadMbps} Mbps upload, ${response.data.totalDownloadMbps} Mbps download`);
+          } else {
+            console.log('[Scheduler] API failed, using fallback bandwidth calculation');
+            throw new Error(response.data.error || 'API failed');
+          }
+        } else if (firstResponse.data.success) {
+          // First call already has data
+          uploadBandwidthBytes = Math.round(firstResponse.data.totalUploadMbps * 125000);
+          downloadBandwidthBytes = Math.round(firstResponse.data.totalDownloadMbps * 125000);
+          console.log(`[Scheduler] API returned: ${firstResponse.data.totalUploadMbps} Mbps upload, ${firstResponse.data.totalDownloadMbps} Mbps download`);
         } else {
-          console.log('[Scheduler] API failed, using fallback bandwidth calculation');
-          throw new Error(response.data.error || 'API failed');
+          throw new Error(firstResponse.data.error || 'API failed');
         }
       } catch (apiError) {
         console.error('[Scheduler] Bandwidth API error:', apiError.message);
@@ -164,17 +183,15 @@ async function collectNetworkData() {
       
       console.log(`[Scheduler] Final bandwidth - Upload: ${Math.round(uploadBandwidth/125000)}Mbps, Download: ${Math.round(downloadBandwidth/125000)}Mbps`);
       
-      // Get current Philippine time
-      const currentTime = getPhilippineTime();
+      // Data will use created_at timestamp automatically
       
       // Insert data into network_summary table
       await client.query(`
         INSERT INTO network_summary (
           total_clients, online_clients, offline_clients,
           total_bandwidth_usage, upload_bandwidth, download_bandwidth,
-          network_uptime_percentage, active_connections, failed_connections,
-          data_collected_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          network_uptime_percentage, active_connections, failed_connections
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       `, [
         totalClients,
         onlineClients,
@@ -184,8 +201,7 @@ async function collectNetworkData() {
         downloadBandwidth,
         99.9,
         onlineClients,
-        0,
-        currentTime
+        0
       ]);
       
       client.release();
@@ -218,8 +234,7 @@ async function collectNetworkData() {
         const downloadBandwidth = onlineClients * 250000; // 2 Mbps download per client
         const totalBandwidthUsage = uploadBandwidth + downloadBandwidth;
         
-        // Get current Philippine time for fallback
-        const currentTime = getPhilippineTime();
+        // Data will use created_at timestamp automatically
         
         await fallbackClient.query(`
           INSERT INTO network_summary (
