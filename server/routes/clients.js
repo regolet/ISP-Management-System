@@ -1,5 +1,5 @@
 const express = require('express');
-const pool = require('../config/database');
+const pool = require('../config/database'); // Now automatically handles offline/online
 const { formatDateForDB, formatClientDates } = require('../utils/dateHelpers');
 const { authenticateToken } = require('../middleware/auth');
 

@@ -13,18 +13,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS -->
+  
+  
+  
+  
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            'inter': ['Inter', 'system-ui', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
 </head>
 <body class="bg-gray-100 font-inter">
   <div class="flex h-screen overflow-hidden">
@@ -104,7 +98,16 @@
       <!-- Top Header -->
       <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
         <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-gray-900">Settings</h2>
+          <div class="flex items-center space-x-4">
+            <h2 class="text-2xl font-bold text-gray-900">Settings</h2>
+            <!-- Global Offline Indicator -->
+            <div id="globalOfflineIndicator" class="hidden">
+              <div class="bg-yellow-100 border border-yellow-400 text-yellow-800 px-3 py-1 rounded-full text-xs font-medium flex items-center">
+                <i class="fas fa-wifi-slash mr-1"></i>
+                Offline Mode
+              </div>
+            </div>
+          </div>
           <div class="flex items-center space-x-4">
             <span class="text-gray-600 text-sm">System configuration</span>
           </div>
@@ -493,6 +496,54 @@
                         <span id="syncQueue" class="text-sm text-gray-900">Loading...</span>
                       </div>
                     </div>
+                    
+                    <!-- Offline Mode Warning -->
+                    <div id="offlineWarning" class="mt-4 hidden">
+                      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <div class="flex items-start">
+                          <i class="fas fa-exclamation-triangle text-yellow-600 mr-2 mt-0.5"></i>
+                          <div class="text-sm">
+                            <div class="font-medium text-yellow-800">Working in Offline Mode</div>
+                            <div class="text-yellow-700 mt-1">
+                              All data is being saved locally. Remember to sync when you go back online.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Offline/Online Toggle Controls -->
+                  <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+                    <h4 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                      <i class="fas fa-toggle-on mr-2 text-blue-600"></i>
+                      Database Mode Controls
+                    </h4>
+                    <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                      <div class="flex-1">
+                        <p class="text-sm text-gray-600 mb-2">Manually switch between online and offline database modes:</p>
+                        <div class="text-xs text-gray-500">
+                          <div>• <strong>Online:</strong> Data saved to Neon PostgreSQL cloud database</div>
+                          <div>• <strong>Offline:</strong> Data saved locally to SQLite database</div>
+                        </div>
+                      </div>
+                      <div class="flex gap-2">
+                        <button 
+                          id="switchOnlineBtn"
+                          onclick="switchToOnlineMode()" 
+                          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                          <i class="fas fa-cloud mr-2"></i>
+                          Switch Online
+                        </button>
+                        <button 
+                          id="switchOfflineBtn"
+                          onclick="switchToOfflineMode()" 
+                          class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors flex items-center text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                          <i class="fas fa-desktop mr-2"></i>
+                          Switch Offline
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- Sync Actions -->
@@ -515,6 +566,63 @@
                       class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center">
                       <i class="fas fa-list mr-2"></i>
                       Offline Summary
+                    </button>
+                  </div>
+
+                  <!-- Offline Database Management -->
+                  <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+                    <h4 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                      <i class="fas fa-database mr-2 text-purple-600"></i>
+                      Offline Database Management
+                    </h4>
+                    
+                    <!-- Progress Bar Container (initially hidden) -->
+                    <div id="syncProgressContainer" class="hidden mb-4">
+                      <div class="bg-gray-200 rounded-full h-3 mb-2">
+                        <div id="syncProgressBar" class="bg-blue-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span id="syncProgressText" class="text-sm text-gray-600">Preparing...</span>
+                        <span id="syncProgressPercent" class="text-sm font-medium text-gray-900">0%</span>
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <button 
+                        onclick="initializeOfflineDatabase()" 
+                        id="initOfflineBtn"
+                        class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-redo mr-2"></i>
+                        Initialize Offline Database
+                      </button>
+                      <button 
+                        onclick="downloadDataToOffline()" 
+                        id="downloadDataBtn"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-download mr-2"></i>
+                        Download Online Data
+                      </button>
+                    </div>
+                    
+                    <div class="mt-3 text-xs text-gray-500">
+                      <div>• <strong>Initialize:</strong> Repairs schema mismatches and replicates PostgreSQL schema to SQLite</div>
+                      <div>• <strong>Download:</strong> Copies all online data to offline database for working offline</div>
+                    </div>
+                  </div>
+                  
+                  <!-- Advanced Options -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <button 
+                      onclick="testDatabaseConnection()" 
+                      class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center">
+                      <i class="fas fa-vial mr-2"></i>
+                      Test Connection
+                    </button>
+                    <button 
+                      onclick="forceOnlineMode()" 
+                      class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center">
+                      <i class="fas fa-exclamation-triangle mr-2"></i>
+                      Force Online (Bypass Check)
                     </button>
                   </div>
 
@@ -1514,6 +1622,9 @@
             }
           }
           
+          // Update mode toggle buttons
+          updateModeButtons(db.isOnline);
+          
           // Show/hide sync button based on queue
           const syncButton = document.getElementById('syncButton');
           if (syncButton) {
@@ -1628,6 +1739,358 @@
         console.error('Error getting offline summary:', error);
         const statusDiv = document.getElementById('syncStatus');
         statusDiv.innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800"><i class="fas fa-exclamation-circle mr-2"></i>Failed to get offline summary</div>';
+      }
+    }
+
+    // Database Mode Switching Functions
+    async function switchToOnlineMode() {
+      const btn = document.getElementById('switchOnlineBtn');
+      const originalText = btn.innerHTML;
+      
+      // Show loading state
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Switching...';
+      
+      try {
+        const response = await fetch('/api/database/switch-online', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification('Success', 'Successfully switched to online mode', 'success');
+          // Refresh status to show new mode
+          setTimeout(() => {
+            checkDatabaseStatus();
+          }, 1000);
+        } else {
+          // Show more detailed error message for connection failures
+          if (data.isOffline) {
+            showNotification('Connection Failed', data.error, 'warning');
+            showNotification('Info', data.message, 'info');
+          } else {
+            showNotification('Error', data.error || 'Failed to switch to online mode', 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Error switching to online mode:', error);
+        showNotification('Error', 'Failed to switch to online mode', 'error');
+      } finally {
+        // Restore button state
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    async function switchToOfflineMode() {
+      if (!confirm('Switch to offline mode? You will work locally until switched back online.')) {
+        return;
+      }
+      
+      const btn = document.getElementById('switchOfflineBtn');
+      const originalText = btn.innerHTML;
+      
+      // Show loading state
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Switching...';
+      
+      try {
+        const response = await fetch('/api/database/switch-offline', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification('Success', 'Successfully switched to offline mode', 'success');
+          // Refresh status to show new mode
+          setTimeout(() => {
+            checkDatabaseStatus();
+          }, 1000);
+        } else {
+          showNotification('Error', data.error || 'Failed to switch to offline mode', 'error');
+        }
+      } catch (error) {
+        console.error('Error switching to offline mode:', error);
+        showNotification('Error', 'Failed to switch to offline mode', 'error');
+      } finally {
+        // Restore button state
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // Update button states based on current database mode
+    function updateModeButtons(isOnline) {
+      const onlineBtn = document.getElementById('switchOnlineBtn');
+      const offlineBtn = document.getElementById('switchOfflineBtn');
+      const offlineWarning = document.getElementById('offlineWarning');
+      const globalOfflineIndicator = document.getElementById('globalOfflineIndicator');
+      
+      if (isOnline) {
+        onlineBtn.disabled = true;
+        onlineBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Currently Online';
+        offlineBtn.disabled = false;
+        offlineBtn.innerHTML = '<i class="fas fa-desktop mr-2"></i>Switch Offline';
+        
+        // Hide offline indicators
+        if (offlineWarning) {
+          offlineWarning.classList.add('hidden');
+        }
+        if (globalOfflineIndicator) {
+          globalOfflineIndicator.classList.add('hidden');
+        }
+      } else {
+        onlineBtn.disabled = false;
+        onlineBtn.innerHTML = '<i class="fas fa-cloud mr-2"></i>Switch Online';
+        offlineBtn.disabled = true;
+        offlineBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Currently Offline';
+        
+        // Show offline indicators
+        if (offlineWarning) {
+          offlineWarning.classList.remove('hidden');
+        }
+        if (globalOfflineIndicator) {
+          globalOfflineIndicator.classList.remove('hidden');
+        }
+      }
+    }
+
+    // Test database connection
+    async function testDatabaseConnection() {
+      const statusDiv = document.getElementById('syncStatus');
+      statusDiv.innerHTML = '<div class="bg-blue-50 border border-blue-200 rounded-lg p-3"><i class="fas fa-spinner fa-spin mr-2"></i>Testing database connection...</div>';
+      
+      try {
+        const response = await fetch('/api/database/status?test=true', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.connectionTest) {
+          const test = data.connectionTest;
+          const statusClass = test.connected ? 'green' : 'red';
+          const icon = test.connected ? 'check-circle' : 'times-circle';
+          
+          statusDiv.innerHTML = `
+            <div class="bg-${statusClass}-50 border border-${statusClass}-200 rounded-lg p-4">
+              <div class="flex items-start">
+                <i class="fas fa-${icon} text-${statusClass}-600 mr-3 mt-1"></i>
+                <div>
+                  <div class="font-medium text-${statusClass}-800">
+                    ${test.connected ? 'Connection Successful' : 'Connection Failed'}
+                  </div>
+                  <div class="text-sm text-${statusClass}-700 mt-1">
+                    <div>Response Time: ${test.responseTime}</div>
+                    <div>Connection String: <code class="text-xs">${test.connectionString}</code></div>
+                    <div>SSL: ${test.ssl}</div>
+                    <div>Current Mode: ${data.database.mode}</div>
+                    <div class="mt-2 font-medium">${test.advice}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          // Also update the main status display
+          updateDatabaseStatusDisplay(data.database);
+        } else {
+          statusDiv.innerHTML = `<div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800">
+            <i class="fas fa-exclamation-circle mr-2"></i>Test failed: ${data.error || 'Unknown error'}
+          </div>`;
+        }
+      } catch (error) {
+        console.error('Error testing connection:', error);
+        statusDiv.innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800"><i class="fas fa-exclamation-circle mr-2"></i>Failed to test connection</div>';
+      }
+    }
+    
+    // Helper function to update database status display
+    function updateDatabaseStatusDisplay(db) {
+      const dbModeEl = document.getElementById('dbMode');
+      const dbStatusEl = document.getElementById('dbStatus');
+      const syncQueueEl = document.getElementById('syncQueue');
+      
+      if (dbModeEl) dbModeEl.textContent = db.mode || 'Unknown';
+      if (dbStatusEl) dbStatusEl.textContent = db.status || 'Unknown';
+      if (syncQueueEl) syncQueueEl.textContent = db.syncQueue > 0 ? `${db.syncQueue} items` : 'Empty';
+    }
+
+    // Force online mode (bypass connectivity check)
+    async function forceOnlineMode() {
+      if (!confirm('Force online mode? This bypasses connectivity checks and may cause errors if the database is unreachable. Continue?')) {
+        return;
+      }
+      
+      const statusDiv = document.getElementById('syncStatus');
+      statusDiv.innerHTML = '<div class="bg-orange-50 border border-orange-200 rounded-lg p-3"><i class="fas fa-spinner fa-spin mr-2"></i>Forcing online mode...</div>';
+      
+      try {
+        const response = await fetch('/api/database/switch-online', {
+          method: 'POST',
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ forceOnline: true })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification('Success', data.message, 'success');
+          if (data.warning) {
+            showNotification('Warning', data.warning, 'warning');
+          }
+          // Refresh status
+          setTimeout(() => {
+            checkDatabaseStatus();
+            statusDiv.innerHTML = '';
+          }, 2000);
+        } else {
+          statusDiv.innerHTML = `<div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800">
+            <i class="fas fa-exclamation-circle mr-2"></i>Failed: ${data.error}
+          </div>`;
+        }
+      } catch (error) {
+        console.error('Error forcing online mode:', error);
+        statusDiv.innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800"><i class="fas fa-exclamation-circle mr-2"></i>Failed to force online mode</div>';
+      }
+    }
+
+    // Progress bar utilities
+    function showProgress(text = 'Processing...') {
+      const container = document.getElementById('syncProgressContainer');
+      const progressBar = document.getElementById('syncProgressBar');
+      const progressText = document.getElementById('syncProgressText');
+      const progressPercent = document.getElementById('syncProgressPercent');
+      
+      container.classList.remove('hidden');
+      progressBar.style.width = '0%';
+      progressText.textContent = text;
+      progressPercent.textContent = '0%';
+    }
+
+    function updateProgress(percent, text) {
+      const progressBar = document.getElementById('syncProgressBar');
+      const progressText = document.getElementById('syncProgressText');
+      const progressPercent = document.getElementById('syncProgressPercent');
+      
+      progressBar.style.width = `${percent}%`;
+      progressText.textContent = text;
+      progressPercent.textContent = `${Math.round(percent)}%`;
+    }
+
+    function hideProgress() {
+      const container = document.getElementById('syncProgressContainer');
+      container.classList.add('hidden');
+    }
+
+    // Initialize offline database
+    async function initializeOfflineDatabase() {
+      if (!confirm('This will repair the offline database schema to match online database structure. This fixes sync errors and ensures compatibility. Continue?')) {
+        return;
+      }
+      
+      const btn = document.getElementById('initOfflineBtn');
+      const originalText = btn.innerHTML;
+      
+      // Show loading state
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Initializing...';
+      showProgress('Initializing offline database...');
+      
+      try {
+        updateProgress(30, 'Repairing database schema...');
+        
+        const response = await fetch('/api/database/init-offline', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        updateProgress(80, 'Synchronizing schema with PostgreSQL...');
+        const data = await response.json();
+        
+        if (data.success) {
+          updateProgress(100, 'Database schema repaired and synchronized!');
+          showNotification('Success', 'Offline database schema repaired and synchronized with online database', 'success');
+          
+          setTimeout(() => {
+            hideProgress();
+            checkDatabaseStatus();
+          }, 2000);
+        } else {
+          hideProgress();
+          showNotification('Error', data.error || 'Failed to initialize offline database', 'error');
+        }
+      } catch (error) {
+        console.error('Error initializing offline database:', error);
+        hideProgress();
+        showNotification('Error', 'Failed to initialize offline database', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // Download data from online to offline
+    async function downloadDataToOffline() {
+      if (!confirm('This will download all online data to your offline database. Any existing offline data will be overwritten. Continue?')) {
+        return;
+      }
+      
+      const btn = document.getElementById('downloadDataBtn');
+      const originalText = btn.innerHTML;
+      
+      // Show loading state
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Downloading...';
+      showProgress('Connecting to online database...');
+      
+      try {
+        updateProgress(10, 'Checking online database connection...');
+        
+        const response = await fetch('/api/database/download-data', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        updateProgress(30, 'Starting data download...');
+        
+        // Simulate progress updates while waiting for response
+        const progressInterval = setInterval(() => {
+          const currentProgress = parseInt(document.getElementById('syncProgressBar').style.width);
+          if (currentProgress < 90) {
+            updateProgress(currentProgress + 5, 'Downloading data from online database...');
+          }
+        }, 500);
+        
+        const data = await response.json();
+        clearInterval(progressInterval);
+        
+        if (data.success) {
+          updateProgress(100, `Download completed! ${data.summary || 'Data downloaded successfully'}`);
+          showNotification('Success', data.summary || 'Data downloaded successfully to offline database', 'success');
+          
+          setTimeout(() => {
+            hideProgress();
+            checkDatabaseStatus();
+          }, 3000);
+        } else {
+          hideProgress();
+          showNotification('Error', data.error || 'Failed to download data', 'error');
+        }
+      } catch (error) {
+        console.error('Error downloading data:', error);
+        hideProgress();
+        showNotification('Error', 'Failed to download data to offline database', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
       }
     }
 

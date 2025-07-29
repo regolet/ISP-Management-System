@@ -28,7 +28,12 @@
       "Bash(mkdir:*)",
       "Bash(mv:*)",
       "Bash(cp:*)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "Bash(del \"C:\\Users\\admin\\Desktop\\ISP-Management-System\\server\\config\\database-wrapper.js\")",
+      "Bash(del \"C:\\Users\\admin\\Desktop\\ISP-Management-System\\data\\offline.db\")",
+      "Bash(npm run:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(del:*)"
     ],
     "deny": []
   }

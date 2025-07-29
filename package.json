@@ -7,8 +7,6 @@
     "start": "node server/app.js",
     "dev": "node server/app.js",
     "start-backup": "node server/backup/index.js.backup",
-    "build-css": "tailwindcss -i ./src/styles.css -o ./public/assets/css/styles.css --watch",
-    "build-css-prod": "tailwindcss -i ./src/styles.css -o ./public/assets/css/styles.css --minify",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -30,12 +28,5 @@
     "pg": "^8.16.3",
     "routeros-api": "^1.0.1",
     "sqlite3": "^5.1.7"
-  },
-  "devDependencies": {
-    "@tailwindcss/cli": "^4.1.11",
-    "@tailwindcss/forms": "^0.5.10",
-    "@tailwindcss/typography": "^0.5.16",
-    "autoprefixer": "^10.4.21",
-    "tailwindcss": "^4.1.11"
   }
 }
