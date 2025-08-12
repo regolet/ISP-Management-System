@@ -81,7 +81,7 @@ const { authenticateToken } = require('./middleware/auth');
 app.get('/api/client-plans-count', authenticateToken, async (req, res) => {
   try {
     const client = await pool.connect();
-    const result = await client.query('SELECT COUNT(*) as count FROM client_plans WHERE status = $1', ['active']);
+    const result = await client.query('SELECT COUNT(*) as count FROM client_plans WHERE status = ?', ['active']);
     client.release();
     res.json({ count: parseInt(result.rows[0].count) });
   } catch (error) {
@@ -194,7 +194,7 @@ app.post('/api/import-clients', authenticateToken, async (req, res) => {
         }
         
         // Check if client already exists
-        const existing = await client.query('SELECT id FROM clients WHERE name = $1', [account.name]);
+        const existing = await client.query('SELECT id FROM clients WHERE name = ?', [account.name]);
         
         if (existing.rows.length === 0) {
           // Prepare client data
@@ -204,36 +204,36 @@ app.post('/api/import-clients', authenticateToken, async (req, res) => {
             account.comment : 'Imported from MikroTik';
           const mikrotikProfile = account.profile || 'default';
           
-          // Import as new client
+          // Import as new client (SQLite compatible)
           const clientResult = await client.query(
-            'INSERT INTO clients (name, email, address, status) VALUES ($1, $2, $3, $4) RETURNING id',
+            'INSERT INTO clients (name, email, address, status) VALUES (?, ?, ?, ?)',
             [clientName, clientEmail, clientAddress, 'active']
           );
-          const newClientId = clientResult.rows[0].id;
           
-          // Find or create a plan based on the MikroTik profile
+          // Get the inserted client ID using lastID from the database manager
+          const newClientId = clientResult.lastID;
+          
+          // Find existing plan based on the MikroTik profile (only match existing plans)
+          // Handle both active status and null status (imported plans)
           let planResult = await client.query(
-            'SELECT id FROM plans WHERE name = $1',
+            'SELECT id, name, status FROM plans WHERE name = ?',
             [mikrotikProfile]
           );
           
-          let planId;
-          if (planResult.rows.length === 0) {
-            // Create a new plan based on the MikroTik profile
-            const newPlanResult = await client.query(
-              'INSERT INTO plans (name, description, price, status) VALUES ($1, $2, $3, $4) RETURNING id',
-              [mikrotikProfile, `Imported from MikroTik profile: ${mikrotikProfile}`, 0.00, 'active']
+          // Only import client with plan if we find a matching existing plan
+          if (planResult.rows.length > 0) {
+            const planId = planResult.rows[0].id;
+            
+            // Create client-plan relationship with existing plan
+            await client.query(
+              'INSERT INTO client_plans (client_id, plan_id, status) VALUES (?, ?, ?)',
+              [newClientId, planId, 'active']
             );
-            planId = newPlanResult.rows[0].id;
+            
+            console.log(`✅ Client ${account.name} imported with plan: ${mikrotikProfile}`);
           } else {
-            planId = planResult.rows[0].id;
+            console.log(`⚠️ Client ${account.name} imported without plan (no matching plan found for: ${mikrotikProfile})`);
           }
-          
-          // Create client-plan relationship
-          await client.query(
-            'INSERT INTO client_plans (client_id, plan_id, status) VALUES ($1, $2, $3)',
-            [newClientId, planId, 'active']
-          );
           
           importedCount++;
         } else {
@@ -246,15 +246,20 @@ app.post('/api/import-clients', authenticateToken, async (req, res) => {
       }
     }
     
-    client.release();
+    // Get plan matching statistics for better reporting
+    const allPlansResult = await client.query('SELECT COUNT(*) as count FROM plans');
+    const totalActivePlans = parseInt(allPlansResult.rows[0].count);
     
+    client.release();
+
     // Prepare response with detailed results
     const response = {
       success: true,
       imported: importedCount,
       skipped: skippedCount,
       errors: errorCount,
-      message: `Import completed: ${importedCount} clients imported with plans, ${skippedCount} skipped, ${errorCount} errors`
+      totalActivePlans: totalActivePlans,
+      message: `Import completed: ${importedCount} clients imported, ${skippedCount} skipped, ${errorCount} errors. ${totalActivePlans} active plans available for matching.`
     };
     
     if (errors.length > 0 && errors.length <= 5) {

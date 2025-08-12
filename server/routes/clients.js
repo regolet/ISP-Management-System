@@ -32,19 +32,19 @@ router.get('/', authenticateToken, async (req, res) => {
     if (search) {
       paramCount++;
       // Use LIKE for SQLite compatibility (case-insensitive in SQLite by default)
-      whereConditions.push(`c.name LIKE $${paramCount}`);
+      whereConditions.push(`c.name LIKE ?`);
       queryParams.push(`%${search}%`);
     }
     
     if (paymentStatus) {
       paramCount++;
-      whereConditions.push(`c.payment_status = $${paramCount}`);
+      whereConditions.push(`c.payment_status = ?`);
       queryParams.push(paymentStatus);
     }
     
     if (status) {
       paramCount++;
-      whereConditions.push(`c.status = $${paramCount}`);
+      whereConditions.push(`c.status = ?`);
       queryParams.push(status);
     }
     
@@ -88,7 +88,7 @@ router.get('/', authenticateToken, async (req, res) => {
       LEFT JOIN plans p ON cp.plan_id = p.id
       ${whereClause}
       ORDER BY c.${sortColumn} ${sortDirection}
-      LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
+      LIMIT ? OFFSET ?
     `;
     
     queryParams.push(limit, offset);
@@ -121,11 +121,11 @@ router.post('/', authenticateToken, async (req, res) => {
     }
     const client = await pool.connect();
     const result = await client.query(
-      'INSERT INTO clients (name, email, phone, address, installation_date, due_date, payment_status, status, balance) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+      'INSERT INTO clients (name, email, phone, address, installation_date, due_date, payment_status, status, balance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [name, email || null, phone || null, address, formatDateForDB(installation_date), formatDateForDB(due_date), payment_status, status, balance]
     );
     client.release();
-    res.json({ success: true, client: formatClientDates(result.rows[0]) });
+    res.json({ success: true, message: 'Client created successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -138,15 +138,45 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const { name, email, phone, address, installation_date, due_date, payment_status, status, balance } = req.body;
     const client = await pool.connect();
     const result = await client.query(
-      'UPDATE clients SET name = $1, email = $2, phone = $3, address = $4, installation_date = $5, due_date = $6, payment_status = $7, status = $8, balance = $9, updated_at = CURRENT_TIMESTAMP WHERE id = $10 RETURNING *',
+      'UPDATE clients SET name = ?, email = ?, phone = ?, address = ?, installation_date = ?, due_date = ?, payment_status = ?, status = ?, balance = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [name, email || null, phone || null, address, formatDateForDB(installation_date), formatDateForDB(due_date), payment_status, status, balance || 0, clientId]
     );
     client.release();
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Client not found' });
     }
-    res.json({ success: true, updated: formatClientDates(result.rows[0]) });
+    res.json({ success: true, message: 'Client updated successfully' });
   } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Delete all clients (temporary function) - MUST be before /:id route
+router.delete('/delete-all', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    
+    // Get count before deleting
+    const countResult = await client.query('SELECT COUNT(*) as count FROM clients');
+    const clientCount = parseInt(countResult.rows[0].count);
+    
+    // Delete all related data first (cascade delete)
+    await client.query('DELETE FROM client_plans');
+    await client.query('DELETE FROM billings');
+    await client.query('DELETE FROM payments');
+    
+    // Then delete all clients
+    await client.query('DELETE FROM clients');
+    
+    client.release();
+    
+    res.json({ 
+      success: true, 
+      deleted: clientCount,
+      message: `Successfully deleted ${clientCount} clients and all related data`
+    });
+  } catch (error) {
+    console.error('Error deleting all clients:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -156,12 +186,20 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const clientId = req.params.id;
     const client = await pool.connect();
-    const result = await client.query('DELETE FROM clients WHERE id = $1 RETURNING *', [clientId]);
+    
+    // Delete related data first
+    await client.query('DELETE FROM client_plans WHERE client_id = ?', [clientId]);
+    await client.query('DELETE FROM billings WHERE client_id = ?', [clientId]);
+    await client.query('DELETE FROM payments WHERE client_id = ?', [clientId]);
+    
+    // Then delete the client
+    const result = await client.query('DELETE FROM clients WHERE id = ?', [clientId]);
     client.release();
+    
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Client not found' });
     }
-    res.json({ success: true, deleted: result.rows[0] });
+    res.json({ success: true, message: 'Client deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
   }

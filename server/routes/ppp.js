@@ -80,12 +80,12 @@ router.post('/import-clients', authenticateToken, async (req, res) => {
     for (const account of selectedAccounts) {
       try {
         // Check if client already exists
-        const existing = await client.query('SELECT id FROM clients WHERE name = $1', [account.name]);
+        const existing = await client.query('SELECT id FROM clients WHERE name = ?', [account.name]);
         
         if (existing.rows.length === 0) {
           // Import as new client
           await client.query(
-            'INSERT INTO clients (name, email, address, status) VALUES ($1, $2, $3, $4)',
+            'INSERT INTO clients (name, email, address, status) VALUES (?, ?, ?, ?)',
             [account.name, account.comment || `${account.name}@isp.local`, account.profile || 'Imported from MikroTik', 'active']
           );
           importedCount++;

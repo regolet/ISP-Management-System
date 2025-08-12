@@ -22,8 +22,11 @@
 </head>
 <body class="bg-gray-100 font-inter">
   <div class="flex h-screen overflow-hidden">
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+    
     <!-- Sidebar -->
-    <aside class="w-64 bg-gradient-to-b from-blue-700 to-blue-800 text-white shadow-xl flex flex-col">
+    <aside id="sidebar" class="w-64 bg-gradient-to-b from-blue-700 to-blue-800 text-white shadow-xl flex flex-col fixed lg:static inset-y-0 left-0 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
       <!-- Logo -->
       <div class="p-6 border-b border-blue-600">
         <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
@@ -96,77 +99,105 @@
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
       <!-- Top Header -->
-      <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+      <header class="bg-white shadow-sm border-b border-gray-200 px-4 lg:px-6 py-4">
         <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-gray-900">Clients</h2>
+          <div class="flex items-center">
+            <!-- Mobile Menu Button -->
+            <button id="mobileMenuBtn" class="lg:hidden mr-4 p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <i class="fas fa-bars text-xl"></i>
+            </button>
+            <h2 class="text-xl lg:text-2xl font-bold text-gray-900">Clients</h2>
+          </div>
           <div class="flex items-center space-x-4">
-            <span class="text-gray-600 text-sm">Manage your client information</span>
+            <span class="text-gray-600 text-sm hidden sm:block">Manage your client information</span>
           </div>
         </div>
       </header>
 
       <!-- Main Content Area -->
-      <main class="flex-1 overflow-y-auto bg-gray-100 px-6 py-8">
+      <main class="flex-1 overflow-y-auto bg-gray-100 px-4 lg:px-6 py-6 lg:py-8">
 
     <!-- Client List Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h3 class="text-lg font-semibold text-gray-900 flex items-center mb-4 sm:mb-0">
-          <i class="fas fa-users text-blue-600 mr-2"></i>
-          Client Management
-        </h3>
-        <div class="flex items-center space-x-3">
-          <input 
-            type="text" 
-            id="clientSearch" 
-            placeholder="Search clients..." 
-            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-          <select 
-            id="statusFilter" 
-            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-          <select 
-            id="paymentStatusFilter" 
-            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">All Payments</option>
-            <option value="paid">Paid</option>
-            <option value="unpaid">Unpaid</option>
-          </select>
-          <select id="itemsPerPage" class="px-2 py-1 border border-gray-300 rounded text-sm">
-            <option value="10">10</option>
-            <option value="25" selected>25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="250">250</option>
-            <option value="500">500</option>
-            <option value="1000">All</option>
-          </select>
-          <button 
-            id="importMikrotikBtn" 
-            onclick="openImportModal()"
-            class="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
-          >
-            <i class="fas fa-file-import"></i>
-            <span>Import from MikroTik</span>
-          </button>
-          <button 
-            id="addClientBtn" 
-            onclick="openAddModal()"
-            class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            <i class="fas fa-user-plus"></i>
-            <span>Add Client</span>
-          </button>
+      <div class="px-4 lg:px-6 py-4 border-b border-gray-200">
+        <div class="flex flex-col space-y-4">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-users text-blue-600 mr-2"></i>
+            Client Management
+          </h3>
+          
+          <!-- Mobile-responsive controls -->
+          <div class="flex flex-col space-y-3 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+            <!-- Search and Filters Row -->
+            <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 lg:flex-1">
+              <input 
+                type="text" 
+                id="clientSearch" 
+                placeholder="Search clients..." 
+                class="w-full sm:flex-1 lg:w-64 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+              <select 
+                id="statusFilter" 
+                class="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <select 
+                id="paymentStatusFilter" 
+                class="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Payments</option>
+                <option value="paid">Paid</option>
+                <option value="unpaid">Unpaid</option>
+              </select>
+              <select id="itemsPerPage" class="w-full sm:w-auto px-2 py-1 border border-gray-300 rounded text-sm">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="250">250</option>
+                <option value="500">500</option>
+                <option value="1000">All</option>
+              </select>
+            </div>
+            
+            <!-- Action Buttons Row -->
+            <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 lg:space-x-3">
+              <button 
+                id="importMikrotikBtn" 
+                onclick="openImportModal()"
+                class="flex items-center justify-center space-x-2 px-3 py-2 lg:px-4 lg:py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium text-sm"
+              >
+                <i class="fas fa-file-import"></i>
+                <span class="hidden sm:inline">Import from MikroTik</span>
+                <span class="sm:hidden">Import</span>
+              </button>
+              <button 
+                id="deleteAllBtn" 
+                onclick="confirmDeleteAll()"
+                class="flex items-center justify-center space-x-2 px-3 py-2 lg:px-4 lg:py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 hover:border-red-400 transition-all duration-200 font-medium text-sm"
+              >
+                <i class="fas fa-trash-alt"></i>
+                <span class="hidden sm:inline">Delete All</span>
+                <span class="sm:hidden">Clear</span>
+              </button>
+              <button 
+                id="addClientBtn" 
+                onclick="openAddModal()"
+                class="flex items-center justify-center space-x-2 px-3 py-2 lg:px-4 lg:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+              >
+                <i class="fas fa-user-plus"></i>
+                <span>Add Client</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       
-      <div class="overflow-x-auto">
+      <!-- Desktop Table View -->
+      <div class="hidden lg:block overflow-x-auto">
         <table class="w-full">
           <thead class="bg-gray-50">
             <tr>
@@ -210,21 +241,32 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Mobile Card View -->
+      <div class="lg:hidden" id="clientsCardView">
+        <div class="px-4 py-8 text-center">
+          <div class="flex items-center justify-center">
+            <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mr-3"></div>
+            <span class="text-gray-500">Loading clients...</span>
+          </div>
+        </div>
+      </div>
       
       <!-- Pagination Controls -->
-      <div class="px-6 py-4 border-t border-gray-200">
-        <div class="flex items-center justify-between">
-          <div class="text-sm text-gray-700">
+      <div class="px-4 lg:px-6 py-4 border-t border-gray-200">
+        <div class="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+          <div class="text-sm text-gray-700 text-center sm:text-left">
             <span id="paginationStatus">Showing 0 to 0 of 0 entries</span>
           </div>
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center justify-center space-x-1 sm:space-x-2">
             <button 
               id="prevPageBtn" 
               onclick="changePage(-1)" 
-              class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-2 py-1 lg:px-3 lg:py-1 text-xs lg:text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled
             >
-              <i class="fas fa-chevron-left mr-1"></i> Previous
+              <i class="fas fa-chevron-left mr-1"></i>
+              <span class="hidden sm:inline">Previous</span>
             </button>
             <div id="pageNumbers" class="flex space-x-1">
               <!-- Page numbers will be inserted here -->
@@ -232,10 +274,11 @@
             <button 
               id="nextPageBtn" 
               onclick="changePage(1)" 
-              class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-2 py-1 lg:px-3 lg:py-1 text-xs lg:text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled
             >
-              Next <i class="fas fa-chevron-right ml-1"></i>
+              <span class="hidden sm:inline">Next</span>
+              <i class="fas fa-chevron-right ml-1"></i>
             </button>
           </div>
         </div>
@@ -246,12 +289,15 @@
 
   <!-- Add Client Modal -->
   <div id="addClientModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-      <div class="px-6 py-4 border-b border-gray-200">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto mx-auto">
+      <div class="px-4 py-4 lg:px-6 border-b border-gray-200 flex items-center justify-between">
         <h3 class="text-lg font-semibold text-gray-900">Add New Client</h3>
+        <button type="button" onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 lg:hidden">
+          <i class="fas fa-times text-xl"></i>
+        </button>
       </div>
       
-      <form id="addClientForm" class="p-6 space-y-4">
+      <form id="addClientForm" class="p-4 lg:p-6 space-y-4">
         <div>
           <label for="clientName" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
           <input 
@@ -1934,6 +1980,82 @@
         importBtn.textContent = originalText;
       }
     }
+
+    // Delete All Clients functionality
+    async function confirmDeleteAll() {
+      if (confirm('⚠️ WARNING: This will permanently delete ALL clients and their associated data (plans, billings, payments). This action cannot be undone.\n\nAre you sure you want to continue?')) {
+        if (confirm('This is your FINAL confirmation. All client data will be lost forever. Type OK to proceed.')) {
+          await deleteAllClients();
+        }
+      }
+    }
+
+    async function deleteAllClients() {
+      const token = localStorage.getItem('token');
+      const deleteBtn = document.getElementById('deleteAllBtn');
+      const originalText = deleteBtn.innerHTML;
+      
+      try {
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Deleting...';
+        
+        const response = await fetch('/api/clients/delete-all', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          showNotification('Success', `Successfully deleted all clients. ${result.deleted || 0} clients removed.`, 'success');
+          loadClients(); // Refresh client list
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to delete clients');
+        }
+      } catch (error) {
+        console.error('Error deleting clients:', error);
+        showNotification('Error', 'Failed to delete clients: ' + error.message, 'error');
+      } finally {
+        deleteBtn.disabled = false;
+        deleteBtn.innerHTML = originalText;
+      }
+    }
+
+    // Mobile Menu Functionality
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    const sidebar = document.getElementById('sidebar');
+
+    function toggleMobileMenu() {
+      sidebar.classList.toggle('-translate-x-full');
+      mobileMenuOverlay.classList.toggle('hidden');
+      document.body.classList.toggle('overflow-hidden');
+    }
+
+    function closeMobileMenu() {
+      sidebar.classList.add('-translate-x-full');
+      mobileMenuOverlay.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+    mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+
+    // Close mobile menu when clicking on navigation links
+    const navLinks = sidebar.querySelectorAll('nav a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', closeMobileMenu);
+    });
+
+    // Handle resize events
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) { // lg breakpoint
+        closeMobileMenu();
+      }
+    });
+
   </script>
 </body>
 </html>

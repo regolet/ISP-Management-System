@@ -33,7 +33,16 @@
       "Bash(del \"C:\\Users\\admin\\Desktop\\ISP-Management-System\\data\\offline.db\")",
       "Bash(npm run:*)",
       "Bash(npm uninstall:*)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(sqlite3:*)",
+      "Bash(start http://localhost:3000/clients.html)",
+      "Bash(start http://localhost:3000/payments.html)",
+      "Bash(start http://localhost:3000/billings.html)",
+      "Bash(start http://localhost:3000/tickets.html)",
+      "Bash(start http://localhost:3000/inventory.html)",
+      "Bash(start http://localhost:3000/assets.html)",
+      "Bash(git rm:*)",
+      "Bash(start http://localhost:3000/dashboard.html)"
     ],
     "deny": []
   }

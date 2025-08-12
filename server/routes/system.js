@@ -7,7 +7,7 @@ const { authenticateToken } = require('../middleware/auth');
 const router = express.Router();
 
 // Get current system version and status
-router.get('/version', authenticateToken, async (req, res) => {
+router.get('/version', async (req, res) => {
   try {
     // Get current commit hash and message
     const getCurrentCommit = () => {
@@ -72,7 +72,7 @@ router.get('/version', authenticateToken, async (req, res) => {
 });
 
 // Check for available updates
-router.get('/check-updates', authenticateToken, async (req, res) => {
+router.get('/check-updates', async (req, res) => {
   try {
     // Fetch latest changes from remote
     const fetchUpdates = () => {

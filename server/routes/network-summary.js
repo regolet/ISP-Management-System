@@ -25,63 +25,72 @@ function getIntervalMs(timeRange) {
 router.get('/stats', authenticateToken, async (req, res) => {
   try {
     const { date } = req.query; // Optional date parameter for specific day stats
+    console.log('[Network Stats] Starting stats query for date:', date);
     const client = await pool.connect();
     
     // Get latest network summary data
+    console.log('[Network Stats] Getting latest data...');
     const latestResult = await client.query(`
       SELECT * FROM network_summary 
       ORDER BY created_at DESC 
       LIMIT 1
     `);
+    console.log('[Network Stats] Latest result:', latestResult.rows?.length || 0, 'rows');
     
-    // Get hourly data for the last 24 hours
+    // Get hourly data for the last 24 hours (SQLite compatible)
+    console.log('[Network Stats] Getting hourly data...');
     const hourlyResult = await client.query(`
       SELECT 
-        DATE_TRUNC('hour', created_at) as hour,
+        strftime('%Y-%m-%d %H:00:00', created_at) as hour,
         AVG(online_clients) as avg_online_clients,
         AVG(total_bandwidth_usage) as avg_bandwidth_usage,
         AVG(network_uptime_percentage) as avg_uptime
       FROM network_summary 
-      WHERE created_at >= NOW() - INTERVAL '24 hours'
-      GROUP BY DATE_TRUNC('hour', created_at)
+      WHERE created_at >= datetime('now', '-24 hours')
+      GROUP BY strftime('%Y-%m-%d %H:00:00', created_at)
       ORDER BY hour DESC
     `);
+    console.log('[Network Stats] Hourly result:', hourlyResult.rows?.length || 0, 'rows');
     
     // Get daily data for the last 7 days (or specific date if provided)
+    console.log('[Network Stats] Getting daily data...');
     let dailyQuery, dailyParams;
     if (date) {
-      // Get peak bandwidth for specific date
+      // Get peak bandwidth for specific date (SQLite compatible)
+      console.log('[Network Stats] Using date filter:', date);
       dailyQuery = `
         SELECT 
-          DATE_TRUNC('day', created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Manila') as day,
+          date(created_at, '+8 hours') as day,
           AVG(online_clients) as avg_online_clients,
           AVG(total_bandwidth_usage) as avg_bandwidth_usage,
           AVG(network_uptime_percentage) as avg_uptime,
-          MAX(upload_bandwidth + download_bandwidth) as peak_bandwidth
+          MAX(COALESCE(upload_bandwidth, 0) + COALESCE(download_bandwidth, 0)) as peak_bandwidth
         FROM network_summary 
-        WHERE DATE(created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Manila') = $1
-        GROUP BY DATE_TRUNC('day', created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Manila')
+        WHERE date(created_at, '+8 hours') = ?
+        GROUP BY date(created_at, '+8 hours')
         ORDER BY day DESC
       `;
       dailyParams = [date];
     } else {
-      // Get last 7 days
+      // Get last 7 days (SQLite compatible)
+      console.log('[Network Stats] Using 7 day range');
       dailyQuery = `
         SELECT 
-          DATE_TRUNC('day', created_at) as day,
+          date(created_at) as day,
           AVG(online_clients) as avg_online_clients,
           AVG(total_bandwidth_usage) as avg_bandwidth_usage,
           AVG(network_uptime_percentage) as avg_uptime,
-          MAX(upload_bandwidth + download_bandwidth) as peak_bandwidth
+          MAX(COALESCE(upload_bandwidth, 0) + COALESCE(download_bandwidth, 0)) as peak_bandwidth
         FROM network_summary 
-        WHERE created_at >= NOW() - INTERVAL '7 days'
-        GROUP BY DATE_TRUNC('day', created_at)
+        WHERE created_at >= datetime('now', '-7 days')
+        GROUP BY date(created_at)
         ORDER BY day DESC
       `;
       dailyParams = [];
     }
     
     const dailyResult = await client.query(dailyQuery, dailyParams);
+    console.log('[Network Stats] Daily result:', dailyResult.rows?.length || 0, 'rows');
     
     client.release();
     
@@ -105,11 +114,11 @@ router.post('/', authenticateToken, async (req, res) => {
       online_clients,
       offline_clients,
       total_bandwidth_usage,
-      average_bandwidth_per_client,
-      peak_bandwidth_usage,
       network_uptime_percentage,
       active_connections,
-      failed_connections
+      failed_connections,
+      upload_bandwidth,
+      download_bandwidth
     } = req.body;
     
     const client = await pool.connect();
@@ -117,25 +126,24 @@ router.post('/', authenticateToken, async (req, res) => {
     const result = await client.query(`
       INSERT INTO network_summary (
         total_clients, online_clients, offline_clients,
-        total_bandwidth_usage, average_bandwidth_per_client, peak_bandwidth_usage,
-        network_uptime_percentage, active_connections, failed_connections
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING *
+        total_bandwidth_usage, network_uptime_percentage, 
+        active_connections, failed_connections, upload_bandwidth, download_bandwidth
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       total_clients || 0,
       online_clients || 0,
       offline_clients || 0,
       total_bandwidth_usage || 0,
-      average_bandwidth_per_client || 0,
-      peak_bandwidth_usage || 0,
       network_uptime_percentage || 100.00,
       active_connections || 0,
-      failed_connections || 0
+      failed_connections || 0,
+      upload_bandwidth || 0,
+      download_bandwidth || 0
     ]);
     
     client.release();
     
-    res.json({ success: true, data: result.rows[0] });
+    res.json({ success: true, message: 'Network summary data added successfully' });
   } catch (error) {
     console.error('Error adding network summary data:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
@@ -199,7 +207,7 @@ router.get('/bandwidth-history', authenticateToken, async (req, res) => {
           online_clients as avg_online_clients,
           total_clients
         FROM network_summary 
-        WHERE created_at >= $1 AND created_at < $2
+        WHERE created_at >= ? AND created_at < ?
         ORDER BY created_at ASC
       `;
       params = [startDate.toISOString(), endDate.toISOString()];
@@ -214,7 +222,7 @@ router.get('/bandwidth-history', authenticateToken, async (req, res) => {
           online_clients as avg_online_clients,
           total_clients
         FROM network_summary 
-        WHERE created_at >= $1
+        WHERE created_at >= ?
         ORDER BY created_at ASC
       `;
       params = [cutoffTime];
@@ -243,14 +251,14 @@ router.get('/uptime-stats', authenticateToken, async (req, res) => {
         MIN(network_uptime_percentage) as min_uptime_24h,
         COUNT(*) as total_measurements
       FROM network_summary 
-      WHERE created_at >= NOW() - INTERVAL '24 hours'
+      WHERE created_at >= datetime('now', '-24 hours')
     `);
     
     const weeklyResult = await client.query(`
       SELECT 
         AVG(network_uptime_percentage) as avg_uptime_7d
       FROM network_summary 
-      WHERE created_at >= NOW() - INTERVAL '7 days'
+      WHERE created_at >= datetime('now', '-7 days')
     `);
     
     client.release();

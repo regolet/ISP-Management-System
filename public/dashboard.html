@@ -20,8 +20,11 @@
 </head>
 <body class="bg-gray-100 font-inter">
   <div class="flex h-screen overflow-hidden">
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+    
     <!-- Sidebar -->
-    <aside class="w-64 bg-gradient-to-b from-blue-700 to-blue-800 text-white shadow-xl flex flex-col">
+    <aside id="sidebar" class="w-64 bg-gradient-to-b from-blue-700 to-blue-800 text-white shadow-xl flex flex-col fixed lg:static inset-y-0 left-0 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
       <!-- Logo -->
       <div class="p-6 border-b border-blue-600">
         <a href="/dashboard.html" class="flex items-center space-x-3 hover:opacity-90 transition-opacity">
@@ -94,11 +97,17 @@
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
       <!-- Top Header -->
-      <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+      <header class="bg-white shadow-sm border-b border-gray-200 px-4 lg:px-6 py-4">
         <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-gray-900">Dashboard</h2>
+          <div class="flex items-center">
+            <!-- Mobile Menu Button -->
+            <button id="mobileMenuBtn" class="lg:hidden mr-4 p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <i class="fas fa-bars text-xl"></i>
+            </button>
+            <h2 class="text-xl lg:text-2xl font-bold text-gray-900">Dashboard</h2>
+          </div>
           <div class="flex items-center space-x-4">
-            <div class="text-right">
+            <div class="text-right hidden sm:block">
               <span class="text-gray-600 text-sm">Welcome to your ISP Management System</span>
               <div class="text-gray-900 font-medium" id="currentDateTime">Loading...</div>
             </div>
@@ -107,128 +116,128 @@
       </header>
 
       <!-- Main Content Area -->
-      <main class="flex-1 overflow-y-auto bg-gray-100 px-6 py-8">
+      <main class="flex-1 overflow-y-auto bg-gray-100 px-4 lg:px-6 py-6 lg:py-8">
 
     <!-- Stats Cards Row 1 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
       <!-- Clients Card -->
       <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
-        <div class="p-6 flex items-center">
-          <div class="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
-            <i class="fas fa-users text-2xl text-blue-600"></i>
+        <div class="p-4 lg:p-6 flex items-center">
+          <div class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center mr-3 lg:mr-4 group-hover:scale-105 transition-transform flex-shrink-0">
+            <i class="fas fa-users text-xl lg:text-2xl text-blue-600"></i>
           </div>
-          <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Total Clients</p>
-            <p class="text-3xl font-bold text-gray-900" id="clientCount">0</p>
-            <p class="text-sm text-gray-500">Active subscribers</p>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs lg:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Total Clients</p>
+            <p class="text-2xl lg:text-3xl font-bold text-gray-900" id="clientCount">0</p>
+            <p class="text-xs lg:text-sm text-gray-500">Active subscribers</p>
           </div>
         </div>
       </div>
       
       <!-- Revenue Card -->
       <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
-        <div class="p-6 flex items-center">
-          <div class="w-14 h-14 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
-            <i class="fas fa-peso-sign text-2xl text-green-600"></i>
+        <div class="p-4 lg:p-6 flex items-center">
+          <div class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center mr-3 lg:mr-4 group-hover:scale-105 transition-transform flex-shrink-0">
+            <i class="fas fa-peso-sign text-xl lg:text-2xl text-green-600"></i>
           </div>
-          <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">This Month</p>
-            <p class="text-3xl font-bold text-gray-900" id="monthlyRevenue">₱0.00</p>
-            <p class="text-sm text-gray-500">Monthly revenue</p>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs lg:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">This Month</p>
+            <p class="text-2xl lg:text-3xl font-bold text-gray-900" id="monthlyRevenue">₱0.00</p>
+            <p class="text-xs lg:text-sm text-gray-500">Monthly revenue</p>
           </div>
         </div>
       </div>
       
       <!-- Active Services Card -->
       <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
-        <div class="p-6 flex items-center">
-          <div class="w-14 h-14 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
-            <i class="fas fa-wifi text-2xl text-purple-600"></i>
+        <div class="p-4 lg:p-6 flex items-center">
+          <div class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center mr-3 lg:mr-4 group-hover:scale-105 transition-transform flex-shrink-0">
+            <i class="fas fa-wifi text-xl lg:text-2xl text-purple-600"></i>
           </div>
-          <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Active Services</p>
-            <p class="text-3xl font-bold text-gray-900" id="clientPlansCount">0</p>
-            <p class="text-sm text-gray-500">Running connections</p>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs lg:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Active Services</p>
+            <p class="text-2xl lg:text-3xl font-bold text-gray-900" id="clientPlansCount">0</p>
+            <p class="text-xs lg:text-sm text-gray-500">Running connections</p>
           </div>
         </div>
       </div>
       
       <!-- Pending Issues Card -->
       <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
-        <div class="p-6 flex items-center">
-          <div class="w-14 h-14 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
-            <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+        <div class="p-4 lg:p-6 flex items-center">
+          <div class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center mr-3 lg:mr-4 group-hover:scale-105 transition-transform flex-shrink-0">
+            <i class="fas fa-exclamation-triangle text-xl lg:text-2xl text-red-600"></i>
           </div>
-          <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Pending Issues</p>
-            <p class="text-3xl font-bold text-gray-900" id="pendingIssues">0</p>
-            <p class="text-sm text-gray-500">Need attention</p>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs lg:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Pending Issues</p>
+            <p class="text-2xl lg:text-3xl font-bold text-gray-900" id="pendingIssues">0</p>
+            <p class="text-xs lg:text-sm text-gray-500">Need attention</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Stats Cards Row 2 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
       <!-- Plans Card -->
       <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
-        <div class="p-6 flex items-center">
-          <div class="w-14 h-14 bg-gradient-to-br from-cyan-100 to-cyan-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
-            <i class="fas fa-project-diagram text-2xl text-cyan-600"></i>
+        <div class="p-4 lg:p-6 flex items-center">
+          <div class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-cyan-100 to-cyan-200 rounded-xl flex items-center justify-center mr-3 lg:mr-4 group-hover:scale-105 transition-transform flex-shrink-0">
+            <i class="fas fa-project-diagram text-xl lg:text-2xl text-cyan-600"></i>
           </div>
-          <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Service Plans</p>
-            <p class="text-3xl font-bold text-gray-900" id="planCount">0</p>
-            <p class="text-sm text-gray-500">Available plans</p>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs lg:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Service Plans</p>
+            <p class="text-2xl lg:text-3xl font-bold text-gray-900" id="planCount">0</p>
+            <p class="text-xs lg:text-sm text-gray-500">Available plans</p>
           </div>
         </div>
       </div>
 
       <!-- Assets Card -->
       <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
-        <div class="p-6 flex items-center">
-          <div class="w-14 h-14 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
-            <i class="fas fa-cube text-2xl text-orange-600"></i>
+        <div class="p-4 lg:p-6 flex items-center">
+          <div class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center mr-3 lg:mr-4 group-hover:scale-105 transition-transform flex-shrink-0">
+            <i class="fas fa-cube text-xl lg:text-2xl text-orange-600"></i>
           </div>
-          <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Total Assets</p>
-            <p class="text-3xl font-bold text-gray-900" id="assetCount">0</p>
-            <p class="text-sm text-gray-500">Network equipment</p>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs lg:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Total Assets</p>
+            <p class="text-2xl lg:text-3xl font-bold text-gray-900" id="assetCount">0</p>
+            <p class="text-xs lg:text-sm text-gray-500">Network equipment</p>
           </div>
         </div>
       </div>
 
       <!-- Tickets Card -->
       <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
-        <div class="p-6 flex items-center">
-          <div class="w-14 h-14 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
-            <i class="fas fa-ticket-alt text-2xl text-indigo-600"></i>
+        <div class="p-4 lg:p-6 flex items-center">
+          <div class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-xl flex items-center justify-center mr-3 lg:mr-4 group-hover:scale-105 transition-transform flex-shrink-0">
+            <i class="fas fa-ticket-alt text-xl lg:text-2xl text-indigo-600"></i>
           </div>
-          <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Open Tickets</p>
-            <p class="text-3xl font-bold text-gray-900" id="openTickets">0</p>
-            <p class="text-sm text-gray-500">Support requests</p>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs lg:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Open Tickets</p>
+            <p class="text-2xl lg:text-3xl font-bold text-gray-900" id="openTickets">0</p>
+            <p class="text-xs lg:text-sm text-gray-500">Support requests</p>
           </div>
         </div>
       </div>
 
       <!-- Inventory Card -->
       <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200 group">
-        <div class="p-6 flex items-center">
-          <div class="w-14 h-14 bg-gradient-to-br from-teal-100 to-teal-200 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
-            <i class="fas fa-boxes text-2xl text-teal-600"></i>
+        <div class="p-4 lg:p-6 flex items-center">
+          <div class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-teal-100 to-teal-200 rounded-xl flex items-center justify-center mr-3 lg:mr-4 group-hover:scale-105 transition-transform flex-shrink-0">
+            <i class="fas fa-boxes text-xl lg:text-2xl text-teal-600"></i>
           </div>
-          <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Inventory Items</p>
-            <p class="text-3xl font-bold text-gray-900" id="inventoryCount">0</p>
-            <p class="text-sm text-gray-500">Stock items</p>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs lg:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Inventory Items</p>
+            <p class="text-2xl lg:text-3xl font-bold text-gray-900" id="inventoryCount">0</p>
+            <p class="text-xs lg:text-sm text-gray-500">Stock items</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Charts and Analytics Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
       <!-- Revenue Chart -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
@@ -243,37 +252,6 @@
         </div>
       </div>
 
-      <!-- Client Status Chart -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <i class="fas fa-users text-blue-600 mr-2"></i>
-            Client Distribution
-          </h3>
-          <p class="text-sm text-gray-600 mt-1">Client status breakdown</p>
-        </div>
-        <div class="p-6">
-          <canvas id="clientChart" width="400" height="200"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- Network Monitoring Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <!-- Network Activity Chart -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <i class="fas fa-network-wired text-purple-600 mr-2"></i>
-            Network Activity
-          </h3>
-          <p class="text-sm text-gray-600 mt-1">Online clients over time</p>
-        </div>
-        <div class="p-6">
-          <canvas id="networkActivityChart" width="400" height="200"></canvas>
-        </div>
-      </div>
-
       <!-- Bandwidth Usage Chart -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
@@ -285,16 +263,30 @@
               </h3>
               <p class="text-sm text-gray-600 mt-1">Network bandwidth trends</p>
             </div>
-            
-            <!-- Smart view info -->
             <div class="text-sm text-gray-600">
               <i class="fas fa-clock mr-1"></i>
-              Morning view (12:00 AM - 12:00 PM) or recent data • Asia/Manila (+8 GMT)
+              24-hour view • Asia/Manila (+8 GMT)
             </div>
           </div>
         </div>
         <div class="p-6">
-          <canvas id="bandwidthChart" width="400" height="200"></canvas>
+          <canvas id="mainBandwidthChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Network Activity Section -->
+    <div class="mb-8">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-network-wired text-purple-600 mr-2"></i>
+            Network Activity
+          </h3>
+          <p class="text-sm text-gray-600 mt-1">Online clients over time</p>
+        </div>
+        <div class="p-6">
+          <canvas id="networkActivityChart" width="400" height="200"></canvas>
         </div>
       </div>
     </div>
@@ -635,9 +627,8 @@
 
     // Chart instances
     let revenueChart = null;
-    let clientChart = null;
+    let mainBandwidthChart = null;
     let networkActivityChart = null;
-    let bandwidthChart = null;
     
     // Fixed 24-hour bandwidth view (no filter needed)
     
@@ -808,9 +799,8 @@
 
         // Create charts with fetched data
         createRevenueChart(paymentsData);
-        createClientChart(clientsData);
+        createMainBandwidthChart(bandwidthData);
         createNetworkActivityChart(bandwidthData);  // Use same data source as bandwidth chart
-        createBandwidthChart(bandwidthData);
         
         // Load recent activity
         loadRecentActivity();
@@ -921,53 +911,130 @@
       });
     }
 
-    function createClientChart(clientsData) {
-      const ctx = document.getElementById('clientChart').getContext('2d');
-      
+    function createMainBandwidthChart(bandwidthData) {
+      const ctx = document.getElementById('mainBandwidthChart');
+      if (!ctx) return;
+
       // Destroy existing chart if it exists
-      if (clientChart) {
-        clientChart.destroy();
+      if (mainBandwidthChart) {
+        mainBandwidthChart.destroy();
       }
+
+      // Prepare data for 24-hour chart with 1-hour intervals
+      const labels = [];
+      const uploadData = [];
+      const downloadData = [];
       
-      // Ensure clientsData is an array
-      if (!Array.isArray(clientsData)) {
-        clientsData = [];
-      }
-      
-      // Count clients by status
-      const statusCounts = {
-        active: 0,
-        inactive: 0,
-        suspended: 0
-      };
-      
-      clientsData.forEach(client => {
-        const status = client.status || 'active';
-        if (statusCounts[status] !== undefined) {
-          statusCounts[status]++;
+      // Create 24 hourly buckets from 12am to 11pm (24 hours)
+      const hourlyData = {};
+      for (let hour = 0; hour < 24; hour++) {
+        let timeLabel;
+        if (hour === 0) {
+          timeLabel = '12:00 AM';
+        } else if (hour < 12) {
+          timeLabel = `${hour}:00 AM`;
+        } else if (hour === 12) {
+          timeLabel = '12:00 PM';
         } else {
-          statusCounts.active++;
+          timeLabel = `${hour - 12}:00 PM`;
         }
-      });
+        
+        hourlyData[hour] = {
+          label: timeLabel,
+          upload: [],
+          download: []
+        };
+      }
       
-      clientChart = new Chart(ctx, {
-        type: 'doughnut',
+      if (Array.isArray(bandwidthData) && bandwidthData.length > 0) {
+        
+        // Group data by hour - convert UTC to Manila time (+8 hours)
+        bandwidthData.forEach(record => {
+          // Convert UTC time to Manila time (+8 hours)
+          const utcDate = new Date(record.time_period);
+          const manilaTime = new Date(utcDate.getTime() + (8 * 60 * 60 * 1000));
+          const hour = manilaTime.getHours();
+          
+          // Include data for all 24 hours (0-23)
+          if (hour >= 0 && hour < 24) {
+            // Convert bytes to Mbps
+            const uploadMbps = (record.upload_bandwidth * 8) / 1000000;
+            const downloadMbps = (record.download_bandwidth * 8) / 1000000;
+            
+            hourlyData[hour].upload.push(uploadMbps);
+            hourlyData[hour].download.push(downloadMbps);
+          }
+        });
+        
+        // Calculate averages for each hour
+        for (let hour = 0; hour < 24; hour++) {
+          const hourData = hourlyData[hour];
+          labels.push(hourData.label);
+          
+          // Calculate average bandwidth for this hour
+          const avgUpload = hourData.upload.length > 0 
+            ? (hourData.upload.reduce((a, b) => a + b, 0) / hourData.upload.length)
+            : 0;
+          const avgDownload = hourData.download.length > 0 
+            ? (hourData.download.reduce((a, b) => a + b, 0) / hourData.download.length)
+            : 0;
+          
+          uploadData.push(avgUpload);
+          downloadData.push(avgDownload);
+        }
+      } else {
+        // Default empty data when no records exist - show 24 hours
+        for (let hour = 0; hour < 24; hour++) {
+          let timeLabel;
+          if (hour === 0) {
+            timeLabel = '12:00 AM';
+          } else if (hour < 12) {
+            timeLabel = `${hour}:00 AM`;
+          } else if (hour === 12) {
+            timeLabel = '12:00 PM';
+          } else {
+            timeLabel = `${hour - 12}:00 PM`;
+          }
+          
+          labels.push(timeLabel);
+          uploadData.push(0);
+          downloadData.push(0);
+        }
+      }
+
+      // Create the chart
+      mainBandwidthChart = new Chart(ctx, {
+        type: 'line',
         data: {
-          labels: ['Active', 'Inactive', 'Suspended'],
-          datasets: [{
-            data: [statusCounts.active, statusCounts.inactive, statusCounts.suspended],
-            backgroundColor: [
-              'rgb(34, 197, 94)',
-              'rgb(156, 163, 175)',
-              'rgb(239, 68, 68)'
-            ],
-            borderColor: [
-              'rgb(34, 197, 94)',
-              'rgb(156, 163, 175)',
-              'rgb(239, 68, 68)'
-            ],
-            borderWidth: 2
-          }]
+          labels: labels,
+          datasets: [
+            {
+              label: 'Upload (Mbps)',
+              data: uploadData,
+              borderColor: 'rgb(239, 68, 68)',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              borderWidth: 3,
+              tension: 0.4,
+              fill: true,
+              pointBackgroundColor: 'rgb(239, 68, 68)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointRadius: 4
+            },
+            {
+              label: 'Download (Mbps)',
+              data: downloadData,
+              borderColor: 'rgb(34, 197, 94)',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              borderWidth: 3,
+              tension: 0.4,
+              fill: true,
+              pointBackgroundColor: 'rgb(34, 197, 94)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointRadius: 4
+            }
+          ]
         },
         options: {
           responsive: true,
@@ -976,8 +1043,40 @@
             legend: {
               position: 'bottom',
               labels: {
-                padding: 20,
+                padding: 15,
                 usePointStyle: true
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' Mbps';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return value.toFixed(1) + ' Mbps';
+                },
+                stepSize: 0.5
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 12
               }
             }
           }
@@ -1139,159 +1238,6 @@
       });
     }
 
-    function createBandwidthChart(bandwidthData) {
-      const ctx = document.getElementById('bandwidthChart');
-      if (!ctx) return;
-
-      // Destroy existing chart if it exists
-      if (bandwidthChart) {
-        bandwidthChart.destroy();
-      }
-
-      // Prepare data for 24-hour chart with 1-hour intervals (exact copy from Network Activity chart)
-      const labels = [];
-      const uploadData = [];
-      const downloadData = [];
-      
-      // Create 24 hourly buckets from 12am to 12pm (24 hours)
-      const hourlyData = {};
-      for (let hour = 0; hour < 24; hour++) {
-        let timeLabel;
-        if (hour === 0) {
-          timeLabel = '12:00 AM';
-        } else if (hour < 12) {
-          timeLabel = `${hour}:00 AM`;
-        } else if (hour === 12) {
-          timeLabel = '12:00 PM';
-        } else {
-          timeLabel = `${hour - 12}:00 PM`;
-        }
-        
-        hourlyData[hour] = {
-          label: timeLabel,
-          upload: [],
-          download: []
-        };
-      }
-      
-      if (Array.isArray(bandwidthData) && bandwidthData.length > 0) {
-        
-        // Group data by hour - convert UTC to Manila time (+8 hours)
-        bandwidthData.forEach(record => {
-          // Convert UTC time to Manila time (+8 hours)
-          const utcDate = new Date(record.time_period);
-          const manilaTime = new Date(utcDate.getTime() + (8 * 60 * 60 * 1000));
-          const hour = manilaTime.getHours();
-          
-          // Include data for all 24 hours (0-23)
-          if (hour >= 0 && hour < 24) {
-            // Convert bytes to Mbps
-            const uploadMbps = (record.upload_bandwidth * 8) / 1000000;
-            const downloadMbps = (record.download_bandwidth * 8) / 1000000;
-            
-            hourlyData[hour].upload.push(uploadMbps);
-            hourlyData[hour].download.push(downloadMbps);
-          }
-        });
-        
-        // Calculate averages for each hour
-        for (let hour = 0; hour < 24; hour++) {
-          const hourData = hourlyData[hour];
-          labels.push(hourData.label);
-          
-          // Calculate average bandwidth for this hour
-          const avgUpload = hourData.upload.length > 0 
-            ? (hourData.upload.reduce((a, b) => a + b, 0) / hourData.upload.length)
-            : 0;
-          const avgDownload = hourData.download.length > 0 
-            ? (hourData.download.reduce((a, b) => a + b, 0) / hourData.download.length)
-            : 0;
-          
-          uploadData.push(avgUpload);
-          downloadData.push(avgDownload);
-        }
-      } else {
-        // Default empty data when no records exist - show 24 hours
-        for (let hour = 0; hour < 24; hour++) {
-          let timeLabel;
-          if (hour === 0) {
-            timeLabel = '12:00 AM';
-          } else if (hour < 12) {
-            timeLabel = `${hour}:00 AM`;
-          } else if (hour === 12) {
-            timeLabel = '12:00 PM';
-          } else {
-            timeLabel = `${hour - 12}:00 PM`;
-          }
-          
-          labels.push(timeLabel);
-          uploadData.push(0);
-          downloadData.push(0);
-        }
-      }
-
-      // Create the chart
-      bandwidthChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'Upload (Mbps)',
-              data: uploadData,
-              borderColor: 'rgb(239, 68, 68)',
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              borderWidth: 2,
-              tension: 0.4,
-              fill: true
-            },
-            {
-              label: 'Download (Mbps)',
-              data: downloadData,
-              borderColor: 'rgb(34, 197, 94)',
-              backgroundColor: 'rgba(34, 197, 94, 0.1)',
-              borderWidth: 2,
-              tension: 0.4,
-              fill: true
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom'
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' Mbps';
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                callback: function(value) {
-                  return value.toFixed(1) + ' Mbps';
-                }
-              }
-            },
-            x: {
-              ticks: {
-                maxRotation: 45,
-                minRotation: 0,
-                autoSkip: true,
-                maxTicksLimit: 12
-              }
-            }
-          }
-        }
-      });
-    }
 
     function updateNetworkStats(networkData) {
       // Update network performance metrics
@@ -1452,6 +1398,39 @@
         document.getElementById('mikrotikStatus').className = 'text-xs font-semibold text-red-600 px-2 py-1 bg-red-100 rounded-full';
       }
     }
+
+    // Mobile Menu Functionality
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    const sidebar = document.getElementById('sidebar');
+
+    function toggleMobileMenu() {
+      sidebar.classList.toggle('-translate-x-full');
+      mobileMenuOverlay.classList.toggle('hidden');
+      document.body.classList.toggle('overflow-hidden');
+    }
+
+    function closeMobileMenu() {
+      sidebar.classList.add('-translate-x-full');
+      mobileMenuOverlay.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+    mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+
+    // Close mobile menu when clicking on navigation links
+    const navLinks = sidebar.querySelectorAll('nav a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', closeMobileMenu);
+    });
+
+    // Handle resize events
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) { // lg breakpoint
+        closeMobileMenu();
+      }
+    });
 
   </script>
 </body>
