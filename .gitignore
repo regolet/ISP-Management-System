@@ -1,3 +1,11 @@
 # Local Netlify folder
 .netlify
 node_modules
+
+# Database files (local/runtime data)
+data/offline.db
+data/*.db
+
+# System backups
+backups/
+*.tar
