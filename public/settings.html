@@ -517,63 +517,31 @@
                   <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
                     <h4 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
                       <i class="fas fa-toggle-on mr-2 text-blue-600"></i>
-                      Database Mode Controls
+                      Database Information
                     </h4>
                     <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                       <div class="flex-1">
-                        <p class="text-sm text-gray-600 mb-2">Manually switch between online and offline database modes:</p>
+                        <p class="text-sm text-gray-600 mb-2">Your ISP Management System uses a local SQLite database for optimal performance and reliability:</p>
                         <div class="text-xs text-gray-500">
-                          <div>• <strong>Online:</strong> Data saved to Neon PostgreSQL cloud database</div>
-                          <div>• <strong>Offline:</strong> Data saved locally to SQLite database</div>
+                          <div>• <strong>Fast Performance:</strong> All data stored locally for instant access</div>
+                          <div>• <strong>Always Available:</strong> Works without internet connection</div>
+                          <div>• <strong>Secure & Private:</strong> Your data stays on your system</div>
+                          <div>• <strong>No Dependencies:</strong> No cloud services required</div>
                         </div>
                       </div>
-                      <div class="flex gap-2">
-                        <button 
-                          id="switchOnlineBtn"
-                          onclick="switchToOnlineMode()" 
-                          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                          <i class="fas fa-cloud mr-2"></i>
-                          Switch Online
-                        </button>
-                        <button 
-                          id="switchOfflineBtn"
-                          onclick="switchToOfflineMode()" 
-                          class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors flex items-center text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                          <i class="fas fa-desktop mr-2"></i>
-                          Switch Offline
-                        </button>
+                      <div class="flex items-center">
+                        <div class="bg-green-100 text-green-800 px-3 py-2 rounded-lg text-sm font-medium">
+                          <i class="fas fa-database mr-2"></i>SQLite Active
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Sync Actions -->
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <button 
-                      onclick="checkDatabaseStatus()" 
-                      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center">
-                      <i class="fas fa-sync-alt mr-2"></i>
-                      Refresh Status
-                    </button>
-                    <button 
-                      onclick="forceSyncData()" 
-                      id="syncButton"
-                      class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center">
-                      <i class="fas fa-cloud-upload-alt mr-2"></i>
-                      Force Sync
-                    </button>
-                    <button 
-                      onclick="getOfflineSummary()" 
-                      class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center">
-                      <i class="fas fa-list mr-2"></i>
-                      Offline Summary
-                    </button>
-                  </div>
-
-                  <!-- Offline Database Management -->
+                  <!-- Database Management -->
                   <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
                     <h4 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
                       <i class="fas fa-database mr-2 text-purple-600"></i>
-                      Offline Database Management
+                      Database Management
                     </h4>
                     
                     <!-- Progress Bar Container (initially hidden) -->
@@ -618,12 +586,6 @@
                       <i class="fas fa-vial mr-2"></i>
                       Test Connection
                     </button>
-                    <button 
-                      onclick="forceOnlineMode()" 
-                      class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center">
-                      <i class="fas fa-exclamation-triangle mr-2"></i>
-                      Force Online (Bypass Check)
-                    </button>
                   </div>
 
                   <!-- Sync Status Messages -->
@@ -637,14 +599,14 @@
                     </div>
                   </div>
 
-                  <!-- Database Mode Info -->
+                  <!-- Database System Info -->
                   <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 class="text-sm font-medium text-blue-900 mb-2">How It Works</h4>
+                    <h4 class="text-sm font-medium text-blue-900 mb-2">SQLite Database Features</h4>
                     <ul class="text-sm text-blue-800 space-y-1">
-                      <li>• <strong>Online Mode:</strong> All data saved to Neon PostgreSQL cloud database</li>
-                      <li>• <strong>Offline Mode:</strong> Data saved locally to SQLite when internet is down</li>
-                      <li>• <strong>Auto-Sync:</strong> Offline data automatically syncs when connection returns</li>
-                      <li>• <strong>Manual Sync:</strong> Use "Force Sync" button to manually push offline data</li>
+                      <li>• <strong>High Performance:</strong> All data stored locally for instant access</li>
+                      <li>• <strong>Always Available:</strong> No internet connection required</li>
+                      <li>• <strong>Reliable:</strong> File-based database with ACID transactions</li>
+                      <li>• <strong>Lightweight:</strong> Minimal resource usage and fast startup</li>
                     </ul>
                   </div>
                 </div>
@@ -1656,42 +1618,6 @@
       }
     }
 
-    async function forceSyncData() {
-      const statusDiv = document.getElementById('syncStatus');
-      statusDiv.innerHTML = '<div class="bg-blue-50 border border-blue-200 rounded-lg p-3"><i class="fas fa-spinner fa-spin mr-2"></i>Syncing offline data...</div>';
-      
-      try {
-        const response = await fetch('/api/database/sync', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-          if (data.synced > 0) {
-            statusDiv.innerHTML = `<div class="bg-green-50 border border-green-200 rounded-lg p-3 text-green-800">
-              <i class="fas fa-check-circle mr-2"></i>Successfully synced ${data.synced} items to online database
-            </div>`;
-          } else {
-            statusDiv.innerHTML = '<div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-blue-800"><i class="fas fa-info-circle mr-2"></i>No data to sync - all up to date</div>';
-          }
-          
-          // Refresh status after sync
-          setTimeout(() => {
-            checkDatabaseStatus();
-            statusDiv.innerHTML = '';
-          }, 3000);
-          
-        } else {
-          statusDiv.innerHTML = `<div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800">
-            <i class="fas fa-exclamation-circle mr-2"></i>Sync failed: ${data.error}
-          </div>`;
-        }
-      } catch (error) {
-        console.error('Error syncing data:', error);
-        statusDiv.innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800"><i class="fas fa-exclamation-circle mr-2"></i>Failed to sync data</div>';
-      }
-    }
 
     async function getOfflineSummary() {
       try {
@@ -1742,120 +1668,19 @@
       }
     }
 
-    // Database Mode Switching Functions
-    async function switchToOnlineMode() {
-      const btn = document.getElementById('switchOnlineBtn');
-      const originalText = btn.innerHTML;
-      
-      // Show loading state
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Switching...';
-      
-      try {
-        const response = await fetch('/api/database/switch-online', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          showNotification('Success', 'Successfully switched to online mode', 'success');
-          // Refresh status to show new mode
-          setTimeout(() => {
-            checkDatabaseStatus();
-          }, 1000);
-        } else {
-          // Show more detailed error message for connection failures
-          if (data.isOffline) {
-            showNotification('Connection Failed', data.error, 'warning');
-            showNotification('Info', data.message, 'info');
-          } else {
-            showNotification('Error', data.error || 'Failed to switch to online mode', 'error');
-          }
-        }
-      } catch (error) {
-        console.error('Error switching to online mode:', error);
-        showNotification('Error', 'Failed to switch to online mode', 'error');
-      } finally {
-        // Restore button state
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-      }
-    }
+    // Database Management Functions (SQLite-only system)
 
-    async function switchToOfflineMode() {
-      if (!confirm('Switch to offline mode? You will work locally until switched back online.')) {
-        return;
-      }
-      
-      const btn = document.getElementById('switchOfflineBtn');
-      const originalText = btn.innerHTML;
-      
-      // Show loading state
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Switching...';
-      
-      try {
-        const response = await fetch('/api/database/switch-offline', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          showNotification('Success', 'Successfully switched to offline mode', 'success');
-          // Refresh status to show new mode
-          setTimeout(() => {
-            checkDatabaseStatus();
-          }, 1000);
-        } else {
-          showNotification('Error', data.error || 'Failed to switch to offline mode', 'error');
-        }
-      } catch (error) {
-        console.error('Error switching to offline mode:', error);
-        showNotification('Error', 'Failed to switch to offline mode', 'error');
-      } finally {
-        // Restore button state
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-      }
-    }
-
-    // Update button states based on current database mode
+    // Update UI state (SQLite-only system)
     function updateModeButtons(isOnline) {
-      const onlineBtn = document.getElementById('switchOnlineBtn');
-      const offlineBtn = document.getElementById('switchOfflineBtn');
       const offlineWarning = document.getElementById('offlineWarning');
       const globalOfflineIndicator = document.getElementById('globalOfflineIndicator');
       
-      if (isOnline) {
-        onlineBtn.disabled = true;
-        onlineBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Currently Online';
-        offlineBtn.disabled = false;
-        offlineBtn.innerHTML = '<i class="fas fa-desktop mr-2"></i>Switch Offline';
-        
-        // Hide offline indicators
-        if (offlineWarning) {
-          offlineWarning.classList.add('hidden');
-        }
-        if (globalOfflineIndicator) {
-          globalOfflineIndicator.classList.add('hidden');
-        }
-      } else {
-        onlineBtn.disabled = false;
-        onlineBtn.innerHTML = '<i class="fas fa-cloud mr-2"></i>Switch Online';
-        offlineBtn.disabled = true;
-        offlineBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Currently Offline';
-        
-        // Show offline indicators
-        if (offlineWarning) {
-          offlineWarning.classList.remove('hidden');
-        }
-        if (globalOfflineIndicator) {
-          globalOfflineIndicator.classList.remove('hidden');
-        }
+      // Always hide offline warnings since SQLite is the primary mode
+      if (offlineWarning) {
+        offlineWarning.classList.add('hidden');
+      }
+      if (globalOfflineIndicator) {
+        globalOfflineIndicator.classList.add('hidden');
       }
     }
 

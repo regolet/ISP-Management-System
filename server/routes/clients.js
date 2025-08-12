@@ -31,7 +31,8 @@ router.get('/', authenticateToken, async (req, res) => {
     
     if (search) {
       paramCount++;
-      whereConditions.push(`c.name ILIKE $${paramCount}`);
+      // Use LIKE for SQLite compatibility (case-insensitive in SQLite by default)
+      whereConditions.push(`c.name LIKE $${paramCount}`);
       queryParams.push(`%${search}%`);
     }
     
@@ -65,7 +66,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const countResult = await client.query(countQuery, queryParams);
     const totalCount = parseInt(countResult.rows[0].total);
     
-    // Get paginated results
+    // Get paginated results - using database-agnostic date formatting
     const dataQuery = `
       SELECT 
         c.id,
@@ -78,8 +79,8 @@ router.get('/', authenticateToken, async (req, res) => {
         c.balance,
         c.created_at,
         c.updated_at,
-        TO_CHAR(c.installation_date, 'YYYY-MM-DD') as installation_date,
-        TO_CHAR(c.due_date, 'YYYY-MM-DD') as due_date,
+        c.installation_date,
+        c.due_date,
         cp.plan_id,
         p.name as plan_name
       FROM clients c
@@ -106,6 +107,7 @@ router.get('/', authenticateToken, async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Error in clients GET route:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

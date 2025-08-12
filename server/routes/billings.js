@@ -5,60 +5,40 @@ const { recalculateClientBalance, autoPayUnpaidBillings } = require('../utils/bi
 
 const router = express.Router();
 
-// Get all billings
+// Get all billings - minimal SQLite-compatible version
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(`
       SELECT 
-        b.id, 
-        b.client_id,
-        b.amount, 
-        b.due_date, 
-        b.balance as prev_balance,
-        (COALESCE(b.balance, 0) - COALESCE((
-          SELECT SUM(p.amount) 
-          FROM payments p 
-          WHERE p.client_id = b.client_id 
-            AND p.created_at >= (
-              SELECT COALESCE(MAX(prev_b.created_at), '1900-01-01'::timestamp)
-              FROM billings prev_b 
-              WHERE prev_b.client_id = b.client_id 
-                AND prev_b.created_at < b.created_at
-            )
-            AND p.created_at <= b.created_at
-        ), 0) + b.amount) as total_amount_due,
-        b.created_at, 
-        b.updated_at,
+        b.*,
         c.name AS client_name,
-        p.name AS plan_name,
-        c.balance as client_balance,
-        b.status,
-        TO_CHAR(b.due_date - INTERVAL '1 month' + INTERVAL '1 day', 'Mon DD, YYYY') as period_start,
-        TO_CHAR(b.due_date, 'Mon DD, YYYY') as period_end,
-        TO_CHAR(b.due_date - INTERVAL '1 month' + INTERVAL '1 day', 'Mon/DD/YYYY') || ' - ' || TO_CHAR(b.due_date, 'Mon/DD/YYYY') as period,
-        EXTRACT(MONTH FROM b.due_date) as month,
-        EXTRACT(YEAR FROM b.due_date) as year,
-        COALESCE((
-          SELECT SUM(p.amount) 
-          FROM payments p 
-          WHERE p.client_id = b.client_id 
-            AND p.created_at >= (
-              SELECT COALESCE(MAX(prev_b.created_at), '1900-01-01'::timestamp)
-              FROM billings prev_b 
-              WHERE prev_b.client_id = b.client_id 
-                AND prev_b.created_at < b.created_at
-            )
-            AND p.created_at <= b.created_at
-        ), 0) as prev_payments
+        p.name AS plan_name
       FROM billings b
       LEFT JOIN clients c ON b.client_id = c.id
       LEFT JOIN plans p ON b.plan_id = p.id
       ORDER BY b.created_at DESC
     `);
     client.release();
-    res.json(result.rows);
+    
+    // Format the results for the frontend
+    const formattedRows = result.rows.map(row => ({
+      ...row,
+      total_amount_due: row.amount,
+      prev_balance: row.balance || 0,
+      client_balance: 0,
+      status: row.status || 'pending',
+      period_start: row.due_date,
+      period_end: row.due_date,
+      period: 'Monthly Bill',
+      month: row.due_date ? new Date(row.due_date).getMonth() + 1 : 1,
+      year: row.due_date ? new Date(row.due_date).getFullYear() : new Date().getFullYear(),
+      prev_payments: 0
+    }));
+    
+    res.json(formattedRows);
   } catch (error) {
+    console.error('Error in billings GET route:', error);
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
@@ -74,7 +54,7 @@ router.post('/', authenticateToken, async (req, res) => {
     
     // Get client's due date
     const clientResult = await client.query(
-      'SELECT TO_CHAR(due_date, \'YYYY-MM-DD\') as due_date FROM clients WHERE id = $1',
+      'SELECT due_date FROM clients WHERE id = $1',
       [client_id]
     );
     
@@ -85,30 +65,18 @@ router.post('/', authenticateToken, async (req, res) => {
     
     const clientData = clientResult.rows[0];
     
-    // Get the total amount due from the most recent billing for this client
+    // Get the most recent billing for this client (simplified)
     const lastBillingResult = await client.query(`
-      SELECT 
-        (COALESCE(b.balance, 0) - COALESCE((
-          SELECT SUM(p.amount) 
-          FROM payments p 
-          WHERE p.client_id = b.client_id 
-            AND p.created_at >= (
-              SELECT COALESCE(MAX(prev_b.created_at), '1900-01-01'::timestamp)
-              FROM billings prev_b 
-              WHERE prev_b.client_id = b.client_id 
-                AND prev_b.created_at < b.created_at
-            )
-            AND p.created_at <= b.created_at
-        ), 0) + b.amount) as total_amount_due
-      FROM billings b 
-      WHERE b.client_id = $1 
-      ORDER BY b.created_at DESC 
+      SELECT amount, balance
+      FROM billings 
+      WHERE client_id = $1 
+      ORDER BY created_at DESC 
       LIMIT 1
     `, [client_id]);
     
-    // Previous balance is the total amount due from the last billing (0 if no previous billing)
+    // Previous balance is from the last billing (0 if no previous billing)
     const previousBalance = lastBillingResult.rows.length > 0 ? 
-      parseFloat(lastBillingResult.rows[0].total_amount_due) : 0;
+      parseFloat(lastBillingResult.rows[0].balance || 0) : 0;
     
     // If due_date is not provided, use client's due date or current date
     if (!due_date) {
@@ -139,6 +107,7 @@ router.post('/', authenticateToken, async (req, res) => {
       client_payment_status: balanceInfo.clientPaymentStatus
     });
   } catch (error) {
+    console.error('Error in billings POST route:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -173,6 +142,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
     
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Error in billings POST route:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -212,6 +182,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
       client_payment_status: balanceInfo.clientPaymentStatus
     });
   } catch (error) {
+    console.error('Error in billings POST route:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -229,6 +200,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
     res.json({ success: true, deleted: result.rows[0] });
   } catch (error) {
+    console.error('Error in billings POST route:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -259,7 +231,7 @@ router.post('/generate-for-day', authenticateToken, async (req, res) => {
       FROM clients c
       INNER JOIN client_plans cp ON c.id = cp.client_id AND cp.status = 'active'
       INNER JOIN plans p ON cp.plan_id = p.id AND (p.status = 'active' OR p.status IS NULL)
-      WHERE EXTRACT(DAY FROM c.due_date) = $1
+      WHERE CAST(strftime('%d', c.due_date) AS INTEGER) = $1
         AND c.status = 'active'
       ORDER BY c.name
     `, [day]);
@@ -276,7 +248,7 @@ router.post('/generate-for-day', authenticateToken, async (req, res) => {
       FROM clients c
       LEFT JOIN client_plans cp ON c.id = cp.client_id
       LEFT JOIN plans p ON cp.plan_id = p.id
-      WHERE EXTRACT(DAY FROM c.due_date) = $1
+      WHERE CAST(strftime('%d', c.due_date) AS INTEGER) = $1
       ORDER BY c.name
     `, [day]);
     
@@ -318,8 +290,8 @@ router.post('/generate-for-day', authenticateToken, async (req, res) => {
           SELECT id FROM billings 
           WHERE client_id = $1 
             AND plan_id = $2
-            AND EXTRACT(MONTH FROM due_date) = $3 
-            AND EXTRACT(YEAR FROM due_date) = $4
+            AND CAST(strftime('%m', due_date) AS INTEGER) = $3 
+            AND CAST(strftime('%Y', due_date) AS INTEGER) = $4
         `, [clientData.client_id, clientData.plan_id, currentMonth + 1, currentYear]);
         
         if (existingBillingResult.rows.length > 0) {

@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const client = await pool.connect();
-    const result = await client.query('SELECT NOW()');
+    const result = await client.query('SELECT datetime("now") as now');
     client.release();
     res.json({ 
       status: 'ok', 

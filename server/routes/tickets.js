@@ -60,7 +60,7 @@ router.get('/', authenticateToken, async (req, res) => {
 
     if (search) {
       paramCount++;
-      whereClause += ` AND (t.title ILIKE $${paramCount} OR t.description ILIKE $${paramCount} OR t.ticket_number ILIKE $${paramCount})`;
+      whereClause += ` AND (t.title LIKE $${paramCount} OR t.description LIKE $${paramCount} OR t.ticket_number LIKE $${paramCount})`;
       queryParams.push(`%${search}%`);
     }
 

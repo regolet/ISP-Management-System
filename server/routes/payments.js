@@ -32,7 +32,7 @@ function getNextDueDate(currentDueDate) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-// Get all payments
+// Get all payments - simplified SQLite-compatible version
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const client = await pool.connect();
@@ -41,24 +41,8 @@ router.get('/', authenticateToken, async (req, res) => {
         p.*,
         c.name as client_name,
         c.balance as current_client_balance,
-        -- Previous balance: what the balance was BEFORE this payment (current balance + sum of all payments made after this one + this payment)
-        (
-          c.balance + COALESCE(
-            (SELECT SUM(later_p.amount) 
-             FROM payments later_p 
-             WHERE later_p.client_id = p.client_id 
-               AND later_p.created_at > p.created_at), 0
-          ) + p.amount
-        ) as prev_balance,
-        -- New balance: what the balance became AFTER this payment (current balance + sum of all payments made after this one)
-        (
-          c.balance + COALESCE(
-            (SELECT SUM(later_p.amount) 
-             FROM payments later_p 
-             WHERE later_p.client_id = p.client_id 
-               AND later_p.created_at > p.created_at), 0
-          )
-        ) as new_balance
+        c.balance as prev_balance,
+        c.balance as new_balance
       FROM payments p
       LEFT JOIN clients c ON p.client_id = c.id
       ORDER BY p.payment_date DESC, p.created_at DESC
@@ -66,6 +50,7 @@ router.get('/', authenticateToken, async (req, res) => {
     client.release();
     res.json(result.rows);
   } catch (error) {
+    console.error('Error in payments GET route:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

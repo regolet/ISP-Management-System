@@ -42,4 +42,54 @@ router.post('/settings', authenticateToken, async (req, res) => {
   }
 });
 
+// Test MikroTik connection
+router.post('/test', authenticateToken, async (req, res) => {
+  try {
+    const { host, username, password, port = 8728 } = req.body;
+    
+    if (!host || !username || !password) {
+      return res.status(400).json({ error: 'Host, username, and password are required' });
+    }
+    
+    const connection = new RouterOSAPI({
+      host: host,
+      user: username,
+      password: password,
+      port: parseInt(port) || 8728
+    });
+    
+    try {
+      // Test connection with timeout
+      const connectPromise = connection.connect();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Connection timeout')), 10000)
+      );
+      
+      await Promise.race([connectPromise, timeoutPromise]);
+      
+      // Get system identity to verify connection
+      const identity = await connection.write('/system/identity/print');
+      
+      connection.close();
+      
+      res.json({ 
+        success: true, 
+        message: 'Connection successful',
+        identity: identity[0]?.name || 'Unknown'
+      });
+      
+    } catch (connectionError) {
+      console.error('MikroTik connection error:', connectionError.message);
+      res.json({ 
+        success: false, 
+        error: connectionError.message || 'Connection failed' 
+      });
+    }
+    
+  } catch (error) {
+    console.error('MikroTik test error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

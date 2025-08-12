@@ -3,11 +3,10 @@ const pool = require('../config/database');
 
 // Create ticketing system tables (accepts client to use existing connection)
 async function createTicketingTables(client) {
-  // Create all ticketing tables in a single query
+  // Create ticketing tables with SQLite-compatible syntax
   await client.query(`
-    -- Tickets table
     CREATE TABLE IF NOT EXISTS tickets (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       ticket_number VARCHAR(20) UNIQUE NOT NULL,
       title VARCHAR(255) NOT NULL,
       description TEXT,
@@ -22,21 +21,23 @@ async function createTicketingTables(client) {
       due_date TIMESTAMP,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+    )
+  `);
 
-    -- Ticket comments table
+  await client.query(`
     CREATE TABLE IF NOT EXISTS ticket_comments (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
       user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
       comment TEXT NOT NULL,
       is_internal BOOLEAN DEFAULT false,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+    )
+  `);
 
-    -- Ticket attachments table
+  await client.query(`
     CREATE TABLE IF NOT EXISTS ticket_attachments (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
       filename VARCHAR(255) NOT NULL,
       original_name VARCHAR(255) NOT NULL,
@@ -44,11 +45,12 @@ async function createTicketingTables(client) {
       mime_type VARCHAR(100),
       uploaded_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+    )
+  `);
 
-    -- Ticket history table
+  await client.query(`
     CREATE TABLE IF NOT EXISTS ticket_history (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
       user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
       action VARCHAR(50) NOT NULL,
@@ -56,7 +58,7 @@ async function createTicketingTables(client) {
       new_value TEXT,
       description TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+    )
   `);
 }
 
@@ -71,11 +73,10 @@ async function initializeDatabaseTables() {
     // Start transaction
     await client.query('BEGIN');
 
-    // Create all main tables in a single query
+    // Create all main tables with SQLite-compatible syntax
     await client.query(`
-      -- Users table
       CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         username VARCHAR(50) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
         email VARCHAR(100),
@@ -86,7 +87,7 @@ async function initializeDatabaseTables() {
 
       -- Clients table
       CREATE TABLE IF NOT EXISTS clients (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(100) NOT NULL,
         email VARCHAR(100),
         phone VARCHAR(20),
@@ -102,7 +103,7 @@ async function initializeDatabaseTables() {
 
       -- Plans table
       CREATE TABLE IF NOT EXISTS plans (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(100) NOT NULL,
         description TEXT,
         price DECIMAL(10,2) NOT NULL,
@@ -116,7 +117,7 @@ async function initializeDatabaseTables() {
 
       -- Client Plans table (many-to-many relationship)
       CREATE TABLE IF NOT EXISTS client_plans (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
         plan_id INTEGER REFERENCES plans(id) ON DELETE CASCADE,
         status VARCHAR(20) DEFAULT 'active',
@@ -127,7 +128,7 @@ async function initializeDatabaseTables() {
 
       -- Billings table
       CREATE TABLE IF NOT EXISTS billings (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
         plan_id INTEGER REFERENCES plans(id) ON DELETE CASCADE,
         amount DECIMAL(10,2) NOT NULL,
@@ -140,7 +141,7 @@ async function initializeDatabaseTables() {
 
       -- Payments table
       CREATE TABLE IF NOT EXISTS payments (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
         plan_id INTEGER REFERENCES plans(id) ON DELETE CASCADE,
         amount DECIMAL(10,2) NOT NULL,
@@ -154,7 +155,7 @@ async function initializeDatabaseTables() {
 
       -- MikroTik Settings table
       CREATE TABLE IF NOT EXISTS mikrotik_settings (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         host VARCHAR(255) NOT NULL,
         username VARCHAR(100) NOT NULL,
         password VARCHAR(255) NOT NULL,
@@ -165,7 +166,7 @@ async function initializeDatabaseTables() {
 
       -- Company Info table
       CREATE TABLE IF NOT EXISTS company_info (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         company_name VARCHAR(255),
         address TEXT,
         phone VARCHAR(50),
@@ -177,7 +178,7 @@ async function initializeDatabaseTables() {
 
       -- Inventory Categories table
       CREATE TABLE IF NOT EXISTS inventory_categories (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(100) NOT NULL,
         description TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -186,7 +187,7 @@ async function initializeDatabaseTables() {
 
       -- Inventory Suppliers table
       CREATE TABLE IF NOT EXISTS inventory_suppliers (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(100) NOT NULL,
         contact_person VARCHAR(100),
         phone VARCHAR(20),
@@ -198,7 +199,7 @@ async function initializeDatabaseTables() {
 
       -- Inventory Items table
       CREATE TABLE IF NOT EXISTS inventory_items (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(100) NOT NULL,
         description TEXT,
         category_id INTEGER REFERENCES inventory_categories(id) ON DELETE SET NULL,
@@ -215,7 +216,7 @@ async function initializeDatabaseTables() {
 
       -- Inventory Assignments table
       CREATE TABLE IF NOT EXISTS inventory_assignments (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
         item_id INTEGER REFERENCES inventory_items(id) ON DELETE CASCADE,
         quantity INTEGER NOT NULL,
@@ -227,7 +228,7 @@ async function initializeDatabaseTables() {
 
       -- Inventory Movements table
       CREATE TABLE IF NOT EXISTS inventory_movements (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         item_id INTEGER REFERENCES inventory_items(id) ON DELETE CASCADE,
         movement_type VARCHAR(20) NOT NULL,
         quantity INTEGER NOT NULL,
@@ -239,7 +240,7 @@ async function initializeDatabaseTables() {
 
       -- Monitoring Groups table
       CREATE TABLE IF NOT EXISTS monitoring_groups (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         group_name VARCHAR(100) NOT NULL,
         group_data JSONB NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -248,7 +249,7 @@ async function initializeDatabaseTables() {
 
       -- Monitoring Categories table
       CREATE TABLE IF NOT EXISTS monitoring_categories (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         category_name VARCHAR(100) NOT NULL,
         subcategory_name VARCHAR(100),
         group_ids JSONB,
@@ -260,7 +261,7 @@ async function initializeDatabaseTables() {
 
       -- Assets table
       CREATE TABLE IF NOT EXISTS assets (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(100) NOT NULL,
         type VARCHAR(50) NOT NULL,
         description TEXT,
@@ -275,7 +276,7 @@ async function initializeDatabaseTables() {
 
       -- Asset Collections table
       CREATE TABLE IF NOT EXISTS asset_collections (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         asset_id INTEGER REFERENCES assets(id) ON DELETE CASCADE,
         collection_date DATE NOT NULL,
         amount DECIMAL(10,2) NOT NULL,
@@ -287,7 +288,7 @@ async function initializeDatabaseTables() {
 
       -- Asset Subitems table (linking assets to inventory items)
       CREATE TABLE IF NOT EXISTS asset_subitems (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         asset_id INTEGER REFERENCES assets(id) ON DELETE CASCADE,
         inventory_item_id INTEGER REFERENCES inventory_items(id) ON DELETE CASCADE,
         quantity INTEGER NOT NULL DEFAULT 1,
@@ -301,7 +302,7 @@ async function initializeDatabaseTables() {
 
       -- Network Summary table for storing monitoring data
       CREATE TABLE IF NOT EXISTS network_summary (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         total_clients INTEGER DEFAULT 0,
         online_clients INTEGER DEFAULT 0,
         offline_clients INTEGER DEFAULT 0,
@@ -317,7 +318,7 @@ async function initializeDatabaseTables() {
 
       -- Interface stats table for real-time bandwidth calculation
       CREATE TABLE IF NOT EXISTS interface_stats (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         interface_name VARCHAR(255) NOT NULL,
         rx_bytes BIGINT DEFAULT 0,
         tx_bytes BIGINT DEFAULT 0,
@@ -331,7 +332,7 @@ async function initializeDatabaseTables() {
 
       -- Scheduler Settings table
       CREATE TABLE IF NOT EXISTS scheduler_settings (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         setting_key VARCHAR(100) NOT NULL,
         setting_value VARCHAR(100) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -410,7 +411,7 @@ async function initializeDatabaseTables() {
         IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='monitoring_groups') THEN
           -- Create table only if it doesn't exist at all
           CREATE TABLE monitoring_groups (
-            id SERIAL PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             group_name VARCHAR(100) NOT NULL,
             group_data JSONB NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

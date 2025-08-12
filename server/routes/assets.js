@@ -42,25 +42,37 @@ router.get('/stats', authenticateToken, async (req, res) => {
       FROM assets
     `);
     
-    // Get collection stats
-    const collectionStatsResult = await client.query(`
-      SELECT 
-        COALESCE(SUM(amount), 0) as total_collections,
-        COALESCE(SUM(CASE 
-          WHEN EXTRACT(MONTH FROM collection_date) = EXTRACT(MONTH FROM CURRENT_DATE)
-          AND EXTRACT(YEAR FROM collection_date) = EXTRACT(YEAR FROM CURRENT_DATE)
-          THEN amount 
-          ELSE 0 
-        END), 0) as this_month_collections,
-        COUNT(CASE WHEN amount IS NOT NULL THEN 1 END) as total_collection_records
-      FROM asset_collections
-    `);
+    // Get collection stats - SQLite compatible with error handling
+    let collectionStats = {
+      total_collections: 0,
+      this_month_collections: 0,
+      total_collection_records: 0
+    };
+    
+    try {
+      const collectionStatsResult = await client.query(`
+        SELECT 
+          COALESCE(SUM(amount), 0) as total_collections,
+          COALESCE(SUM(CASE 
+            WHEN CAST(strftime('%m', collection_date) AS INTEGER) = CAST(strftime('%m', 'now') AS INTEGER)
+            AND CAST(strftime('%Y', collection_date) AS INTEGER) = CAST(strftime('%Y', 'now') AS INTEGER)
+            THEN amount 
+            ELSE 0 
+          END), 0) as this_month_collections,
+          COUNT(CASE WHEN amount IS NOT NULL THEN 1 END) as total_collection_records
+        FROM asset_collections
+      `);
+      collectionStats = collectionStatsResult.rows[0];
+    } catch (collectionError) {
+      // asset_collections table might not exist, use defaults
+      console.log('Asset collections table not available, using default values');
+    }
     
     client.release();
     
     const stats = {
       ...assetStatsResult.rows[0],
-      ...collectionStatsResult.rows[0]
+      ...collectionStats
     };
     
     res.json({ success: true, stats });
@@ -75,15 +87,11 @@ router.get('/inventory-items', authenticateToken, async (req, res) => {
   try {
     const client = await pool.connect();
     
-    // Check if inventory_items table exists
-    const tableCheck = await client.query(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_name = 'inventory_items'
-      );
-    `);
-    
-    if (!tableCheck.rows[0].exists) {
+    // Check if inventory_items table exists - SQLite compatible
+    try {
+      await client.query(`SELECT 1 FROM inventory_items LIMIT 1`);
+    } catch (error) {
+      // Table doesn't exist
       client.release();
       return res.json({ success: true, items: [] });
     }
