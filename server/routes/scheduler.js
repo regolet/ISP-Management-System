@@ -1,12 +1,11 @@
 const express = require('express');
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 const { restartScheduler, getSchedulerInterval } = require('../utils/scheduler');
 
 const router = express.Router();
 
 // Get current scheduler settings
-router.get('/settings', authenticateToken, async (req, res) => {
+router.get('/settings', async (req, res) => {
   try {
     const interval = await getSchedulerInterval();
     
@@ -22,7 +21,7 @@ router.get('/settings', authenticateToken, async (req, res) => {
 });
 
 // Update scheduler interval
-router.post('/interval', authenticateToken, async (req, res) => {
+router.post('/interval', async (req, res) => {
   try {
     const { interval } = req.body;
     
@@ -66,7 +65,7 @@ router.post('/interval', authenticateToken, async (req, res) => {
 });
 
 // Restart scheduler with current settings
-router.post('/restart', authenticateToken, async (req, res) => {
+router.post('/restart', async (req, res) => {
   try {
     const result = await restartScheduler();
     

@@ -81,7 +81,7 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <i class="fas fa-user-circle text-2xl"></i>
-            <span id="username" class="font-medium">Loading...</span>
+            <span id="username" class="font-medium">Administrator</span>
           </div>
           <button 
             id="logoutBtn"
@@ -769,15 +769,12 @@
 
     // Load assets
     async function loadAssets() {
-      const token = localStorage.getItem('auth_token');
       
       try {
         const [assetsResponse, statsResponse] = await Promise.all([
           fetch('/api/assets', {
-            headers: { 'Authorization': `Bearer ${token}` }
           }),
           fetch('/api/assets/stats', {
-            headers: { 'Authorization': `Bearer ${token}` }
           }).catch(() => null) // Stats endpoint might not exist, handle gracefully
         ]);
         
@@ -1074,11 +1071,9 @@
 
     // View asset details
     async function viewAsset(assetId) {
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch(`/api/assets/${assetId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -1147,15 +1142,12 @@
     // View asset collections
     async function viewAssetCollections(assetId) {
       currentAssetId = assetId;
-      const token = localStorage.getItem('auth_token');
       
       try {
         const [assetResponse, collectionsResponse] = await Promise.all([
           fetch(`/api/assets/${assetId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
           }),
           fetch(`/api/assets/${assetId}/collections`, {
-            headers: { 'Authorization': `Bearer ${token}` }
           })
         ]);
         
@@ -1250,11 +1242,9 @@
 
     // Edit asset
     async function editAsset(assetId) {
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch(`/api/assets/${assetId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -1286,12 +1276,10 @@
         return;
       }
       
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch(`/api/assets/${assetId}`, {
           method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -1313,12 +1301,10 @@
         return;
       }
       
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch(`/api/assets/collections/${collectionId}`, {
           method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -1340,15 +1326,12 @@
     // Manage asset subitems
     async function manageAssetSubitems(assetId) {
       currentAssetId = assetId;
-      const token = localStorage.getItem('auth_token');
       
       try {
         const [assetResponse, subitemsResponse] = await Promise.all([
           fetch(`/api/assets/${assetId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
           }),
           fetch(`/api/assets/${assetId}/subitems`, {
-            headers: { 'Authorization': `Bearer ${token}` }
           })
         ]);
         
@@ -1467,11 +1450,9 @@
 
     // Load available inventory items
     async function loadInventoryItems() {
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch('/api/assets/inventory-items', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -1503,12 +1484,10 @@
 
     // Edit subitem
     async function editSubitem(subitemId) {
-      const token = localStorage.getItem('auth_token');
       
       try {
         // Get current subitems to find the one being edited
         const response = await fetch(`/api/assets/${currentAssetId}/subitems`, {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -1548,12 +1527,10 @@
         return;
       }
       
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch(`/api/assets/subitems/${subitemId}`, {
           method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -1708,21 +1685,7 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        window.location.href = '/login.html';
-        return;
-      }
 
-      // Set up logout functionality
-      document.getElementById('logoutBtn').addEventListener('click', function() {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
-        showNotification('Logged Out', 'You have been successfully logged out', 'info');
-        setTimeout(() => {
-          window.location.href = '/login.html';
-        }, 1000);
-      });
 
       // Load username
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -1749,14 +1712,12 @@
       const formData = new FormData(e.target);
       const assetData = Object.fromEntries(formData);
       
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch('/api/assets', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(assetData)
         });
@@ -1786,14 +1747,12 @@
       // Remove id from assetData since it's not needed in the request body
       delete assetData.id;
       
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch(`/api/assets/${assetId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(assetData)
         });
@@ -1823,14 +1782,12 @@
       // Remove asset_id from collectionData since it's in the URL
       delete collectionData.asset_id;
       
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch(`/api/assets/${assetId}/collections`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(collectionData)
         });
@@ -1865,7 +1822,6 @@
       delete subitemData.asset_id;
       delete subitemData.subitem_id;
       
-      const token = localStorage.getItem('auth_token');
       
       try {
         let response;
@@ -1875,7 +1831,6 @@
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(subitemData)
           });
@@ -1885,7 +1840,6 @@
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(subitemData)
           });

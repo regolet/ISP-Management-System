@@ -1,13 +1,12 @@
 const express = require('express');
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // ========== ROOT ENDPOINT FOR DASHBOARD ==========
 
 // Get inventory summary for dashboard
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(`
@@ -31,7 +30,7 @@ router.get('/', authenticateToken, async (req, res) => {
 // ========== CATEGORIES ==========
 
 // Get all categories
-router.get('/categories', authenticateToken, async (req, res) => {
+router.get('/categories', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query('SELECT * FROM inventory_categories ORDER BY name');
@@ -43,7 +42,7 @@ router.get('/categories', authenticateToken, async (req, res) => {
 });
 
 // Add inventory category
-router.post('/categories', authenticateToken, async (req, res) => {
+router.post('/categories', async (req, res) => {
   try {
     const { name, description } = req.body;
     const client = await pool.connect();
@@ -59,7 +58,7 @@ router.post('/categories', authenticateToken, async (req, res) => {
 });
 
 // Update inventory category 
-router.put('/categories/:id', authenticateToken, async (req, res) => {
+router.put('/categories/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description } = req.body;
@@ -76,7 +75,7 @@ router.put('/categories/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete inventory category
-router.delete('/categories/:id', authenticateToken, async (req, res) => {
+router.delete('/categories/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const client = await pool.connect();
@@ -91,7 +90,7 @@ router.delete('/categories/:id', authenticateToken, async (req, res) => {
 // ========== SUPPLIERS ==========
 
 // Get all suppliers
-router.get('/suppliers', authenticateToken, async (req, res) => {
+router.get('/suppliers', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query('SELECT * FROM inventory_suppliers ORDER BY name');
@@ -103,7 +102,7 @@ router.get('/suppliers', authenticateToken, async (req, res) => {
 });
 
 // Add supplier
-router.post('/suppliers', authenticateToken, async (req, res) => {
+router.post('/suppliers', async (req, res) => {
   try {
     const { name, contact_person, email, phone, address } = req.body;
     const client = await pool.connect();
@@ -119,7 +118,7 @@ router.post('/suppliers', authenticateToken, async (req, res) => {
 });
 
 // Update supplier
-router.put('/suppliers/:id', authenticateToken, async (req, res) => {
+router.put('/suppliers/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, contact_person, email, phone, address } = req.body;
@@ -136,7 +135,7 @@ router.put('/suppliers/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete supplier
-router.delete('/suppliers/:id', authenticateToken, async (req, res) => {
+router.delete('/suppliers/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const client = await pool.connect();
@@ -151,7 +150,7 @@ router.delete('/suppliers/:id', authenticateToken, async (req, res) => {
 // ========== ITEMS ==========
 
 // Get all inventory items with joins
-router.get('/items', authenticateToken, async (req, res) => {
+router.get('/items', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(`
@@ -172,7 +171,7 @@ router.get('/items', authenticateToken, async (req, res) => {
 });
 
 // Add inventory item
-router.post('/items', authenticateToken, async (req, res) => {
+router.post('/items', async (req, res) => {
   try {
     const { name, description, category_id, supplier_id, sku, unit_cost, selling_price, quantity_on_hand, reorder_level } = req.body;
     const client = await pool.connect();
@@ -198,7 +197,7 @@ router.post('/items', authenticateToken, async (req, res) => {
 });
 
 // Update inventory item
-router.put('/items/:id', authenticateToken, async (req, res) => {
+router.put('/items/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description, category_id, supplier_id, sku, unit_cost, selling_price, quantity_on_hand, reorder_level, status } = req.body;
@@ -226,7 +225,7 @@ router.put('/items/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete inventory item
-router.delete('/items/:id', authenticateToken, async (req, res) => {
+router.delete('/items/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const client = await pool.connect();
@@ -239,7 +238,7 @@ router.delete('/items/:id', authenticateToken, async (req, res) => {
 });
 
 // Adjust stock for item
-router.post('/items/:id/adjust-stock', authenticateToken, async (req, res) => {
+router.post('/items/:id/adjust-stock', async (req, res) => {
   try {
     const { id } = req.params;
     const { adjustment_type, quantity, notes } = req.body;
@@ -315,7 +314,7 @@ router.post('/items/:id/adjust-stock', authenticateToken, async (req, res) => {
 // ========== ASSIGNMENTS ==========
 
 // Get all assignments
-router.get('/assignments', authenticateToken, async (req, res) => {
+router.get('/assignments', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(`
@@ -337,7 +336,7 @@ router.get('/assignments', authenticateToken, async (req, res) => {
 });
 
 // Create assignment
-router.post('/assignments', authenticateToken, async (req, res) => {
+router.post('/assignments', async (req, res) => {
   try {
     const { client_id, item_id, quantity, assigned_date, notes } = req.body;
     
@@ -388,7 +387,7 @@ router.post('/assignments', authenticateToken, async (req, res) => {
 // ========== MOVEMENTS ==========
 
 // Get all movements
-router.get('/movements', authenticateToken, async (req, res) => {
+router.get('/movements', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(`

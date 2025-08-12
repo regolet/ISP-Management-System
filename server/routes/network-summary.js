@@ -1,6 +1,5 @@
 const express = require('express');
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -22,7 +21,7 @@ function getIntervalMs(timeRange) {
 }
 
 // Get network summary statistics
-router.get('/stats', authenticateToken, async (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
     const { date } = req.query; // Optional date parameter for specific day stats
     console.log('[Network Stats] Starting stats query for date:', date);
@@ -107,7 +106,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
 });
 
 // Add new network summary data
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const {
       total_clients,
@@ -151,7 +150,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Get bandwidth usage over time
-router.get('/bandwidth-history', authenticateToken, async (req, res) => {
+router.get('/bandwidth-history', async (req, res) => {
   try {
     const { period = '24h', date } = req.query; // 24h, 7d, 30d, date (YYYY-MM-DD)
     
@@ -241,7 +240,7 @@ router.get('/bandwidth-history', authenticateToken, async (req, res) => {
 });
 
 // Get network uptime statistics
-router.get('/uptime-stats', authenticateToken, async (req, res) => {
+router.get('/uptime-stats', async (req, res) => {
   try {
     const client = await pool.connect();
     

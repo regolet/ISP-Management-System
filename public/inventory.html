@@ -81,7 +81,7 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <i class="fas fa-user-circle text-2xl"></i>
-            <span id="username" class="font-medium">Loading...</span>
+            <span id="username" class="font-medium">Administrator</span>
           </div>
           <button 
             id="logoutBtn"
@@ -1441,7 +1441,6 @@
     async function loadEquipment() {
       try {
         const response = await fetch('/api/inventory/items', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
         });
         
         const data = await response.json();
@@ -1537,17 +1536,14 @@
     // Load categories and suppliers for dropdowns
     async function loadCategoriesAndSuppliers() {
       try {
-        const token = localStorage.getItem('auth_token');
         
         // Load categories
         const categoriesResponse = await fetch('/api/inventory/categories', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         const categoriesData = await categoriesResponse.json();
         
         // Load suppliers
         const suppliersResponse = await fetch('/api/inventory/suppliers', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         const suppliersData = await suppliersResponse.json();
         
@@ -1657,7 +1653,6 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify(equipmentData)
         });
@@ -2042,7 +2037,6 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify({
             adjustment_type: backendAdjustmentType,
@@ -2126,17 +2120,14 @@
     // Load categories and suppliers for edit modal
     async function loadCategoriesAndSuppliersForEdit() {
       try {
-        const token = localStorage.getItem('auth_token');
         
         // Load categories
         const categoriesResponse = await fetch('/api/inventory/categories', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         const categoriesData = await categoriesResponse.json();
         
         // Load suppliers
         const suppliersResponse = await fetch('/api/inventory/suppliers', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         const suppliersData = await suppliersResponse.json();
         
@@ -2247,7 +2238,6 @@
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify(equipmentData)
         });
@@ -2288,17 +2278,14 @@
     // Load equipment and clients for assignment modal
     async function loadEquipmentAndClientsForAssignment() {
       try {
-        const token = localStorage.getItem('auth_token');
         
         // Load equipment (only active items with stock)
         const equipmentResponse = await fetch('/api/inventory/items', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         const equipmentData = await equipmentResponse.json();
         
         // Load clients
         const clientsResponse = await fetch('/api/clients', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         const clientsData = await clientsResponse.json();
         
@@ -2428,7 +2415,6 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify(assignmentData)
         });
@@ -2561,7 +2547,6 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify(categoryData)
         });
@@ -2635,7 +2620,6 @@
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify(categoryData)
         });
@@ -2679,7 +2663,6 @@
         const response = await fetch(`/api/inventory/categories/${categoryId}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           }
         });
         
@@ -2780,7 +2763,6 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify(supplierData)
         });
@@ -2850,7 +2832,6 @@
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify(supplierData)
         });
@@ -2885,7 +2866,6 @@
         const response = await fetch(`/api/inventory/suppliers/${supplierId}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           }
         });
         
@@ -2907,7 +2887,6 @@
     async function loadAssignments() {
       try {
         const response = await fetch('/api/inventory/assignments', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
         });
         
         const data = await response.json();
@@ -2972,7 +2951,6 @@
     async function loadMovements() {
       try {
         const response = await fetch('/api/inventory/movements', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
         });
         
         const data = await response.json();
@@ -3077,7 +3055,6 @@
     async function loadCategories() {
       try {
         const response = await fetch('/api/inventory/categories', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
         });
         
         const data = await response.json();
@@ -3145,9 +3122,7 @@
     // Load item counts for categories
     async function loadCategoryItemCounts() {
       try {
-        const token = localStorage.getItem('auth_token');
         const response = await fetch('/api/inventory/items', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         const data = await response.json();
@@ -3182,7 +3157,6 @@
     async function loadSuppliers() {
       try {
         const response = await fetch('/api/inventory/suppliers', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
         });
         
         const data = await response.json();
@@ -3231,25 +3205,9 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-      // Check if user is logged in
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        window.location.href = '/login.html';
-        return;
-      }
-
-      // Set up logout functionality
-      document.getElementById('logoutBtn').addEventListener('click', function() {
-        localStorage.removeItem('auth_token');
-        showNotification('Logged Out', 'You have been successfully logged out', 'info');
-        setTimeout(() => {
-          window.location.href = '/login.html';
-        }, 1000);
-      });
 
       // Load user info
       fetch('/api/auth/me', {
-        headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(response => response.json())
       .then(data => {

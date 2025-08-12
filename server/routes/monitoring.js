@@ -1,12 +1,11 @@
 const express = require('express');
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 const RouterOSAPI = require('routeros-api').RouterOSAPI;
 
 const router = express.Router();
 
 // Get monitoring dashboard data
-router.get('/dashboard', authenticateToken, async (req, res) => {
+router.get('/dashboard', async (req, res) => {
   try {
     const client = await pool.connect();
     
@@ -87,7 +86,7 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
 });
 
 // Get PPP accounts summary (using existing MikroTik settings)
-router.get('/ppp_accounts_summary', authenticateToken, async (req, res) => {
+router.get('/ppp_accounts_summary', async (req, res) => {
   try {
     const client = await pool.connect();
     
@@ -160,7 +159,7 @@ router.get('/ppp_accounts_summary', authenticateToken, async (req, res) => {
 // ========== GROUPS ==========
 
 // Get all monitoring groups
-router.get('/groups', authenticateToken, async (req, res) => {
+router.get('/groups', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query('SELECT * FROM monitoring_groups ORDER BY created_at DESC');
@@ -183,7 +182,7 @@ router.get('/groups', authenticateToken, async (req, res) => {
 });
 
 // Create new monitoring group
-router.post('/groups', authenticateToken, async (req, res) => {
+router.post('/groups', async (req, res) => {
   try {
     const { group_name, group_data } = req.body;
     
@@ -218,7 +217,7 @@ router.post('/groups', authenticateToken, async (req, res) => {
 });
 
 // Update monitoring group
-router.put('/groups', authenticateToken, async (req, res) => {
+router.put('/groups', async (req, res) => {
   try {
     const { id, group_name, group_data } = req.body;
     
@@ -250,7 +249,7 @@ router.put('/groups', authenticateToken, async (req, res) => {
 });
 
 // Delete monitoring group
-router.delete('/groups', authenticateToken, async (req, res) => {
+router.delete('/groups', async (req, res) => {
   try {
     const { id } = req.body;
     
@@ -277,7 +276,7 @@ router.delete('/groups', authenticateToken, async (req, res) => {
 // ========== CATEGORIES ==========
 
 // Get all monitoring categories
-router.get('/categories', authenticateToken, async (req, res) => {
+router.get('/categories', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query('SELECT * FROM monitoring_categories ORDER BY category_index, subcategory_index');
@@ -303,7 +302,7 @@ router.get('/categories', authenticateToken, async (req, res) => {
 });
 
 // Create new monitoring category
-router.post('/categories', authenticateToken, async (req, res) => {
+router.post('/categories', async (req, res) => {
   try {
     const { category_name, subcategory_name, group_ids, category_index, subcategory_index } = req.body;
     
@@ -330,7 +329,7 @@ router.post('/categories', authenticateToken, async (req, res) => {
 });
 
 // Update monitoring category
-router.put('/categories', authenticateToken, async (req, res) => {
+router.put('/categories', async (req, res) => {
   try {
     const { id, category_name, subcategory_name, group_ids, category_index, subcategory_index } = req.body;
     
@@ -362,7 +361,7 @@ router.put('/categories', authenticateToken, async (req, res) => {
 });
 
 // Delete monitoring category
-router.delete('/categories', authenticateToken, async (req, res) => {
+router.delete('/categories', async (req, res) => {
   try {
     const { id } = req.body;
     
@@ -387,7 +386,7 @@ router.delete('/categories', authenticateToken, async (req, res) => {
 });
 
 // Create subcategory
-router.post('/categories/:categoryId/subcategories', authenticateToken, async (req, res) => {
+router.post('/categories/:categoryId/subcategories', async (req, res) => {
   try {
     const { categoryId } = req.params;
     const { subcategory_name, group_ids } = req.body;
@@ -431,7 +430,7 @@ router.post('/categories/:categoryId/subcategories', authenticateToken, async (r
 });
 
 // Update subcategory
-router.put('/categories/:categoryId/subcategories/:subcategoryId', authenticateToken, async (req, res) => {
+router.put('/categories/:categoryId/subcategories/:subcategoryId', async (req, res) => {
   try {
     const { subcategoryId } = req.params;
     const { subcategory_name, group_ids } = req.body;
@@ -465,7 +464,7 @@ router.put('/categories/:categoryId/subcategories/:subcategoryId', authenticateT
 });
 
 // Delete subcategory
-router.delete('/categories/:categoryId/subcategories/:subcategoryId', authenticateToken, async (req, res) => {
+router.delete('/categories/:categoryId/subcategories/:subcategoryId', async (req, res) => {
   try {
     const { subcategoryId } = req.params;
 
@@ -486,7 +485,7 @@ router.delete('/categories/:categoryId/subcategories/:subcategoryId', authentica
 });
 
 // Update subcategory groups
-router.put('/categories/:categoryId/subcategories/:subcategoryId/groups', authenticateToken, async (req, res) => {
+router.put('/categories/:categoryId/subcategories/:subcategoryId/groups', async (req, res) => {
   try {
     const { subcategoryId } = req.params;
     const { group_ids } = req.body;

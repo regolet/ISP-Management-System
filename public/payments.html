@@ -80,7 +80,7 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <i class="fas fa-user-circle text-2xl"></i>
-            <span id="username" class="font-medium">Loading...</span>
+            <span id="username" class="font-medium">Administrator</span>
           </div>
           <button 
             id="logoutBtn"
@@ -404,15 +404,10 @@
 
     // Load and display payments
     async function loadPayments() {
-      const token = localStorage.getItem('auth_token');
       
       try {
         // Fetch payments, clients, plans, and billings in parallel
         const [paymentsResponse, clientsResponse, plansResponse, billingsResponse] = await Promise.all([
-          fetch('/api/payments', { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch('/api/clients', { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch('/api/plans', { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch('/api/billings', { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
         
         if (!paymentsResponse.ok || !clientsResponse.ok || !plansResponse.ok || !billingsResponse.ok) {
@@ -665,11 +660,9 @@
 
     // Load clients for dropdown
     async function loadClients() {
-      const token = localStorage.getItem('auth_token');
       try {
         const response = await fetch('/api/clients', {
           headers: {
-            'Authorization': `Bearer ${token}`
           }
         });
         
@@ -742,13 +735,11 @@
         return;
       }
       
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch(`/api/payments/${paymentId}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${token}`
           }
         });
         
@@ -767,10 +758,8 @@
 
     // Fetch company information for receipt
     async function fetchCompanyInfo() {
-      const token = localStorage.getItem('auth_token');
       try {
         const response = await fetch('/api/company-info', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
           return await response.json();
@@ -978,21 +967,6 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-      // Check if user is logged in
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        window.location.href = '/login.html';
-        return;
-      }
-
-      // Set up logout functionality
-      document.getElementById('logoutBtn').addEventListener('click', function() {
-        localStorage.removeItem('auth_token');
-        showNotification('Logged Out', 'You have been successfully logged out', 'info');
-        setTimeout(() => {
-          window.location.href = '/login.html';
-        }, 1000);
-      });
 
       // Set up search
       const searchElement = document.getElementById('paymentSearch');
@@ -1024,14 +998,12 @@
         const formData = new FormData(e.target);
         const paymentData = Object.fromEntries(formData);
         
-        const token = localStorage.getItem('auth_token');
         
         try {
           const response = await fetch('/api/payments', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(paymentData)
           });
@@ -1067,30 +1039,8 @@
       loadPayments();
       
       // Fetch user info
-      fetchUserInfo();
     });
 
-    async function fetchUserInfo() {
-      const token = localStorage.getItem('auth_token');
-      try {
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          document.getElementById('username').textContent = data.user.username || 'User';
-        } else {
-          localStorage.removeItem('auth_token');
-          window.location.href = '/login.html';
-        }
-      } catch (error) {
-        console.error('Error fetching user info:', error);
-        document.getElementById('username').textContent = 'User';
-      }
-    }
   </script>
 </body>
 </html> 

@@ -7,7 +7,6 @@ const { initializeScheduler } = require('./utils/scheduler');
 
 // Import routes
 const healthRoutes = require('./routes/health');
-const authRoutes = require('./routes/auth');
 const clientRoutes = require('./routes/clients');
 const planRoutes = require('./routes/plans');
 const clientPlanRoutes = require('./routes/clientPlans');
@@ -54,7 +53,6 @@ app.post('/api/init-database', async (req, res) => {
 
 // Routes
 app.use('/api/health', healthRoutes);
-app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/client-plans', clientPlanRoutes);
@@ -75,10 +73,9 @@ app.use('/api/database', databaseStatusRoutes);
 
 // Handle special routes that don't follow REST pattern
 const pool = require('./config/database');
-const { authenticateToken } = require('./middleware/auth');
 
 // Client plans count route
-app.get('/api/client-plans-count', authenticateToken, async (req, res) => {
+app.get('/api/client-plans-count', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query('SELECT COUNT(*) as count FROM client_plans WHERE status = ?', ['active']);
@@ -90,7 +87,7 @@ app.get('/api/client-plans-count', authenticateToken, async (req, res) => {
 });
 
 // Client plans all route
-app.get('/api/client-plans-all', authenticateToken, async (req, res) => {
+app.get('/api/client-plans-all', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(`
@@ -108,7 +105,7 @@ app.get('/api/client-plans-all', authenticateToken, async (req, res) => {
 });
 
 // PPP accounts route (alias)
-app.get('/api/ppp-accounts', authenticateToken, async (req, res) => {
+app.get('/api/ppp-accounts', async (req, res) => {
   try {
     const client = await pool.connect();
     const settingsResult = await client.query('SELECT * FROM mikrotik_settings ORDER BY created_at DESC LIMIT 1');
@@ -139,7 +136,7 @@ app.get('/api/ppp-accounts', authenticateToken, async (req, res) => {
 });
 
 // PPP profiles route (alias)  
-app.get('/api/ppp-profiles', authenticateToken, async (req, res) => {
+app.get('/api/ppp-profiles', async (req, res) => {
   try {
     const client = await pool.connect();
     const settingsResult = await client.query('SELECT * FROM mikrotik_settings ORDER BY created_at DESC LIMIT 1');
@@ -170,7 +167,7 @@ app.get('/api/ppp-profiles', authenticateToken, async (req, res) => {
 });
 
 // Import clients route (alias)
-app.post('/api/import-clients', authenticateToken, async (req, res) => {
+app.post('/api/import-clients', async (req, res) => {
   try {
     const { selectedAccounts } = req.body;
     
@@ -281,7 +278,7 @@ app.post('/api/import-clients', authenticateToken, async (req, res) => {
 });
 
 // Clients with plan route
-app.get('/api/clients-with-plan', authenticateToken, async (req, res) => {
+app.get('/api/clients-with-plan', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(`
@@ -311,9 +308,9 @@ app.get('/api/clients-with-plan', authenticateToken, async (req, res) => {
 
 // All routes have been successfully migrated to modular structure!
 
-// Default route - redirect to login
+// Default route - redirect to dashboard
 app.get('/', (req, res) => {
-  res.redirect('/login.html');
+  res.redirect('/dashboard.html');
 });
 
 // Catch-all handler: send back React's index.html file for non-API routes
@@ -322,8 +319,8 @@ app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
-  // For non-API routes, redirect to login
-  res.redirect('/login.html');
+  // For non-API routes, redirect to dashboard
+  res.redirect('/dashboard.html');
 });
 
 // Start server

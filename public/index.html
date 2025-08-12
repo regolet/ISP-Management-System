@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="2; url=/login.html">
+    <meta http-equiv="refresh" content="2; url=/dashboard.html">
     <title>ISP Management System</title>
     
     <!-- Font Awesome -->
@@ -33,20 +33,20 @@
         <!-- Loading indicator -->
         <div class="flex items-center justify-center mb-4">
             <div class="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
-            <p class="text-white text-lg">Redirecting to login...</p>
+            <p class="text-white text-lg">Loading dashboard...</p>
         </div>
         
         <!-- Manual redirect link -->
         <p class="text-white/80 text-sm">
             If you are not redirected automatically, 
-            <a href="/login.html" class="text-white font-medium hover:underline">click here</a>
+            <a href="/dashboard.html" class="text-white font-medium hover:underline">click here</a>
         </p>
     </div>
     
     <script>
         // Fallback redirect in case meta refresh doesn't work
         setTimeout(() => {
-            window.location.href = '/login.html';
+            window.location.href = '/dashboard.html';
         }, 2000);
     </script>
 </body>

@@ -2,7 +2,6 @@ const express = require('express');
 const { exec } = require('child_process');
 const fs = require('fs').promises;
 const path = require('path');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -147,7 +146,7 @@ router.get('/check-updates', async (req, res) => {
 });
 
 // Create backup before update
-router.post('/backup', authenticateToken, async (req, res) => {
+router.post('/backup', async (req, res) => {
   try {
     const backupDir = path.join(process.cwd(), 'backups');
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -195,7 +194,7 @@ router.post('/backup', authenticateToken, async (req, res) => {
 });
 
 // Perform system update
-router.post('/update', authenticateToken, async (req, res) => {
+router.post('/update', async (req, res) => {
   try {
     const { createBackup = true } = req.body;
 
@@ -299,7 +298,7 @@ router.post('/update', authenticateToken, async (req, res) => {
 });
 
 // Restart server (this will terminate the current process)
-router.post('/restart', authenticateToken, async (req, res) => {
+router.post('/restart', async (req, res) => {
   try {
     res.json({
       success: true,
@@ -323,7 +322,7 @@ router.post('/restart', authenticateToken, async (req, res) => {
 });
 
 // Get backup list
-router.get('/backups', authenticateToken, async (req, res) => {
+router.get('/backups', async (req, res) => {
   try {
     const backupDir = path.join(process.cwd(), 'backups');
     

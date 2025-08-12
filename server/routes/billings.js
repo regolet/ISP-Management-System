@@ -1,12 +1,11 @@
 const express = require('express');
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 const { recalculateClientBalance, autoPayUnpaidBillings } = require('../utils/billingHelpers');
 
 const router = express.Router();
 
 // Get all billings - minimal SQLite-compatible version
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(`
@@ -44,7 +43,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Create new billing
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     let { client_id, plan_id, amount, due_date, status = 'pending' } = req.body;
     if (!client_id || !plan_id || !amount) {
@@ -113,7 +112,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Get individual billing by ID
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const billingId = req.params.id;
     const client = await pool.connect();
@@ -148,7 +147,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // Update billing by ID
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const billingId = req.params.id;
     const { client_id, plan_id, amount, due_date, status } = req.body;
@@ -188,7 +187,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete billing by ID
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const billingId = req.params.id;
     const client = await pool.connect();
@@ -206,7 +205,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // Generate billing for clients with due date on specific day
-router.post('/generate-for-day', authenticateToken, async (req, res) => {
+router.post('/generate-for-day', async (req, res) => {
   const dbClient = await pool.connect();
   try {
     const { day } = req.body; // day should be 1-31

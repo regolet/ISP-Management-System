@@ -81,7 +81,7 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <i class="fas fa-user-circle text-2xl"></i>
-            <span id="username" class="font-medium">Loading...</span>
+            <span id="username" class="font-medium">Administrator</span>
           </div>
           <button 
             id="logoutBtn"
@@ -799,7 +799,6 @@
   <script>
     // Globals
     let settings = {};
-    const token = localStorage.getItem('auth_token');
 
     // Settings Tab Management
     function showSettingsTab(tabName) {
@@ -920,7 +919,6 @@
     async function loadCompanyInfo() {
       try {
         const response = await fetch('/api/company-info', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -944,7 +942,6 @@
     async function loadMikrotikSettings() {
       try {
         const response = await fetch('/api/mikrotik/settings', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -983,7 +980,6 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({ host, username, password, port: parseInt(port) })
         });
@@ -1007,7 +1003,6 @@
     async function checkDatabaseHealth() {
       try {
         const response = await fetch('/api/health', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -1030,7 +1025,6 @@
       try {
         const response = await fetch('/api/init-database', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -1060,7 +1054,6 @@
         const response = await fetch('/api/reset-database', {
           method: 'POST',
           headers: { 
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ confirm: 'RESET' })
@@ -1126,7 +1119,6 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(formData)
         });
@@ -1157,7 +1149,6 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(formData)
         });
@@ -1217,12 +1208,10 @@
     }
 
     async function updateSchedulerStats() {
-      const token = localStorage.getItem('auth_token');
       
       try {
         // Get current settings from server
         const response = await fetch('/api/scheduler/settings', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -1278,14 +1267,12 @@
 
     async function applySchedulerSettings() {
       const interval = document.getElementById('intervalSelect').value;
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch('/api/scheduler/interval', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({ interval })
         });
@@ -1314,14 +1301,12 @@
         return;
       }
       
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch('/api/scheduler/restart', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           }
         });
         
@@ -1342,20 +1327,7 @@
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
       // Check authentication
-      if (!token) {
-        window.location.href = '/login.html';
-        return;
-      }
 
-      // Set up logout functionality
-      document.getElementById('logoutBtn').addEventListener('click', function() {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
-        showNotification('Logged Out', 'You have been successfully logged out', 'info');
-        setTimeout(() => {
-          window.location.href = '/login.html';
-        }, 1000);
-      });
 
       // Load username
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -1371,7 +1343,6 @@
     async function loadCurrentVersion() {
       try {
         const response = await fetch('/api/system/version', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
         
@@ -1394,7 +1365,6 @@
       
       try {
         const response = await fetch('/api/system/check-updates', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
         
@@ -1430,7 +1400,6 @@
       try {
         const response = await fetch('/api/system/backup', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
         
@@ -1458,7 +1427,6 @@
         const response = await fetch('/api/system/update', {
           method: 'POST',
           headers: { 
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ createBackup: createBackupFirst })
@@ -1502,7 +1470,6 @@
       try {
         await fetch('/api/system/restart', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         statusDiv.innerHTML = '<div class="bg-green-50 border border-green-200 rounded-lg p-3 text-green-800"><i class="fas fa-check-circle mr-2"></i>Server restart initiated. Please refresh the page in a few seconds.</div>';
@@ -1522,7 +1489,6 @@
       
       try {
         const response = await fetch('/api/system/backups', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
         
@@ -1553,7 +1519,6 @@
     async function checkDatabaseStatus() {
       try {
         const response = await fetch('/api/database/status', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (!response.ok) {
@@ -1622,7 +1587,6 @@
     async function getOfflineSummary() {
       try {
         const response = await fetch('/api/database/offline-summary', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
         
@@ -1691,7 +1655,6 @@
       
       try {
         const response = await fetch('/api/database/status?test=true', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         const data = await response.json();
@@ -1758,7 +1721,6 @@
         const response = await fetch('/api/database/switch-online', {
           method: 'POST',
           headers: { 
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ forceOnline: true })
@@ -1834,7 +1796,6 @@
         
         const response = await fetch('/api/database/init-offline', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         updateProgress(80, 'Synchronizing schema with PostgreSQL...');
@@ -1881,7 +1842,6 @@
         
         const response = await fetch('/api/database/download-data', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
         });
         
         updateProgress(30, 'Starting data download...');

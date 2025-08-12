@@ -87,7 +87,7 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <i class="fas fa-user-circle text-2xl"></i>
-            <span id="username" class="font-medium">Loading...</span>
+            <span id="username" class="font-medium">Administrator</span>
           </div>
           <button 
             id="logoutBtn"
@@ -777,7 +777,6 @@
     async function checkMikrotikConfig() {
       try {
         const response = await fetch('/api/mikrotik/settings', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
         });
         
         const statusEl = document.getElementById('mikrotikStatus');
@@ -819,7 +818,6 @@
       
       try {
         const response = await fetch('/api/monitoring/dashboard', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
         });
         
         const data = await response.json();
@@ -1289,7 +1287,6 @@
       
       try {
         const response = await fetch('/api/monitoring/groups', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
         });
         
         const data = await response.json();
@@ -1508,10 +1505,8 @@
         // Load both categories and groups in parallel
         const [categoriesResponse, groupsResponse] = await Promise.all([
           fetch('/api/monitoring/categories', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
           }),
           fetch('/api/monitoring/groups', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
           })
         ]);
         
@@ -1881,12 +1876,10 @@
 
     // Load bandwidth chart data
     async function loadBandwidthChart() {
-      const token = localStorage.getItem('auth_token');
       
       try {
         // Fetch bandwidth history for the last 24 hours
         const response = await fetch('/api/network-summary/bandwidth-history?period=24h', {
-          headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (response.ok) {
@@ -1911,7 +1904,6 @@
             if (timeDiffMinutes > 5) {
               try {
                 const realtimeResponse = await fetch('/api/network-totals/bandwidth-totals', {
-                  headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
                 if (realtimeResponse.ok) {
@@ -1947,16 +1939,13 @@
 
     // Update network stats cards
     async function updateNetworkStatsCards() {
-      const token = localStorage.getItem('auth_token');
       
       try {
         // Fetch network stats
         const [statsResponse, uptimeResponse] = await Promise.all([
           fetch('/api/network-summary/stats', {
-            headers: { 'Authorization': `Bearer ${token}` }
           }),
           fetch('/api/network-summary/uptime-stats', {
-            headers: { 'Authorization': `Bearer ${token}` }
           })
         ]);
 
@@ -2017,21 +2006,6 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-      // Check if user is logged in
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        window.location.href = '/login.html';
-        return;
-      }
-
-      // Set up logout functionality
-      document.getElementById('logoutBtn').addEventListener('click', function() {
-        localStorage.removeItem('auth_token');
-        showNotification('Logged Out', 'You have been successfully logged out', 'info');
-        setTimeout(() => {
-          window.location.href = '/login.html';
-        }, 1000);
-      });
 
       // Check MikroTik configuration and load initial data
       checkMikrotikConfig();
@@ -2046,30 +2020,8 @@
       }, 5000);
       
       // Fetch user info
-      fetchUserInfo();
     });
 
-    async function fetchUserInfo() {
-      const token = localStorage.getItem('auth_token');
-      try {
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          document.getElementById('username').textContent = data.user.username || 'User';
-        } else {
-          localStorage.removeItem('auth_token');
-          window.location.href = '/login.html';
-        }
-      } catch (error) {
-        console.error('Error fetching user info:', error);
-        document.getElementById('username').textContent = 'User';
-      }
-    }
 
     // Group management functions
     function addGroup() {
@@ -2102,7 +2054,6 @@
       try {
         const response = await fetch(`/api/monitoring/groups?id=${groupId}`, {
           method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
         });
         
         const data = await response.json();
@@ -2158,7 +2109,6 @@
           method: 'DELETE',
           headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
           },
           body: JSON.stringify({ id: category.id })
         });
@@ -2225,7 +2175,6 @@
           method: 'DELETE',
           headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
           },
           body: JSON.stringify({ id: subcategory.dbRecord.id })
         });
@@ -2333,7 +2282,6 @@
       try {
         // Get all PPP accounts
         const response = await fetch('/api/ppp-accounts', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
         });
         
         const data = await response.json();
@@ -2345,7 +2293,6 @@
           console.error('PPP Accounts API failed:', data.error);
           // Try dashboard API as fallback
           const dashboardResponse = await fetch('/api/monitoring/dashboard', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
           });
           const dashboardData = await dashboardResponse.json();
           
@@ -2450,7 +2397,6 @@
           method: groupId ? 'PUT' : 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
           },
           body: JSON.stringify(payload)
         });
@@ -2546,7 +2492,6 @@
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
             },
             body: JSON.stringify({
               id: existingCategory.id,
@@ -2562,7 +2507,6 @@
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
             },
             body: JSON.stringify({
               category_name: name,
@@ -2681,7 +2625,6 @@
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
             },
             body: JSON.stringify({
               subcategory_name: name,
@@ -2706,7 +2649,6 @@
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
             },
             body: JSON.stringify({
               subcategory_name: name,
@@ -2796,7 +2738,6 @@
         
         // Load all groups
         const response = await fetch('/api/monitoring/groups', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
         });
         
         const data = await response.json();
@@ -2919,7 +2860,6 @@
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
           },
           body: JSON.stringify({ categories: updatedCategories })
         });

@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 
 // Get all assets
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(`
@@ -28,7 +27,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Get stats route (before /:id route)
-router.get('/stats', authenticateToken, async (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
     const client = await pool.connect();
     
@@ -83,7 +82,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
 });
 
 // Get available inventory items for adding to assets
-router.get('/inventory-items', authenticateToken, async (req, res) => {
+router.get('/inventory-items', async (req, res) => {
   try {
     const client = await pool.connect();
     
@@ -115,7 +114,7 @@ router.get('/inventory-items', authenticateToken, async (req, res) => {
 });
 
 // Get subitems for an asset
-router.get('/:id/subitems', authenticateToken, async (req, res) => {
+router.get('/:id/subitems', async (req, res) => {
   try {
     const client = await pool.connect();
     
@@ -162,7 +161,7 @@ router.get('/:id/subitems', authenticateToken, async (req, res) => {
 });
 
 // Get collections for an asset
-router.get('/:id/collections', authenticateToken, async (req, res) => {
+router.get('/:id/collections', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(
@@ -178,7 +177,7 @@ router.get('/:id/collections', authenticateToken, async (req, res) => {
 });
 
 // Get single asset with collections (should be after specific routes)
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const client = await pool.connect();
     
@@ -212,7 +211,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // Create new asset
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', async (req, res) => {
   const { name, type, description, location, deployment_date, status, serial_number, model } = req.body;
   
   if (!name || !type) {
@@ -236,7 +235,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Update asset
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', async (req, res) => {
   const { name, type, description, location, deployment_date, status, serial_number, model } = req.body;
   
   if (!name || !type) {
@@ -269,7 +268,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete asset
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(
@@ -291,7 +290,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // Add collection for an asset
-router.post('/:id/collections', authenticateToken, async (req, res) => {
+router.post('/:id/collections', async (req, res) => {
   const { collection_date, amount, collector_name, notes } = req.body;
   
   if (!collection_date || !amount) {
@@ -323,7 +322,7 @@ router.post('/:id/collections', authenticateToken, async (req, res) => {
 });
 
 // Update collection
-router.put('/collections/:collectionId', authenticateToken, async (req, res) => {
+router.put('/collections/:collectionId', async (req, res) => {
   const { collection_date, amount, collector_name, notes } = req.body;
   
   if (!collection_date || !amount) {
@@ -355,7 +354,7 @@ router.put('/collections/:collectionId', authenticateToken, async (req, res) => 
 });
 
 // Delete collection
-router.delete('/collections/:collectionId', authenticateToken, async (req, res) => {
+router.delete('/collections/:collectionId', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(
@@ -377,7 +376,7 @@ router.delete('/collections/:collectionId', authenticateToken, async (req, res) 
 });
 
 // Add subitem to an asset
-router.post('/:id/subitems', authenticateToken, async (req, res) => {
+router.post('/:id/subitems', async (req, res) => {
   const { inventory_item_id, quantity, notes, deployment_date, status } = req.body;
   
   if (!inventory_item_id || !quantity) {
@@ -432,7 +431,7 @@ router.post('/:id/subitems', authenticateToken, async (req, res) => {
 });
 
 // Update asset subitem
-router.put('/subitems/:subitemId', authenticateToken, async (req, res) => {
+router.put('/subitems/:subitemId', async (req, res) => {
   const { quantity, notes, deployment_date, status } = req.body;
   
   if (!quantity) {
@@ -462,7 +461,7 @@ router.put('/subitems/:subitemId', authenticateToken, async (req, res) => {
 });
 
 // Delete asset subitem
-router.delete('/subitems/:subitemId', authenticateToken, async (req, res) => {
+router.delete('/subitems/:subitemId', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(

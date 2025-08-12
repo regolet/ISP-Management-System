@@ -1,12 +1,11 @@
 const express = require('express');
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 
 // Get company information
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const client = await pool.connect();
     
@@ -31,7 +30,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Update company information
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { company_name, address, phone, email, website } = req.body;
     

@@ -1,11 +1,10 @@
 const express = require('express');
-const { authenticateToken } = require('../middleware/auth');
 const sqliteManager = require('../utils/sqlite-database-manager');
 
 const router = express.Router();
 
 // Get SQLite database status
-router.get('/status', authenticateToken, async (req, res) => {
+router.get('/status', async (req, res) => {
   try {
     const status = sqliteManager.getStatus();
     
@@ -29,7 +28,7 @@ router.get('/status', authenticateToken, async (req, res) => {
 });
 
 // SQLite-only system - sync not needed
-router.post('/sync', authenticateToken, async (req, res) => {
+router.post('/sync', async (req, res) => {
   res.json({
     success: true,
     message: 'SQLite-only system - no sync required',
@@ -38,7 +37,7 @@ router.post('/sync', authenticateToken, async (req, res) => {
 });
 
 // Initialize SQLite database
-router.post('/init-offline', authenticateToken, async (req, res) => {
+router.post('/init-offline', async (req, res) => {
   try {
     console.log('[Database Status] Reinitializing SQLite database...');
     

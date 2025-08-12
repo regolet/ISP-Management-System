@@ -1,12 +1,11 @@
 const express = require('express');
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 const RouterOSAPI = require('routeros-api').RouterOSAPI;
 
 const router = express.Router();
 
 // Get PPP accounts from MikroTik
-router.get('/accounts', authenticateToken, async (req, res) => {
+router.get('/accounts', async (req, res) => {
   try {
     const client = await pool.connect();
     const settingsResult = await client.query('SELECT * FROM mikrotik_settings ORDER BY created_at DESC LIMIT 1');
@@ -36,7 +35,7 @@ router.get('/accounts', authenticateToken, async (req, res) => {
 });
 
 // Get PPP profiles from MikroTik
-router.get('/profiles', authenticateToken, async (req, res) => {
+router.get('/profiles', async (req, res) => {
   try {
     const client = await pool.connect();
     const settingsResult = await client.query('SELECT * FROM mikrotik_settings ORDER BY created_at DESC LIMIT 1');
@@ -66,7 +65,7 @@ router.get('/profiles', authenticateToken, async (req, res) => {
 });
 
 // Import clients from MikroTik PPP accounts
-router.post('/import-clients', authenticateToken, async (req, res) => {
+router.post('/import-clients', async (req, res) => {
   try {
     const { selectedAccounts } = req.body;
     

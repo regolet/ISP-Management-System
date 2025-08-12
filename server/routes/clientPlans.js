@@ -1,11 +1,10 @@
 const express = require('express');
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get client plans by client ID
-router.get('/:clientId', authenticateToken, async (req, res) => {
+router.get('/:clientId', async (req, res) => {
   try {
     const clientId = req.params.clientId;
     const client = await pool.connect();
@@ -24,7 +23,7 @@ router.get('/:clientId', authenticateToken, async (req, res) => {
 });
 
 // Create new client plan assignment
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { client_id, plan_id, status = 'active' } = req.body;
     
@@ -58,7 +57,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Delete client plan assignment
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const clientPlanId = req.params.id;
     const client = await pool.connect();

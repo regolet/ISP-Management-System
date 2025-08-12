@@ -1,12 +1,11 @@
 const express = require('express');
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 const RouterOSAPI = require('routeros-api').RouterOSAPI;
 
 const router = express.Router();
 
 // Get MikroTik settings
-router.get('/settings', authenticateToken, async (req, res) => {
+router.get('/settings', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query('SELECT * FROM mikrotik_settings ORDER BY created_at DESC LIMIT 1');
@@ -18,7 +17,7 @@ router.get('/settings', authenticateToken, async (req, res) => {
 });
 
 // Save MikroTik settings
-router.post('/settings', authenticateToken, async (req, res) => {
+router.post('/settings', async (req, res) => {
   try {
     const { host, username, password, port = 8728 } = req.body;
     
@@ -43,7 +42,7 @@ router.post('/settings', authenticateToken, async (req, res) => {
 });
 
 // Test MikroTik connection
-router.post('/test', authenticateToken, async (req, res) => {
+router.post('/test', async (req, res) => {
   try {
     const { host, username, password, port = 8728 } = req.body;
     

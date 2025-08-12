@@ -1,12 +1,11 @@
 const express = require('express');
 const pool = require('../config/database'); // Now automatically handles offline/online
 const { formatDateForDB, formatClientDates } = require('../utils/dateHelpers');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all clients with pagination and filtering
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { 
       page = 1, 
@@ -113,7 +112,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Create new client
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { name, email, phone, address, installation_date, due_date, payment_status = 'unpaid', status = 'active', balance = 0 } = req.body;
     if (!name) {
@@ -132,7 +131,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Update client by ID
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const clientId = req.params.id;
     const { name, email, phone, address, installation_date, due_date, payment_status, status, balance } = req.body;
@@ -182,7 +181,7 @@ router.delete('/delete-all', async (req, res) => {
 });
 
 // Delete client by ID
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const clientId = req.params.id;
     const client = await pool.connect();

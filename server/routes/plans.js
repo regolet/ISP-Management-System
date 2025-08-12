@@ -1,11 +1,10 @@
 const express = require('express');
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all plans
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query('SELECT * FROM plans ORDER BY created_at DESC');
@@ -17,7 +16,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Create new plan
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { name, description, price, speed, download_speed, upload_speed, status } = req.body;
     const client = await pool.connect();
@@ -33,7 +32,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Update plan by ID
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const planId = req.params.id;
     const { name, description, price, speed, download_speed, upload_speed, status } = req.body;
@@ -53,7 +52,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete plan by ID
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const planId = req.params.id;
     const client = await pool.connect();

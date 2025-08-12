@@ -1,6 +1,5 @@
 const express = require('express');
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 const { recalculateClientBalance } = require('../utils/billingHelpers');
 
 const router = express.Router();
@@ -33,7 +32,7 @@ function getNextDueDate(currentDueDate) {
 }
 
 // Get all payments - simplified SQLite-compatible version
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(`
@@ -56,7 +55,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Create new payment
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', async (req, res) => {
   const dbClient = await pool.connect();
   try {
     const { client_id, amount, payment_date, method, notes } = req.body;
@@ -129,7 +128,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Delete payment by ID
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   const dbClient = await pool.connect();
   try {
     const paymentId = req.params.id;

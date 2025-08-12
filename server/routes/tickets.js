@@ -1,11 +1,10 @@
 const express = require('express');
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all tickets with pagination and filtering
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { 
       page = 1, 
@@ -116,7 +115,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Get ticket statistics
-router.get('/stats', authenticateToken, async (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
     const client = await pool.connect();
     
@@ -142,7 +141,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
 });
 
 // Get single ticket by ID
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const ticketId = req.params.id;
     const client = await pool.connect();
@@ -176,7 +175,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // Create new ticket
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { title, description, client_id, priority = 'medium', category = 'general', assigned_to, due_date } = req.body;
     const created_by = req.user.userId;
@@ -215,7 +214,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Update ticket
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', async (req, res) => {
   const dbClient = await pool.connect();
   try {
     const ticketId = req.params.id;
@@ -359,7 +358,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete ticket
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const ticketId = req.params.id;
     const client = await pool.connect();
@@ -380,7 +379,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // Get ticket comments
-router.get('/:id/comments', authenticateToken, async (req, res) => {
+router.get('/:id/comments', async (req, res) => {
   try {
     const ticketId = req.params.id;
     const client = await pool.connect();
@@ -404,7 +403,7 @@ router.get('/:id/comments', authenticateToken, async (req, res) => {
 });
 
 // Add ticket comment
-router.post('/:id/comments', authenticateToken, async (req, res) => {
+router.post('/:id/comments', async (req, res) => {
   try {
     const ticketId = req.params.id;
     const { comment, is_internal = false } = req.body;
@@ -436,7 +435,7 @@ router.post('/:id/comments', authenticateToken, async (req, res) => {
 });
 
 // Get ticket history
-router.get('/:id/history', authenticateToken, async (req, res) => {
+router.get('/:id/history', async (req, res) => {
   try {
     const ticketId = req.params.id;
     const client = await pool.connect();

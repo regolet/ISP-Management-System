@@ -84,7 +84,7 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <i class="fas fa-user-circle text-2xl"></i>
-            <span id="username" class="font-medium">Loading...</span>
+            <span id="username" class="font-medium">Administrator</span>
           </div>
           <button 
             id="logoutBtn"
@@ -980,7 +980,6 @@
 
     // Load billing history for a specific client
     async function loadClientBillingHistory(clientId) {
-      const token = localStorage.getItem('auth_token');
       const billingLoading = document.getElementById('billing-loading');
       const billingContent = document.getElementById('billing-content');
       const billingList = document.getElementById('billing-list');
@@ -991,7 +990,6 @@
       try {
         const response = await fetch(`/api/billings?client_id=${clientId}`, {
           headers: {
-            'Authorization': `Bearer ${token}`
           }
         });
         
@@ -1058,7 +1056,6 @@
     
     // Load payment history for a specific client
     async function loadClientPaymentHistory(clientId) {
-      const token = localStorage.getItem('auth_token');
       const paymentsLoading = document.getElementById('payments-loading');
       const paymentsContent = document.getElementById('payments-content');
       const paymentsList = document.getElementById('payments-list');
@@ -1069,7 +1066,6 @@
       try {
         const response = await fetch(`/api/payments?client_id=${clientId}`, {
           headers: {
-            'Authorization': `Bearer ${token}`
           }
         });
         
@@ -1141,13 +1137,11 @@
     async function deleteClient(clientId) {
       if (!confirm('Are you sure you want to delete this client? This action cannot be undone.')) return;
       
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch(`/api/clients/${clientId}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${token}`
           }
         });
         
@@ -1166,7 +1160,6 @@
 
     // Load and display clients with pagination and sorting
     async function loadClients() {
-      const token = localStorage.getItem('auth_token');
       
       try {
         const params = new URLSearchParams({
@@ -1183,7 +1176,6 @@
         
         const response = await fetch(`/api/clients?${params}`, {
           headers: {
-            'Authorization': `Bearer ${token}`
           }
         });
         
@@ -1216,12 +1208,10 @@
 
     // Load available plans
     async function loadPlans() {
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch('/api/plans', {
           headers: {
-            'Authorization': `Bearer ${token}`
           }
         });
         
@@ -1488,7 +1478,6 @@
       };
       const planId = allData.plan_id;
       
-      const token = localStorage.getItem('auth_token');
       
       try {
         // First, create the client
@@ -1496,7 +1485,6 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(clientData)
         });
@@ -1521,7 +1509,6 @@
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(planAssignmentData)
           });
@@ -1565,7 +1552,6 @@
       };
       const planId = allData.plan_id;
       
-      const token = localStorage.getItem('auth_token');
       
       try {
         // Update client basic info
@@ -1573,7 +1559,6 @@
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(clientData)
         });
@@ -1587,7 +1572,6 @@
           // First, remove any existing active plan
           const currentPlanResponse = await fetch(`/api/client-plans/${clientId}`, {
             headers: {
-              'Authorization': `Bearer ${token}`
             }
           });
           
@@ -1600,7 +1584,6 @@
               await fetch(`/api/client-plans/${activePlan.id}`, {
                 method: 'DELETE',
                 headers: {
-                  'Authorization': `Bearer ${token}`
                 }
               });
             }
@@ -1618,7 +1601,6 @@
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(planAssignmentData)
           });
@@ -1631,7 +1613,6 @@
           // First, find the client's current plan assignment
           const currentPlanResponse = await fetch(`/api/client-plans/${clientId}`, {
             headers: {
-              'Authorization': `Bearer ${token}`
             }
           });
           
@@ -1645,7 +1626,6 @@
               const removeResponse = await fetch(`/api/client-plans/${activePlan.id}`, {
                 method: 'DELETE',
                 headers: {
-                  'Authorization': `Bearer ${token}`
                 }
               });
             }
@@ -1664,21 +1644,6 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-      // Check if user is logged in
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        window.location.href = '/login.html';
-        return;
-      }
-
-      // Set up logout functionality
-      document.getElementById('logoutBtn').addEventListener('click', function() {
-        localStorage.removeItem('auth_token');
-        showNotification('Logged Out', 'You have been successfully logged out', 'info');
-        setTimeout(() => {
-          window.location.href = '/login.html';
-        }, 1000);
-      });
 
       // Set up search and filters
       document.getElementById('clientSearch').addEventListener('input', debounce(filterClients, 300));
@@ -1695,7 +1660,6 @@
       loadPlans();
       
       // Fetch user info
-      fetchUserInfo();
     });
 
     // Debounce function for search input
@@ -1711,27 +1675,6 @@
       };
     }
     
-    async function fetchUserInfo() {
-      const token = localStorage.getItem('auth_token');
-      try {
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          document.getElementById('username').textContent = data.user.username || 'User';
-        } else {
-          localStorage.removeItem('auth_token');
-          window.location.href = '/login.html';
-        }
-      } catch (error) {
-        console.error('Error fetching user info:', error);
-        document.getElementById('username').textContent = 'User';
-      }
-    }
 
     // MikroTik Import Functions
     let mikrotikAccounts = [];
@@ -1759,12 +1702,10 @@
     }
 
     async function fetchMikroTikAccounts() {
-      const token = localStorage.getItem('auth_token');
       
       try {
         const response = await fetch('/api/ppp-accounts', {
           headers: {
-            'Authorization': `Bearer ${token}`
           }
         });
         
@@ -1933,7 +1874,6 @@
         return;
       }
       
-      const token = localStorage.getItem('auth_token');
       const importBtn = document.getElementById('importSelectedBtn');
       const originalText = importBtn.textContent;
       
@@ -1945,7 +1885,6 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({ selectedAccounts })
         });
@@ -1991,7 +1930,6 @@
     }
 
     async function deleteAllClients() {
-      const token = localStorage.getItem('token');
       const deleteBtn = document.getElementById('deleteAllBtn');
       const originalText = deleteBtn.innerHTML;
       
