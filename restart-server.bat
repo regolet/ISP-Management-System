@@ -13,6 +13,9 @@ if not errorlevel 1 (
     pm2 restart isp
     echo [SUCCESS] Server restarted via PM2!
     echo [INFO] Service URL: http://localhost:3000
+    echo [INFO] Opening web browser...
+    timeout /t 2 /nobreak >nul
+    start http://localhost:3000
     echo.
     pause
     exit /b 0
@@ -38,6 +41,9 @@ timeout /t 5 /nobreak >nul
 
 echo [SUCCESS] Server restarted manually!
 echo [INFO] Service URL: http://localhost:3000
+echo [INFO] Opening web browser...
+timeout /t 2 /nobreak >nul
+start http://localhost:3000
 echo.
 echo The server is now running in the background.
 echo Use this script again to restart if needed.
