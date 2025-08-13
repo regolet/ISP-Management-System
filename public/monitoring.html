@@ -132,19 +132,19 @@
               </p>
             </div>
             <div class="flex space-x-1">
-              <button id="dashboardTab" class="tab-button px-4 py-2 text-sm font-medium text-gray-700 bg-blue-100 text-blue-700 rounded-md transition-colors" onclick="showTab('dashboard')">
+              <button id="dashboardTab" class="tab-button px-4 py-2 text-sm font-medium text-gray-700 bg-blue-100 text-blue-700 rounded-md transition-colors hover:bg-blue-200" onclick="showTab('dashboard')">
                 <i class="fas fa-chart-bar mr-2"></i>
                 Dashboard
               </button>
-              <button id="groupsTab" class="tab-button px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('groups')">
+              <button id="groupsTab" class="tab-button px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md transition-colors hover:bg-gray-200" onclick="showTab('groups')">
                 <i class="fas fa-layer-group mr-2"></i>
                 Groups
               </button>
-              <button id="categoriesTab" class="tab-button px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('categories')">
+              <button id="categoriesTab" class="tab-button px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md transition-colors hover:bg-gray-200" onclick="showTab('categories')">
                 <i class="fas fa-sitemap mr-2"></i>
                 Categories
               </button>
-              <button id="bandwidthTab" class="tab-button px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+              <button id="bandwidthTab" class="tab-button px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md transition-colors hover:bg-gray-200" onclick="showTab('bandwidth')">
                 <i class="fas fa-wifi mr-2"></i>
                 Bandwidth
               </button>
@@ -383,7 +383,7 @@
                 <i class="fas fa-wifi mr-2"></i>
                 Bandwidth
               </button>
-              <button id="addGroupBtn" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button id="addGroupBtn" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">
                 <i class="fas fa-plus"></i>
                 <span>Add Group</span>
               </button>
@@ -447,7 +447,7 @@
                 <i class="fas fa-wifi mr-2"></i>
                 Bandwidth
               </button>
-              <button id="addCategoryBtn" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button id="addCategoryBtn" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">
                 <i class="fas fa-plus"></i>
                 <span>Add Category</span>
               </button>
@@ -471,16 +471,16 @@
               <i class="fas fa-wifi text-orange-600 mr-2"></i>
               Bandwidth Monitoring
             </h3>
-            <div class="flex items-center space-x-2">
-              <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('dashboard')">
+            <div class="flex items-center space-x-1">
+              <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors" onclick="showTab('dashboard')">
                 <i class="fas fa-chart-bar mr-2"></i>
                 Dashboard
               </button>
-              <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('groups')">
+              <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors" onclick="showTab('groups')">
                 <i class="fas fa-layer-group mr-2"></i>
                 Groups
               </button>
-              <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors" onclick="showTab('categories')">
+              <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors" onclick="showTab('categories')">
                 <i class="fas fa-sitemap mr-2"></i>
                 Categories
               </button>
@@ -664,10 +664,10 @@
         content.classList.add('hidden');
       });
       
-      // Remove active class from all tab buttons
+      // Remove active class from all tab buttons and set them to inactive state
       document.querySelectorAll('.tab-button').forEach(button => {
-        button.classList.remove('bg-blue-100', 'text-blue-700');
-        button.classList.add('hover:bg-gray-100', 'text-gray-700');
+        button.classList.remove('bg-blue-100', 'text-blue-700', 'hover:bg-blue-200');
+        button.classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
       });
       
       // Show selected tab content
@@ -675,8 +675,8 @@
       
       // Add active class to selected tab button
       const activeButton = document.getElementById(tabName + 'Tab');
-      activeButton.classList.add('bg-blue-100', 'text-blue-700');
-      activeButton.classList.remove('hover:bg-gray-100', 'text-gray-700');
+      activeButton.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+      activeButton.classList.add('bg-blue-100', 'text-blue-700', 'hover:bg-blue-200');
       
       currentTab = tabName;
       
@@ -1624,13 +1624,13 @@
                 ${categoryStats ? `<span class="text-xs text-gray-600">${categoryStats}</span>` : ''}
               </div>
               <div class="flex items-center space-x-0.5">
-                <button onclick="addSubcategory('${category.category}', event)" class="text-green-600 hover:text-green-800 text-sm">
+                <button onclick="addSubcategory('${category.category}', event)" class="px-2 py-1 text-green-600 hover:bg-green-100 rounded-md transition-colors text-sm" title="Add Subcategory">
                   <i class="fas fa-plus"></i>
                 </button>
-                <button onclick="editCategory('${category.category}', event)" class="text-blue-600 hover:text-blue-800 text-sm">
+                <button onclick="editCategory('${category.category}', event)" class="px-2 py-1 text-blue-600 hover:bg-blue-100 rounded-md transition-colors text-sm" title="Edit Category">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button onclick="deleteCategory('${category.category}', event)" class="text-red-600 hover:text-red-800 text-sm">
+                <button onclick="deleteCategory('${category.category}', event)" class="px-2 py-1 text-red-600 hover:bg-red-100 rounded-md transition-colors text-sm" title="Delete Category">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -1667,13 +1667,13 @@
                       ${subcategoryStats ? `<span class="text-xs text-gray-500">${subcategoryStats}</span>` : ''}
                     </div>
                     <div class="flex items-center space-x-0.5">
-                      <button onclick="assignGroups('${category.category}', '${sub.subcategory}', event)" class="text-blue-600 hover:text-blue-800 text-xs">
+                      <button onclick="assignGroups('${category.category}', '${sub.subcategory}', event)" class="px-1.5 py-1 text-blue-600 hover:bg-blue-100 rounded-md transition-colors text-xs" title="Assign Groups">
                         <i class="fas fa-layer-group"></i>
                       </button>
-                      <button onclick="editSubcategory('${category.category}', '${sub.subcategory}', event)" class="text-gray-600 hover:text-gray-800 text-xs">
+                      <button onclick="editSubcategory('${category.category}', '${sub.subcategory}', event)" class="px-1.5 py-1 text-gray-600 hover:bg-gray-100 rounded-md transition-colors text-xs" title="Edit Subcategory">
                         <i class="fas fa-edit"></i>
                       </button>
-                      <button onclick="deleteSubcategory('${category.category}', '${sub.subcategory}', event)" class="text-red-600 hover:text-red-800 text-xs">
+                      <button onclick="deleteSubcategory('${category.category}', '${sub.subcategory}', event)" class="px-1.5 py-1 text-red-600 hover:bg-red-100 rounded-md transition-colors text-xs" title="Delete Subcategory">
                         <i class="fas fa-trash"></i>
                       </button>
                     </div>
@@ -2236,8 +2236,8 @@
                       <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="availableAccounts" multiple size="8"></select>
                     </div>
                     <div class="col-span-1 flex flex-col justify-center items-center space-y-2">
-                      <button type="button" class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" onclick="addAccountsToGroup()">→</button>
-                      <button type="button" class="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors" onclick="removeAccountsFromGroup()">←</button>
+                      <button type="button" class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium" onclick="addAccountsToGroup()" title="Add to Group">→</button>
+                      <button type="button" class="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm font-medium" onclick="removeAccountsFromGroup()" title="Remove from Group">←</button>
                     </div>
                     <div class="col-span-2">
                       <label class="block text-sm font-medium text-gray-500 mb-2">Selected Accounts</label>
@@ -2695,8 +2695,8 @@
                   <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="availableGroups" multiple size="8"></select>
                 </div>
                 <div class="col-span-1 flex flex-col justify-center items-center space-y-2">
-                  <button type="button" class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" onclick="addGroupsToSubcategory()">→</button>
-                  <button type="button" class="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors" onclick="removeGroupsFromSubcategory()">←</button>
+                  <button type="button" class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium" onclick="addGroupsToSubcategory()" title="Add to Subcategory">→</button>
+                  <button type="button" class="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm font-medium" onclick="removeGroupsFromSubcategory()" title="Remove from Subcategory">←</button>
                 </div>
                 <div class="col-span-2">
                   <label class="block text-sm font-medium text-gray-500 mb-2">Assigned Groups</label>

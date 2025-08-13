@@ -37,172 +37,6 @@ class SupabaseSync {
     }
   }
 
-  static getSchemaSQL() {
-    // Static method - doesn't need instance or configuration
-    // This returns the SQL that should be run in Supabase SQL editor
-    return `
--- Users table
-CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(50) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  email VARCHAR(100),
-  role VARCHAR(20) DEFAULT 'user',
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Clients table
-CREATE TABLE IF NOT EXISTS clients (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  email VARCHAR(100),
-  phone VARCHAR(20),
-  address TEXT,
-  status VARCHAR(20) DEFAULT 'active',
-  payment_status VARCHAR(20) DEFAULT 'paid',
-  balance DECIMAL(10,2) DEFAULT 0.00,
-  installation_date DATE,
-  due_date DATE,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Plans table
-CREATE TABLE IF NOT EXISTS plans (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  description TEXT,
-  price DECIMAL(10,2) NOT NULL,
-  speed VARCHAR(50),
-  download_speed VARCHAR(50),
-  upload_speed VARCHAR(50),
-  status VARCHAR(20) DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Client Plans table
-CREATE TABLE IF NOT EXISTS client_plans (
-  id SERIAL PRIMARY KEY,
-  client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
-  plan_id INTEGER REFERENCES plans(id) ON DELETE CASCADE,
-  status VARCHAR(20) DEFAULT 'active',
-  anchor_day INTEGER DEFAULT 1,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Billings table
-CREATE TABLE IF NOT EXISTS billings (
-  id SERIAL PRIMARY KEY,
-  client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
-  plan_id INTEGER REFERENCES plans(id) ON DELETE CASCADE,
-  amount DECIMAL(10,2) NOT NULL,
-  due_date DATE NOT NULL,
-  billing_month DATE NOT NULL,
-  status VARCHAR(20) DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Payments table
-CREATE TABLE IF NOT EXISTS payments (
-  id SERIAL PRIMARY KEY,
-  client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
-  plan_id INTEGER REFERENCES plans(id) ON DELETE CASCADE,
-  amount DECIMAL(10,2) NOT NULL,
-  payment_date DATE NOT NULL,
-  payment_method VARCHAR(50) DEFAULT 'cash',
-  reference_number VARCHAR(100),
-  notes TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- MikroTik Settings table
-CREATE TABLE IF NOT EXISTS mikrotik_settings (
-  id SERIAL PRIMARY KEY,
-  host VARCHAR(255) NOT NULL,
-  username VARCHAR(100) NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  port INTEGER DEFAULT 8728,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Company Info table
-CREATE TABLE IF NOT EXISTS company_info (
-  id SERIAL PRIMARY KEY,
-  company_name VARCHAR(255),
-  address TEXT,
-  phone VARCHAR(50),
-  email VARCHAR(100),
-  website VARCHAR(255),
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Inventory Categories table
-CREATE TABLE IF NOT EXISTS inventory_categories (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  description TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Inventory Suppliers table
-CREATE TABLE IF NOT EXISTS inventory_suppliers (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  contact_person VARCHAR(100),
-  phone VARCHAR(20),
-  email VARCHAR(100),
-  address TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Inventory Items table
-CREATE TABLE IF NOT EXISTS inventory_items (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  description TEXT,
-  category_id INTEGER REFERENCES inventory_categories(id) ON DELETE SET NULL,
-  supplier_id INTEGER REFERENCES inventory_suppliers(id) ON DELETE SET NULL,
-  sku VARCHAR(50),
-  unit_cost DECIMAL(10,2),
-  selling_price DECIMAL(10,2),
-  quantity_on_hand INTEGER DEFAULT 0,
-  reorder_level INTEGER DEFAULT 0,
-  status VARCHAR(20) DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Enable Row Level Security on all tables
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
-ALTER TABLE plans ENABLE ROW LEVEL SECURITY;
-ALTER TABLE client_plans ENABLE ROW LEVEL SECURITY;
-ALTER TABLE billings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE mikrotik_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE company_info ENABLE ROW LEVEL SECURITY;
-ALTER TABLE inventory_categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE inventory_suppliers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE inventory_items ENABLE ROW LEVEL SECURITY;
-
--- Create policies for anonymous access (adjust as needed for your security requirements)
-CREATE POLICY "Enable read access for all users" ON clients FOR SELECT USING (true);
-CREATE POLICY "Enable insert for all users" ON clients FOR INSERT WITH CHECK (true);
-CREATE POLICY "Enable update for all users" ON clients FOR UPDATE USING (true);
-CREATE POLICY "Enable delete for all users" ON clients FOR DELETE USING (true);
-
--- Repeat for other tables as needed
-`;
-  }
 
   async syncTable(tableName, data) {
     if (!this.initialized) {
@@ -331,9 +165,23 @@ CREATE POLICY "Enable delete for all users" ON clients FOR DELETE USING (true);
         'inventory_categories',
         'inventory_suppliers',
         'inventory_items',
+        'inventory_assignments',
+        'inventory_movements',
         'client_plans',
         'billings',
-        'payments'
+        'payments',
+        'monitoring_groups',
+        'monitoring_categories',
+        'tickets',
+        'ticket_comments',
+        'ticket_attachments',
+        'ticket_history',
+        'assets',
+        'asset_collections',
+        'asset_subitems',
+        'network_summary',
+        'interface_stats',
+        'scheduler_settings'
         // Skip 'users' to avoid auth conflicts
       ];
 

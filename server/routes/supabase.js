@@ -126,24 +126,6 @@ router.post('/test-connection', async (req, res) => {
   }
 });
 
-// Get schema creation SQL
-router.get('/schema-sql', async (req, res) => {
-  try {
-    // Use static method - no need for instance
-    const sql = SupabaseSync.getSchemaSQL();
-    
-    res.json({
-      success: true,
-      sql
-    });
-  } catch (error) {
-    console.error('Error getting schema SQL:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
 
 // Sync all data to Supabase
 router.post('/sync', async (req, res) => {
@@ -252,7 +234,9 @@ router.get('/status', async (req, res) => {
     // Get table counts from local database
     const tables = [
       'clients', 'plans', 'client_plans', 
-      'billings', 'payments', 'inventory_items'
+      'billings', 'payments', 'inventory_items',
+      'monitoring_groups', 'monitoring_categories',
+      'tickets', 'assets', 'network_summary'
     ];
     
     const counts = {};
