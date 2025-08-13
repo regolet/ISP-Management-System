@@ -256,6 +256,132 @@ class SupabaseSync {
     return results;
   }
 
+  async downloadFromSupabase() {
+    if (!this.initialized) {
+      throw new Error('Supabase not configured');
+    }
+
+    const results = {
+      success: true,
+      tables: {},
+      errors: [],
+      totalRecords: 0
+    };
+
+    try {
+      const client = await pool.connect();
+
+      // Define tables to download in order (considering foreign key dependencies)
+      const tablesToDownload = [
+        'company_info',
+        'mikrotik_settings',
+        'clients',
+        'plans',
+        'inventory_categories',
+        'inventory_suppliers',
+        'inventory_items',
+        'inventory_assignments',
+        'inventory_movements',
+        'client_plans',
+        'billings',
+        'payments',
+        'monitoring_groups',
+        'monitoring_categories',
+        'tickets',
+        'ticket_comments',
+        'ticket_attachments',
+        'ticket_history',
+        'assets',
+        'asset_collections',
+        'asset_subitems',
+        'network_summary',
+        'interface_stats',
+        'scheduler_settings'
+        // Skip 'users' to avoid auth conflicts
+      ];
+
+      for (const table of tablesToDownload) {
+        try {
+          console.log(`\nDownloading table: ${table}`);
+          
+          // Get data from Supabase
+          const { data, error } = await this.supabase
+            .from(table)
+            .select('*');
+
+          if (error) {
+            console.error(`Error downloading ${table}:`, error);
+            results.errors.push({
+              table,
+              error: error.message
+            });
+            continue;
+          }
+
+          if (!data || data.length === 0) {
+            console.log(`  No data found in Supabase for ${table}`);
+            results.tables[table] = { count: 0 };
+            continue;
+          }
+
+          console.log(`  Found ${data.length} records in Supabase ${table} table`);
+
+          // Clear existing local data
+          await client.query(`DELETE FROM ${table}`);
+          console.log(`  Cleared local ${table} table`);
+
+          // Insert data into local database
+          let insertedCount = 0;
+          for (const row of data) {
+            try {
+              // Build dynamic insert query based on row keys
+              const columns = Object.keys(row).filter(col => 
+                col !== 'rowid' && col !== 'oid' && row[col] !== undefined
+              );
+              const values = columns.map(col => row[col]);
+              const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
+
+              const insertQuery = `
+                INSERT INTO ${table} (${columns.join(', ')})
+                VALUES (${placeholders})
+              `;
+
+              await client.query(insertQuery, values);
+              insertedCount++;
+            } catch (insertError) {
+              console.error(`Error inserting row into ${table}:`, insertError.message);
+              // Continue with other rows
+            }
+          }
+
+          results.tables[table] = { 
+            count: insertedCount,
+            downloaded: data.length 
+          };
+          results.totalRecords += insertedCount;
+          
+          console.log(`✓ Downloaded ${table}: ${insertedCount}/${data.length} records`);
+        } catch (error) {
+          console.error(`Error processing ${table}:`, error);
+          results.errors.push({
+            table,
+            error: error.message
+          });
+        }
+      }
+
+      client.release();
+    } catch (error) {
+      console.error('Database connection error:', error);
+      results.errors.push({
+        general: error.message
+      });
+      results.success = false;
+    }
+
+    return results;
+  }
+
   async getLastSyncTime() {
     // This could be stored in local database or localStorage
     // For now, return current time

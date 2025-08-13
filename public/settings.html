@@ -734,6 +734,16 @@
                         </button>
                         
                         <button 
+                          onclick="downloadFromSupabase()"
+                          id="downloadFromSupabaseBtn"
+                          class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled
+                        >
+                          <i class="fas fa-cloud-download-alt mr-2"></i>
+                          Download from Online
+                        </button>
+                        
+                        <button 
                           onclick="viewSupabaseSchema()"
                           class="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
                         >
@@ -1866,6 +1876,7 @@
           document.getElementById('supabaseStatus').innerHTML = 
             '<span class="text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Configured</span>';
           document.getElementById('uploadToSupabaseBtn').disabled = false;
+          document.getElementById('downloadFromSupabaseBtn').disabled = false;
           
           if (data.lastSync) {
             const syncDate = new Date(data.lastSync);
@@ -1907,6 +1918,7 @@
           document.getElementById('supabaseStatus').innerHTML = 
             '<span class="text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Configured</span>';
           document.getElementById('uploadToSupabaseBtn').disabled = false;
+          document.getElementById('downloadFromSupabaseBtn').disabled = false;
           
           if (data.connectionTest && data.connectionTest.needsSchema) {
             showNotification('Info', 'Database schema needs to be created in Supabase. Click "View Schema SQL" for the SQL commands.', 'info');
@@ -1930,8 +1942,9 @@
         const data = await response.json();
         
         if (data.success) {
-          // Enable upload button after successful test
+          // Enable upload and download buttons after successful test
           document.getElementById('uploadToSupabaseBtn').disabled = false;
+          document.getElementById('downloadFromSupabaseBtn').disabled = false;
           document.getElementById('supabaseStatus').innerHTML = 
             '<span class="text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Connected</span>';
           
@@ -2103,6 +2116,97 @@
         console.error('Error uploading to Supabase:', error);
         progressContainer.classList.add('hidden');
         showNotification('Error', `Failed to upload data: ${error.message || 'Unknown error'}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // Download data from Supabase to local database
+    async function downloadFromSupabase() {
+      if (!confirm('This will download all data from Supabase to your local database. Any existing local data will be replaced. Continue?')) {
+        return;
+      }
+      
+      const btn = document.getElementById('downloadFromSupabaseBtn');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Downloading...';
+      
+      // Show progress
+      const progressContainer = document.getElementById('supabaseSyncProgress');
+      const progressBar = document.getElementById('supabaseSyncBar');
+      const progressText = document.getElementById('supabaseSyncText');
+      const progressPercent = document.getElementById('supabaseSyncPercent');
+      
+      progressContainer.classList.remove('hidden');
+      progressBar.style.width = '0%';
+      progressText.textContent = 'Connecting to Supabase...';
+      progressPercent.textContent = '0%';
+      
+      try {
+        // Simulate progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          if (progress < 90) {
+            progress += 10;
+            progressBar.style.width = progress + '%';
+            progressPercent.textContent = progress + '%';
+            progressText.textContent = 'Downloading data from Supabase...';
+          }
+        }, 500);
+        
+        const response = await fetch('/api/supabase/download', {
+          method: 'POST'
+        });
+        
+        clearInterval(progressInterval);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Download request failed:', response.status, errorText);
+          throw new Error(`Server error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          progressBar.style.width = '100%';
+          progressPercent.textContent = '100%';
+          progressText.textContent = 'Download completed successfully!';
+          showNotification('Success', data.message || 'Data downloaded from Supabase successfully', 'success');
+          
+          // Update local record count
+          if (data.details && data.details.totalRecords) {
+            document.getElementById('localRecordCount').textContent = data.details.totalRecords + ' total records';
+          }
+          
+          // Update last sync time
+          const syncDate = new Date();
+          document.getElementById('supabaseLastSync').textContent = syncDate.toLocaleString();
+        } else {
+          progressBar.classList.remove('bg-green-600');
+          progressBar.classList.add('bg-red-600');
+          progressText.textContent = 'Download failed!';
+          
+          if (data.needsSchema) {
+            showNotification('Error', 'Supabase database is empty. Upload data first before downloading.', 'error');
+          } else {
+            showNotification('Error', data.error || 'Failed to download data from Supabase', 'error');
+          }
+        }
+        
+        // Hide progress after 3 seconds
+        setTimeout(() => {
+          progressContainer.classList.add('hidden');
+          progressBar.classList.remove('bg-red-600');
+          progressBar.classList.add('bg-green-600');
+        }, 3000);
+        
+      } catch (error) {
+        console.error('Error downloading from Supabase:', error);
+        progressContainer.classList.add('hidden');
+        showNotification('Error', `Failed to download data: ${error.message || 'Unknown error'}`, 'error');
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;

@@ -208,6 +208,87 @@ router.post('/sync', async (req, res) => {
   }
 });
 
+// Download data from Supabase to local database
+router.post('/download', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    
+    // Get Supabase configuration
+    const configResult = await client.query(`
+      SELECT * FROM supabase_config 
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `);
+
+    if (configResult.rows.length === 0) {
+      client.release();
+      return res.status(400).json({
+        success: false,
+        error: 'Supabase not configured. Please configure Supabase settings first.'
+      });
+    }
+
+    const config = configResult.rows[0];
+    
+    // Initialize Supabase sync
+    const sync = new SupabaseSync(config.url, config.anon_key);
+    
+    // Test connection first
+    const connectionTest = await sync.testConnection();
+    
+    if (connectionTest.needsSchema) {
+      client.release();
+      return res.status(400).json({
+        success: false,
+        error: 'Supabase database is empty. No data to download.',
+        needsSchema: true
+      });
+    }
+
+    // Perform download
+    console.log('Starting Supabase download...');
+    console.log('Supabase URL:', config.url);
+    const downloadResult = await sync.downloadFromSupabase();
+    console.log('Download completed. Success:', downloadResult.success);
+    if (!downloadResult.success && downloadResult.errors) {
+      console.log('Download errors:', downloadResult.errors);
+    }
+
+    // Update last sync time
+    await client.query(
+      'UPDATE supabase_config SET last_sync = CURRENT_TIMESTAMP WHERE id = ?',
+      [config.id]
+    );
+
+    client.release();
+
+    // Prepare detailed response
+    let message = 'Data download completed';
+    if (downloadResult.success) {
+      message = `Successfully downloaded ${downloadResult.totalRecords} records from ${Object.keys(downloadResult.tables).length} tables`;
+    } else {
+      message = `Download completed with ${downloadResult.errors.length} errors. Check console for details.`;
+    }
+
+    res.json({
+      success: downloadResult.success,
+      message: message,
+      results: downloadResult,
+      details: {
+        tablesProcessed: Object.keys(downloadResult.tables),
+        totalRecords: downloadResult.totalRecords,
+        errors: downloadResult.errors
+      }
+    });
+  } catch (error) {
+    console.error('Error during download:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Get sync status
 router.get('/status', async (req, res) => {
   try {
