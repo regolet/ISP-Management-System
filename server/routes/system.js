@@ -62,10 +62,17 @@ router.get('/version', async (req, res) => {
 
   } catch (error) {
     console.error('Error getting system version:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to get system version',
-      details: error.message 
+    // Fallback version info when git is not available
+    res.json({
+      success: true,
+      version: {
+        commit: 'unknown',
+        fullCommit: 'Git not available or not a git repository',
+        message: 'ISP Management System',
+        date: new Date().toISOString(),
+        branch: 'main'
+      },
+      warning: 'Git information not available'
     });
   }
 });
@@ -137,10 +144,15 @@ router.get('/check-updates', async (req, res) => {
 
   } catch (error) {
     console.error('Error checking for updates:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to check for updates',
-      details: error.message 
+    // Fallback when git is not available
+    res.json({
+      success: true,
+      updates: {
+        available: false,
+        commitsBehind: 0,
+        latest: null
+      },
+      warning: 'Git not available - cannot check for updates'
     });
   }
 });

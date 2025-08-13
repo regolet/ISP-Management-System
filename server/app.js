@@ -24,6 +24,8 @@ const networkTotalsRoutes = require('./routes/network-totals');
 const schedulerRoutes = require('./routes/scheduler');
 const systemRoutes = require('./routes/system');
 const databaseStatusRoutes = require('./routes/database-status');
+const supabaseRoutes = require('./routes/supabase');
+const supabaseInitRoutes = require('./routes/supabase-init');
 
 const app = express();
 
@@ -70,6 +72,8 @@ app.use('/api/network-totals', networkTotalsRoutes);
 app.use('/api/scheduler', schedulerRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/database', databaseStatusRoutes);
+app.use('/api/supabase', supabaseRoutes);
+app.use('/api/supabase-init', supabaseInitRoutes);
 
 // Handle special routes that don't follow REST pattern
 const pool = require('./config/database');

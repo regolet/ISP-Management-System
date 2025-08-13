@@ -208,7 +208,7 @@ async function collectNetworkData() {
       const endTime = getPhilippineTime();
       const duration = endTime - startTime;
       console.log(`[Scheduler] ✅ Network data collected and SAVED to database in ${duration}ms`);
-      console.log(`[Scheduler] SAVED Stats at ${currentTime.toLocaleTimeString()} Philippine Time: Clients: ${totalClients}, Online: ${onlineClients}, Upload: ${Math.round(uploadBandwidth/125000)}Mbps, Download: ${Math.round(downloadBandwidth/125000)}Mbps`);
+      console.log(`[Scheduler] SAVED Stats at ${endTime.toLocaleTimeString()} Philippine Time: Clients: ${totalClients}, Online: ${onlineClients}, Upload: ${Math.round(uploadBandwidth/125000)}Mbps, Download: ${Math.round(downloadBandwidth/125000)}Mbps`);
       
     } catch (mikrotikError) {
       client.release();
@@ -240,9 +240,8 @@ async function collectNetworkData() {
           INSERT INTO network_summary (
             total_clients, online_clients, offline_clients,
             total_bandwidth_usage, upload_bandwidth, download_bandwidth,
-            network_uptime_percentage, active_connections, failed_connections,
-            data_collected_at
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            network_uptime_percentage, active_connections, failed_connections
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         `, [
           totalClients,
           onlineClients,
@@ -252,8 +251,7 @@ async function collectNetworkData() {
           downloadBandwidth,
           99.5,
           onlineClients,
-          0,
-          currentTime
+          0
         ]);
         
         fallbackClient.release();

@@ -20,14 +20,7 @@ curl http://localhost:3000/api/health
 curl -X POST http://localhost:3000/api/init-database
 ```
 
-### Netlify Development
-```bash
-# Start with Netlify Dev for production-like environment
-netlify dev                  # Runs on port 8888 with proxy to backend
 
-# Alternative using npm scripts
-npm run netlify:dev         # If configured in package.json
-```
 
 ## Architecture Overview
 
@@ -41,7 +34,7 @@ npm run netlify:dev         # If configured in package.json
 
 ### Frontend (Static HTML/CSS/JS)
 - **Entry point**: `public/index.html` - redirects to login
-- **Pages**: Login, Dashboard, Clients, Plans, Billings, Payments, Settings
+- **Pages**: Login, Dashboard, Clients, Plans, Billings, Payments, Settings, Monitoring
 - **Assets**: `public/assets/css/styles.css` for styling
 - **Forms**: Modular form components in `public/forms/` directory
 
@@ -55,6 +48,8 @@ Key tables managed by the backend:
 - `payments` - Payment tracking with automatic next-month billing generation
 - `mikrotik_settings` - RouterOS API configuration
 - `company_info` - Business information
+- `monitoring_groups` - JSONB table for group management with PPPoE accounts
+- `monitoring_categories` - Categories with group_ids, category_index, subcategory_index
 
 ## Authentication Flow
 1. Login via `/api/auth/login` with username/password
@@ -72,7 +67,7 @@ Key tables managed by the backend:
 1. Node.js 18+ with npm
 2. Neon PostgreSQL connection (configured in server/index.js:21)
 3. Default login: admin/admin123
-4. Server runs on port 3000, Netlify Dev on 8888
+4. Server runs on port 3000
 
 ## Important Implementation Notes
 - Database connection uses SSL with `rejectUnauthorized: false`
@@ -83,7 +78,7 @@ Key tables managed by the backend:
 - Static files served from `public/` directory
 - 404 redirects to login page for non-API routes
 
-## Recent Major Changes (Session: 2025-01-15)
+## Recent Major Changes (Session: 2025-01-15 & 2025-01-13)
 
 ### System Migration Completed
 - **Backend**: Fully migrated from PHP to Node.js/Express with PostgreSQL
@@ -102,17 +97,22 @@ Key tables managed by the backend:
 - `monitoring_categories` - Categories with group_ids, category_index, subcategory_index
 - Proper JSONB handling for arrays in PostgreSQL
 
-### UI/UX Improvements
+### UI/UX Improvements (2025-01-13)
+- **Compact design system**: Reduced spacing and padding across all pages for better density
 - **Full-width layout**: All pages now use `w-full px-6` instead of `max-w-7xl mx-auto px-4`
 - **Currency localization**: Changed from USD ($) to Philippine Peso (₱) across all pages
 - **Import functionality**: Fixed MikroTik import modals in clients and plans
 - **Select all checkboxes**: Added to PPP profiles import with indeterminate state support
+- **Monitoring categories**: Compact grid layout with 4-column max and reduced spacing
+- **Sidebar navigation**: More compact sidebar with reduced padding and spacing
 
 ### Critical Fixes Applied
 - **API response format**: Fixed `mikrotikAccounts.map is not a function` error
 - **JSON handling**: Proper JSON.stringify/parse for JSONB columns
 - **Array safety**: Added Array.isArray() checks to prevent runtime errors
 - **Modal functionality**: Complete import/export workflows for MikroTik data
+- **Monitoring data integration**: Fixed UUID to database ID mapping for categories
+- **Subcategory member counts**: Fixed "undefined (0)" display issues in monitoring
 
 ### Database Management Features
 - **Health checks**: `/api/health` endpoint for database connectivity
@@ -134,12 +134,12 @@ Key tables managed by the backend:
 2. **Plans Import**: PPP profiles → Plans with rate limit parsing and pricing
 3. **Groups**: Manual creation with account assignments and online/offline tracking
 4. **Categories**: Hierarchical organization with member/max member tracking
+5. **Monitoring data**: Successfully migrated from JSON files to database with ID mapping
 
 ### Technology Stack
 - **Backend**: Node.js 18+, Express.js, PostgreSQL (Neon), JWT auth, bcrypt
 - **Frontend**: HTML5, Tailwind CSS, Vanilla JavaScript, Font Awesome icons
 - **Integration**: RouterOS API, Real-time data fetching, JSONB storage
-- **Deployment**: Netlify-ready with `netlify.toml` configuration
 
 ## Development Tips and Tricks
 - Use npx kill-port to kill any ports and run the server

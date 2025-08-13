@@ -338,102 +338,20 @@ async function initializeDatabaseTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      -- Supabase Configuration table
+      CREATE TABLE IF NOT EXISTS supabase_config (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        url VARCHAR(255) NOT NULL,
+        anon_key TEXT NOT NULL,
+        last_sync TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
-    // Add subcategory_name column if it doesn't exist
-    await client.query(`
-      DO $$ 
-      BEGIN
-        IF NOT EXISTS (
-          SELECT 1 FROM information_schema.columns 
-          WHERE table_name = 'monitoring_categories' 
-          AND column_name = 'subcategory_name'
-        ) THEN
-          ALTER TABLE monitoring_categories ADD COLUMN subcategory_name VARCHAR(100);
-        END IF;
-      END $$;
-    `);
-
-    // Add upload_bandwidth and download_bandwidth columns to network_summary if they don't exist
-    await client.query(`
-      DO $$ 
-      BEGIN
-        IF NOT EXISTS (
-          SELECT 1 FROM information_schema.columns 
-          WHERE table_name = 'network_summary' 
-          AND column_name = 'upload_bandwidth'
-        ) THEN
-          ALTER TABLE network_summary ADD COLUMN upload_bandwidth BIGINT DEFAULT 0;
-        END IF;
-        
-        IF NOT EXISTS (
-          SELECT 1 FROM information_schema.columns 
-          WHERE table_name = 'network_summary' 
-          AND column_name = 'download_bandwidth'
-        ) THEN
-          ALTER TABLE network_summary ADD COLUMN download_bandwidth BIGINT DEFAULT 0;
-        END IF;
-      END $$;
-    `);
-
-    // SAFE: Do not remove profile column to prevent data loss
-    // If profile column exists, leave it as is - removing columns can cause data loss
-    // await client.query(`
-    //   DO $$ 
-    //   BEGIN
-    //     IF EXISTS (
-    //       SELECT 1 FROM information_schema.columns 
-    //       WHERE table_name = 'clients' 
-    //       AND column_name = 'profile'
-    //     ) THEN
-    //       ALTER TABLE clients DROP COLUMN profile;
-    //     END IF;
-    //   END $$;
-    // `);
-
-    // Apply schema modifications in a single PL/pgSQL block
-    await client.query(`
-      DO $$
-      BEGIN
-        -- Add columns if they don't exist
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='payments' AND column_name='billing_id') THEN
-          ALTER TABLE payments ADD COLUMN billing_id INTEGER REFERENCES billings(id) ON DELETE SET NULL;
-        END IF;
-        
-        -- SAFE: Do not remove billing_id column to prevent data loss
-        -- If billing_id column exists, leave it as is - removing columns can cause data loss
-        -- IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='payments' AND column_name='billing_id') THEN
-        --   ALTER TABLE payments DROP COLUMN billing_id;
-        -- END IF;
-        
-        -- Fix monitoring_groups table schema (SAFE VERSION - NO DATA LOSS)
-        -- Only add missing columns, never drop the table
-        IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='monitoring_groups') THEN
-          -- Create table only if it doesn't exist at all
-          CREATE TABLE monitoring_groups (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            group_name VARCHAR(100) NOT NULL,
-            group_data JSONB NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-          );
-        ELSE
-          -- Table exists, add missing columns if needed
-          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_groups' AND column_name='group_name') THEN
-            ALTER TABLE monitoring_groups ADD COLUMN group_name VARCHAR(100);
-          END IF;
-          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_groups' AND column_name='group_data') THEN
-            ALTER TABLE monitoring_groups ADD COLUMN group_data JSONB;
-          END IF;
-          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_groups' AND column_name='created_at') THEN
-            ALTER TABLE monitoring_groups ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-          END IF;
-          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_groups' AND column_name='updated_at') THEN
-            ALTER TABLE monitoring_groups ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-          END IF;
-        END IF;
-      END $$;
-    `);
+    // SQLite doesn't support DO blocks, so we'll skip these PostgreSQL-specific schema modifications
+    // All necessary columns are already defined in the CREATE TABLE statements above
 
     // Create ticketing tables in the same transaction
     await createTicketingTables(client);
