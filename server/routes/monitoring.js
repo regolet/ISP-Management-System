@@ -196,16 +196,22 @@ router.post('/groups', async (req, res) => {
     const groupDataJson = typeof group_data === 'string' ? group_data : JSON.stringify(group_data);
     
     const result = await client.query(
-      'INSERT INTO monitoring_groups (group_name, group_data) VALUES ($1, $2) RETURNING *',
+      'INSERT INTO monitoring_groups (group_name, group_data) VALUES (?, ?)',
       [group_name, groupDataJson]
     );
     
+    // Get the inserted group with its ID
+    const insertedResult = await client.query(
+      'SELECT * FROM monitoring_groups WHERE id = ?',
+      [result.lastID]
+    );
+    
     const newGroup = {
-      id: result.rows[0].id,
-      group_name: result.rows[0].group_name,
-      group_data: typeof result.rows[0].group_data === 'string' ? JSON.parse(result.rows[0].group_data) : result.rows[0].group_data,
-      created_at: result.rows[0].created_at,
-      updated_at: result.rows[0].updated_at
+      id: insertedResult.rows[0].id,
+      group_name: insertedResult.rows[0].group_name,
+      group_data: typeof insertedResult.rows[0].group_data === 'string' ? JSON.parse(insertedResult.rows[0].group_data) : insertedResult.rows[0].group_data,
+      created_at: insertedResult.rows[0].created_at,
+      updated_at: insertedResult.rows[0].updated_at
     };
     
     client.release();
@@ -231,17 +237,24 @@ router.put('/groups', async (req, res) => {
     const groupDataJson = typeof group_data === 'string' ? group_data : JSON.stringify(group_data);
     
     const result = await client.query(
-      'UPDATE monitoring_groups SET group_name = $1, group_data = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *',
+      'UPDATE monitoring_groups SET group_name = ?, group_data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [group_name, groupDataJson, id]
     );
     
-    if (result.rows.length === 0) {
+    // For SQLite, check rowCount instead of rows.length for UPDATE queries
+    if (!result.rowCount || result.rowCount === 0) {
       client.release();
       return res.status(404).json({ success: false, error: 'Group not found' });
     }
     
+    // Fetch the updated group for the response
+    const updatedResult = await client.query(
+      'SELECT * FROM monitoring_groups WHERE id = ?',
+      [id]
+    );
+    
     client.release();
-    res.json({ success: true, group: result.rows[0] });
+    res.json({ success: true, group: updatedResult.rows[0] });
   } catch (error) {
     console.error('Group update error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
@@ -258,15 +271,18 @@ router.delete('/groups', async (req, res) => {
     }
 
     const client = await pool.connect();
-    const result = await client.query('DELETE FROM monitoring_groups WHERE id = $1 RETURNING *', [id]);
-    
-    if (result.rows.length === 0) {
+    // First check if the group exists
+    const checkResult = await client.query('SELECT * FROM monitoring_groups WHERE id = ?', [id]);
+    if (checkResult.rows.length === 0) {
       client.release();
       return res.status(404).json({ success: false, error: 'Group not found' });
     }
     
+    const groupToDelete = checkResult.rows[0];
+    const result = await client.query('DELETE FROM monitoring_groups WHERE id = ?', [id]);
+    
     client.release();
-    res.json({ success: true, deleted: result.rows[0] });
+    res.json({ success: true, deleted: groupToDelete });
   } catch (error) {
     console.error('Group deletion error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
@@ -316,12 +332,18 @@ router.post('/categories', async (req, res) => {
     const groupIdsJson = group_ids ? (typeof group_ids === 'string' ? group_ids : JSON.stringify(group_ids)) : '[]';
     
     const result = await client.query(
-      'INSERT INTO monitoring_categories (category_name, subcategory_name, group_ids, category_index, subcategory_index) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      'INSERT INTO monitoring_categories (category_name, subcategory_name, group_ids, category_index, subcategory_index) VALUES (?, ?, ?, ?, ?)',
       [category_name, subcategory_name || null, groupIdsJson, category_index || 0, subcategory_index || 0]
     );
     
+    // Get the inserted category with its ID
+    const insertedResult = await client.query(
+      'SELECT * FROM monitoring_categories WHERE id = ?',
+      [result.lastID]
+    );
+    
     client.release();
-    res.json({ success: true, category: result.rows[0] });
+    res.json({ success: true, category: insertedResult.rows[0] });
   } catch (error) {
     console.error('Category creation error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
@@ -343,17 +365,24 @@ router.put('/categories', async (req, res) => {
     const groupIdsJson = group_ids ? (typeof group_ids === 'string' ? group_ids : JSON.stringify(group_ids)) : '[]';
     
     const result = await client.query(
-      'UPDATE monitoring_categories SET category_name = $1, subcategory_name = $2, group_ids = $3, category_index = $4, subcategory_index = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING *',
+      'UPDATE monitoring_categories SET category_name = ?, subcategory_name = ?, group_ids = ?, category_index = ?, subcategory_index = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [category_name, subcategory_name || null, groupIdsJson, category_index, subcategory_index, id]
     );
     
-    if (result.rows.length === 0) {
+    // For SQLite, check rowCount instead of rows.length for UPDATE queries
+    if (!result.rowCount || result.rowCount === 0) {
       client.release();
       return res.status(404).json({ success: false, error: 'Category not found' });
     }
     
+    // Fetch the updated category for the response
+    const updatedResult = await client.query(
+      'SELECT * FROM monitoring_categories WHERE id = ?',
+      [id]
+    );
+    
     client.release();
-    res.json({ success: true, category: result.rows[0] });
+    res.json({ success: true, category: updatedResult.rows[0] });
   } catch (error) {
     console.error('Category update error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
@@ -370,15 +399,18 @@ router.delete('/categories', async (req, res) => {
     }
 
     const client = await pool.connect();
-    const result = await client.query('DELETE FROM monitoring_categories WHERE id = $1 RETURNING *', [id]);
-    
-    if (result.rows.length === 0) {
+    // First check if the category exists
+    const checkResult = await client.query('SELECT * FROM monitoring_categories WHERE id = ?', [id]);
+    if (checkResult.rows.length === 0) {
       client.release();
       return res.status(404).json({ success: false, error: 'Category not found' });
     }
     
+    const categoryToDelete = checkResult.rows[0];
+    const result = await client.query('DELETE FROM monitoring_categories WHERE id = ?', [id]);
+    
     client.release();
-    res.json({ success: true, deleted: result.rows[0] });
+    res.json({ success: true, deleted: categoryToDelete });
   } catch (error) {
     console.error('Category deletion error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
@@ -398,7 +430,7 @@ router.post('/categories/:categoryId/subcategories', async (req, res) => {
     const client = await pool.connect();
     
     // Get the parent category to determine indices
-    const parentResult = await client.query('SELECT * FROM monitoring_categories WHERE id = $1', [categoryId]);
+    const parentResult = await client.query('SELECT * FROM monitoring_categories WHERE id = ?', [categoryId]);
     if (parentResult.rows.length === 0) {
       client.release();
       return res.status(404).json({ success: false, error: 'Parent category not found' });
@@ -408,7 +440,7 @@ router.post('/categories/:categoryId/subcategories', async (req, res) => {
     
     // Get the next subcategory index for this category
     const maxSubcategoryResult = await client.query(
-      'SELECT COALESCE(MAX(subcategory_index), 0) + 1 as next_index FROM monitoring_categories WHERE category_index = $1',
+      'SELECT COALESCE(MAX(subcategory_index), 0) + 1 as next_index FROM monitoring_categories WHERE category_index = ?',
       [parentCategory.category_index]
     );
     const nextSubcategoryIndex = maxSubcategoryResult.rows[0].next_index;
@@ -417,12 +449,18 @@ router.post('/categories/:categoryId/subcategories', async (req, res) => {
     const groupIdsJson = group_ids ? (typeof group_ids === 'string' ? group_ids : JSON.stringify(group_ids)) : '[]';
     
     const result = await client.query(
-      'INSERT INTO monitoring_categories (category_name, subcategory_name, group_ids, category_index, subcategory_index) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      'INSERT INTO monitoring_categories (category_name, subcategory_name, group_ids, category_index, subcategory_index) VALUES (?, ?, ?, ?, ?)',
       [parentCategory.category_name, subcategory_name, groupIdsJson, parentCategory.category_index, nextSubcategoryIndex]
     );
     
+    // Get the inserted subcategory with its ID
+    const insertedResult = await client.query(
+      'SELECT * FROM monitoring_categories WHERE id = ?',
+      [result.lastID]
+    );
+    
     client.release();
-    res.json({ success: true, subcategory: result.rows[0] });
+    res.json({ success: true, subcategory: insertedResult.rows[0] });
   } catch (error) {
     console.error('Subcategory creation error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
@@ -446,17 +484,24 @@ router.put('/categories/:categoryId/subcategories/:subcategoryId', async (req, r
     
     // For subcategories, update subcategory_name and group_ids, not category_name (subcategories share parent's category_name)
     const result = await client.query(
-      'UPDATE monitoring_categories SET subcategory_name = $1, group_ids = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *',
+      'UPDATE monitoring_categories SET subcategory_name = ?, group_ids = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [subcategory_name, groupIdsJson, subcategoryId]
     );
     
-    if (result.rows.length === 0) {
+    // For SQLite, check rowCount instead of rows.length for UPDATE queries
+    if (!result.rowCount || result.rowCount === 0) {
       client.release();
       return res.status(404).json({ success: false, error: 'Subcategory not found' });
     }
     
+    // Fetch the updated subcategory for the response
+    const updatedResult = await client.query(
+      'SELECT * FROM monitoring_categories WHERE id = ?',
+      [subcategoryId]
+    );
+    
     client.release();
-    res.json({ success: true, subcategory: result.rows[0] });
+    res.json({ success: true, subcategory: updatedResult.rows[0] });
   } catch (error) {
     console.error('Subcategory update error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
@@ -469,15 +514,18 @@ router.delete('/categories/:categoryId/subcategories/:subcategoryId', async (req
     const { subcategoryId } = req.params;
 
     const client = await pool.connect();
-    const result = await client.query('DELETE FROM monitoring_categories WHERE id = $1 RETURNING *', [subcategoryId]);
-    
-    if (result.rows.length === 0) {
+    // First check if the subcategory exists
+    const checkResult = await client.query('SELECT * FROM monitoring_categories WHERE id = ?', [subcategoryId]);
+    if (checkResult.rows.length === 0) {
       client.release();
       return res.status(404).json({ success: false, error: 'Subcategory not found' });
     }
     
+    const subcategoryToDelete = checkResult.rows[0];
+    const result = await client.query('DELETE FROM monitoring_categories WHERE id = ?', [subcategoryId]);
+    
     client.release();
-    res.json({ success: true, deleted: result.rows[0] });
+    res.json({ success: true, deleted: subcategoryToDelete });
   } catch (error) {
     console.error('Subcategory deletion error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
@@ -496,17 +544,24 @@ router.put('/categories/:categoryId/subcategories/:subcategoryId/groups', async 
     const groupIdsJson = group_ids ? (typeof group_ids === 'string' ? group_ids : JSON.stringify(group_ids)) : '[]';
     
     const result = await client.query(
-      'UPDATE monitoring_categories SET group_ids = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+      'UPDATE monitoring_categories SET group_ids = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [groupIdsJson, subcategoryId]
     );
     
-    if (result.rows.length === 0) {
+    // For SQLite, check rowCount instead of rows.length for UPDATE queries
+    if (!result.rowCount || result.rowCount === 0) {
       client.release();
       return res.status(404).json({ success: false, error: 'Subcategory not found' });
     }
     
+    // Fetch the updated subcategory for the response
+    const updatedResult = await client.query(
+      'SELECT * FROM monitoring_categories WHERE id = ?',
+      [subcategoryId]
+    );
+    
     client.release();
-    res.json({ success: true, subcategory: result.rows[0] });
+    res.json({ success: true, subcategory: updatedResult.rows[0] });
   } catch (error) {
     console.error('Subcategory groups update error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });

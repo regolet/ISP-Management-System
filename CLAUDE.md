@@ -4,142 +4,138 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-### Server & Development
+### Server Management
 ```bash
-npm start                    # Start Node.js backend on port 3000
-npm run dev                  # Start Node.js backend (same as start)
+npm start                    # Start Node.js backend server on port 3000
+npm run dev                  # Same as npm start
 npm install                  # Install dependencies
+
+# Windows batch scripts for server management
+server-manager.bat           # Interactive menu for server management
+start.bat                   # Quick server start
+restart-server.bat          # Restart server
+check-server.bat            # Check server status
 ```
 
-### Database Management
+### Database Operations
 ```bash
-# Health check and database connectivity
+# Database initialization (creates all tables and default admin user)
+curl -X POST http://localhost:3000/api/init-database
+
+# Health check
 curl http://localhost:3000/api/health
 
-# Initialize database tables and sample data
-curl -X POST http://localhost:3000/api/init-database
+# Database status and management available through Settings UI
 ```
 
+## Architecture
 
+### Backend Structure
+- **Entry point**: `server/app.js` - Express server with modular routing
+- **Database**: Dual support for SQLite (local) and Supabase (cloud backup)
+  - Primary: SQLite database at `data/offline.db`
+  - Backup: Supabase integration for data synchronization
+- **Routes**: Modular route files in `server/routes/` for each feature
+- **Utils**: Database managers, schedulers, and sync utilities in `server/utils/`
+- **Config**: Database pool wrapper in `server/config/database.js`
 
-## Architecture Overview
+### API Structure
+All API endpoints under `/api/*` with these main modules:
+- `/api/clients`, `/api/plans`, `/api/billings`, `/api/payments` - Core business entities
+- `/api/monitoring` - Network monitoring with groups and categories
+- `/api/mikrotik`, `/api/ppp` - MikroTik RouterOS integration
+- `/api/tickets`, `/api/inventory`, `/api/assets` - Support systems
+- `/api/supabase`, `/api/supabase-init` - Cloud backup functionality
+- `/api/system`, `/api/scheduler` - System management
 
-### Backend (Node.js/Express)
-- **Main server**: `server/app.js` - Modular Express server with PostgreSQL integration
-- **Legacy server**: `server/index.js` - Original monolithic server (preserved as backup)
-- **Database**: Neon PostgreSQL cloud database with parameterized queries
-- **Authentication**: JWT tokens with bcrypt password hashing
-- **API Base**: `/api/*` endpoints requiring authentication (except `/api/health` and `/api/init-database`)
-- **Architecture**: Modular structure with separate route files for maintainability
+### Frontend Pages
+Static HTML with vanilla JavaScript:
+- `dashboard.html` - Main overview with statistics
+- `clients.html` - Customer management with MikroTik import
+- `plans.html` - Service plans with PPP profile import
+- `billings.html`, `payments.html` - Financial management
+- `monitoring.html` - Network monitoring dashboard
+- `tickets.html`, `inventory.html`, `assets.html` - Support tools
+- `settings.html` - System configuration and database management
 
-### Frontend (Static HTML/CSS/JS)
-- **Entry point**: `public/index.html` - redirects to login
-- **Pages**: Login, Dashboard, Clients, Plans, Billings, Payments, Settings, Monitoring
-- **Assets**: `public/assets/css/styles.css` for styling
-- **Forms**: Modular form components in `public/forms/` directory
+## Key Implementation Details
 
-### Database Schema
-Key tables managed by the backend:
-- `users` - Authentication with admin/admin123 default
-- `clients` - Customer management
-- `plans` - Service plans with pricing
-- `client_plans` - Plan assignments with anchor_day for billing cycles
-- `billings` - Monthly billing records
-- `payments` - Payment tracking with automatic next-month billing generation
-- `mikrotik_settings` - RouterOS API configuration
-- `company_info` - Business information
-- `monitoring_groups` - JSONB table for group management with PPPoE accounts
-- `monitoring_categories` - Categories with group_ids, category_index, subcategory_index
+### Database Management
+- **SQLite Manager**: `server/utils/sqlite-database-manager.js` handles all SQLite operations
+- **Supabase Sync**: `server/utils/supabase-sync.js` for cloud backup
+- **Migration Support**: Automatic table creation and schema updates
+- **JSONB Emulation**: SQLite stores JSON as TEXT, parsed on retrieval
 
-## Authentication Flow
-1. Login via `/api/auth/login` with username/password
-2. Returns JWT token for subsequent API calls
-3. Token required in Authorization header: `Bearer <token>`
-4. Protected routes use `authenticateToken` middleware
+### Authentication
+- Default credentials: `admin/admin123`
+- JWT tokens for API authentication
+- Token required in header: `Authorization: Bearer <token>`
 
-## Key API Patterns
-- **CRUD operations**: GET, POST, PUT, DELETE for main entities
-- **Relationships**: Clients can have multiple plans, billings linked to client+plan
-- **Payment processing**: Creates next month's billing automatically
-- **MikroTik integration**: Fetch PPPoE accounts and profiles via RouterOS API
+### MikroTik Integration
+- RouterOS API connection via `routeros-api` package
+- Import PPPoE accounts as clients
+- Import PPP profiles as service plans
+- Real-time connection monitoring
+- Bandwidth tracking and statistics
 
-## Development Setup Requirements
-1. Node.js 18+ with npm
-2. Neon PostgreSQL connection (configured in server/index.js:21)
-3. Default login: admin/admin123
-4. Server runs on port 3000
+### Monitoring System
+- **Groups**: Collections of PPPoE accounts with online/offline tracking
+- **Categories**: Hierarchical organization with subcategories
+- **Real-time Updates**: Periodic refresh of connection status
+- **Network Totals**: Aggregate bandwidth and connection statistics
 
-## Important Implementation Notes
-- Database connection uses SSL with `rejectUnauthorized: false`
-- JWT secret should be environment variable in production
-- API responses follow `{success: true, data}` pattern
-- Error handling includes detailed logging
-- CORS enabled for frontend communication
-- Static files served from `public/` directory
-- 404 redirects to login page for non-API routes
+### Billing System
+- Monthly billing cycles with anchor day support
+- Automatic next-month billing generation on payment
+- Client-plan relationships for multiple services per client
+- Payment tracking with status management
 
-## Recent Major Changes (Session: 2025-01-15 & 2025-01-13)
+## Critical Files and Locations
 
-### System Migration Completed
-- **Backend**: Fully migrated from PHP to Node.js/Express with PostgreSQL
-- **Frontend**: Converted from PHP to modern HTML/CSS/JS with Tailwind CSS
-- **Database**: Migrated from SQLite to Neon PostgreSQL cloud database
+### Backend Core Files
+- `server/app.js` - Main application entry
+- `server/config/database.js` - Database pool wrapper
+- `server/utils/sqlite-database-manager.js` - SQLite operations
+- `server/utils/database.js` - Table initialization
+- `server/utils/scheduler.js` - Cron job management
 
-### Monitoring System Integration
-- **Complete monitoring system**: Added `public/monitoring.html` with MikroTik integration
-- **Groups management**: Create, edit, delete groups with PPPoE account assignments
-- **Categories management**: Hierarchical categories with subcategories and group assignments
-- **Real-time monitoring**: Network bandwidth tracking, online/offline status
-- **MikroTik API**: RouterOS integration for PPPoE accounts, profiles, and active connections
+### Frontend Assets
+- `public/assets/css/styles.css` - Tailwind CSS styling
+- `public/assets/js/sidebar-nav.js` - Navigation component
 
-### Database Schema Additions
-- `monitoring_groups` - JSONB table for group management
-- `monitoring_categories` - Categories with group_ids, category_index, subcategory_index
-- Proper JSONB handling for arrays in PostgreSQL
+### Data Storage
+- `data/offline.db` - SQLite database file
+- `data/backup/` - Database backup directory
+- `server.log` - Application logs
 
-### UI/UX Improvements (2025-01-13)
-- **Compact design system**: Reduced spacing and padding across all pages for better density
-- **Full-width layout**: All pages now use `w-full px-6` instead of `max-w-7xl mx-auto px-4`
-- **Currency localization**: Changed from USD ($) to Philippine Peso (₱) across all pages
-- **Import functionality**: Fixed MikroTik import modals in clients and plans
-- **Select all checkboxes**: Added to PPP profiles import with indeterminate state support
-- **Monitoring categories**: Compact grid layout with 4-column max and reduced spacing
-- **Sidebar navigation**: More compact sidebar with reduced padding and spacing
+## Development Workflow
 
-### Critical Fixes Applied
-- **API response format**: Fixed `mikrotikAccounts.map is not a function` error
-- **JSON handling**: Proper JSON.stringify/parse for JSONB columns
-- **Array safety**: Added Array.isArray() checks to prevent runtime errors
-- **Modal functionality**: Complete import/export workflows for MikroTik data
-- **Monitoring data integration**: Fixed UUID to database ID mapping for categories
-- **Subcategory member counts**: Fixed "undefined (0)" display issues in monitoring
+### Adding New Features
+1. Create route file in `server/routes/`
+2. Add route registration in `server/app.js`
+3. Create corresponding HTML page in `public/`
+4. Update sidebar navigation if needed
 
-### Database Management Features
-- **Health checks**: `/api/health` endpoint for database connectivity
-- **Manual controls**: Database initialize, repair, and reset functions in Settings
-- **Error handling**: Comprehensive error messages and retry mechanisms
+### Database Changes
+1. Modify schema in `server/utils/database.js`
+2. Run database initialization endpoint
+3. Test with existing data migration
 
-### Working Features Status
-✅ Authentication system (admin/admin123)
-✅ Client management with MikroTik import
-✅ Plans management with PPP profile import  
-✅ Billing and payment tracking
-✅ Network monitoring with groups/categories
-✅ MikroTik RouterOS API integration
-✅ Real-time bandwidth monitoring
-✅ Full CRUD operations across all modules
+### Testing API Endpoints
+```bash
+# Get all clients
+curl http://localhost:3000/api/clients
 
-### Known Working Import Flows
-1. **Clients Import**: PPPoE accounts → Client records with proper email formatting
-2. **Plans Import**: PPP profiles → Plans with rate limit parsing and pricing
-3. **Groups**: Manual creation with account assignments and online/offline tracking
-4. **Categories**: Hierarchical organization with member/max member tracking
-5. **Monitoring data**: Successfully migrated from JSON files to database with ID mapping
+# Create new client (requires auth token)
+curl -X POST http://localhost:3000/api/clients \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test Client","email":"test@example.com"}'
+```
 
-### Technology Stack
-- **Backend**: Node.js 18+, Express.js, PostgreSQL (Neon), JWT auth, bcrypt
-- **Frontend**: HTML5, Tailwind CSS, Vanilla JavaScript, Font Awesome icons
-- **Integration**: RouterOS API, Real-time data fetching, JSONB storage
-
-## Development Tips and Tricks
-- Use npx kill-port to kill any ports and run the server
+## System Requirements
+- Node.js 18+ with npm
+- Windows OS (for .bat scripts) or Unix-based systems
+- SQLite3 support (included via npm)
+- Network access for MikroTik integration
+- Optional: Supabase account for cloud backup

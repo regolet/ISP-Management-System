@@ -2052,8 +2052,12 @@
       if (button) setButtonLoading(button, true);
       
       try {
-        const response = await fetch(`/api/monitoring/groups?id=${groupId}`, {
+        const response = await fetch('/api/monitoring/groups', {
           method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id: groupId })
         });
         
         const data = await response.json();
