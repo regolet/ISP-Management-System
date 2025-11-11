@@ -386,4 +386,160 @@ router.get('/backups', async (req, res) => {
   }
 });
 
+// Database backup - download database file
+router.get('/database/backup', async (req, res) => {
+  try {
+    const dbPath = path.join(process.cwd(), 'data', 'offline.db');
+
+    // Check if database exists
+    try {
+      await fs.access(dbPath);
+    } catch (error) {
+      return res.status(404).json({
+        success: false,
+        error: 'Database file not found'
+      });
+    }
+
+    // Get file stats
+    const stats = await fs.stat(dbPath);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `database-backup-${timestamp}.db`;
+
+    // Set headers for download
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', stats.size);
+
+    // Stream the file
+    const fileStream = require('fs').createReadStream(dbPath);
+    fileStream.pipe(res);
+
+  } catch (error) {
+    console.error('Error downloading database backup:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to download database backup',
+      details: error.message
+    });
+  }
+});
+
+// Database restore - upload database file
+router.post('/database/restore', async (req, res) => {
+  try {
+    const multer = require('multer');
+    const upload = multer({ dest: 'uploads/' });
+
+    // Use multer middleware
+    upload.single('database')(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          error: 'File upload failed',
+          details: err.message
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: 'No file uploaded'
+        });
+      }
+
+      const uploadedPath = req.file.path;
+      const dbPath = path.join(process.cwd(), 'data', 'offline.db');
+      const backupPath = path.join(process.cwd(), 'data', `offline.db.backup-${Date.now()}`);
+
+      try {
+        // Create data directory if it doesn't exist
+        await fs.mkdir(path.join(process.cwd(), 'data'), { recursive: true });
+
+        // Backup existing database
+        try {
+          await fs.access(dbPath);
+          await fs.copyFile(dbPath, backupPath);
+        } catch (error) {
+          // Database doesn't exist yet, that's okay
+        }
+
+        // Move uploaded file to database location
+        await fs.copyFile(uploadedPath, dbPath);
+
+        // Clean up uploaded file
+        await fs.unlink(uploadedPath);
+
+        res.json({
+          success: true,
+          message: 'Database restored successfully. Server will restart.',
+          backupPath: backupPath
+        });
+
+        // Restart server after 2 seconds to load new database
+        setTimeout(() => {
+          console.log('Server restart after database restore');
+          process.exit(0);
+        }, 2000);
+
+      } catch (error) {
+        // Clean up uploaded file on error
+        try {
+          await fs.unlink(uploadedPath);
+        } catch (unlinkError) {
+          console.error('Error cleaning up uploaded file:', unlinkError);
+        }
+        throw error;
+      }
+    });
+
+  } catch (error) {
+    console.error('Error restoring database:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to restore database',
+      details: error.message
+    });
+  }
+});
+
+// Get database info
+router.get('/database/info', async (req, res) => {
+  try {
+    const dbPath = path.join(process.cwd(), 'data', 'offline.db');
+
+    try {
+      const stats = await fs.stat(dbPath);
+
+      res.json({
+        success: true,
+        database: {
+          path: dbPath,
+          size: stats.size,
+          modified: stats.mtime,
+          created: stats.birthtime
+        }
+      });
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        res.json({
+          success: true,
+          database: null,
+          message: 'Database file not found'
+        });
+      } else {
+        throw error;
+      }
+    }
+
+  } catch (error) {
+    console.error('Error getting database info:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get database info',
+      details: error.message
+    });
+  }
+});
+
 module.exports = router;
